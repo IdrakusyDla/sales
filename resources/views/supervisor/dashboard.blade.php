@@ -31,7 +31,10 @@
                         <p class="text-xs text-gray-500">Cek pengajuan biaya dari sales</p>
                     </div>
                 </div>
-                <div>
+                <div class="flex items-center gap-2">
+                    @if(($stats['pending_spv'] ?? 0) > 0)
+                        <span class="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">{{ $stats['pending_spv'] }}</span>
+                    @endif
                     <span class="text-gray-400">➡️</span>
                 </div>
             </a>

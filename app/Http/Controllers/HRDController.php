@@ -35,7 +35,12 @@ class HRDController extends Controller
 
         $users = $query->orderBy('name')->get();
 
-        return view('hrd.dashboard', compact('users'));
+        // Statistik pending reimburse untuk HRD
+        $stats = [
+            'pending_hrd' => Expense::where('status', 'pending_hrd')->count(),
+        ];
+
+        return view('hrd.dashboard', compact('users', 'stats'));
     }
 
     // ==========================================

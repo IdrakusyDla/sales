@@ -77,18 +77,24 @@
         {{-- MENU APPROVAL REIMBURSE --}}
         <div class="mb-6">
             <a href="{{ route('hrd.reimburse.approval') }}"
-                class="flex items-center bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:bg-gray-50 transition">
-                <div
-                    class="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center font-bold mr-4">
-                    📝
+                class="flex items-center justify-between bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:bg-gray-50 transition">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center font-bold">
+                        📝
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-800">Persetujuan Reimburse</h3>
+                        <p class="text-xs text-gray-500">Verifikasi & pencairan dana</p>
+                    </div>
                 </div>
-                <div class="flex-1">
-                    <h3 class="font-bold text-gray-800">Persetujuan Reimburse</h3>
-                    <p class="text-xs text-gray-500">Verifikasi & pencairan dana</p>
+                <div class="flex items-center gap-2">
+                    @if(($stats['pending_hrd'] ?? 0) > 0)
+                        <span class="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">{{ $stats['pending_hrd'] }}</span>
+                    @endif
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
                 </div>
-                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                </svg>
             </a>
         </div>
 

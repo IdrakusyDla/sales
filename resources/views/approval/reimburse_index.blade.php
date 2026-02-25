@@ -15,67 +15,123 @@
             </div>
         </div>
 
+        {{-- FILTERS --}}
+        <form method="GET" action="{{ request()->url() }}" class="mb-4 space-y-2">
+            <div class="grid grid-cols-2 gap-2">
+                <input type="date" name="date_from" value="{{ request('date_from') }}"
+                    class="border border-gray-300 rounded-lg p-2 text-sm">
+                <input type="date" name="date_to" value="{{ request('date_to') }}"
+                    class="border border-gray-300 rounded-lg p-2 text-sm">
+            </div>
+            <div class="flex gap-2">
+                <select name="user_id" class="flex-1 border border-gray-300 rounded-lg p-2 text-sm">
+                    <option value="">Semua User</option>
+                    @foreach($users as $u)
+                        <option value="{{ $u->id }}" {{ request('user_id') == $u->id ? 'selected' : '' }}>{{ $u->name }}</option>
+                    @endforeach
+                </select>
+                <select name="type" class="flex-1 border border-gray-300 rounded-lg p-2 text-sm">
+                    <option value="">Semua Tipe</option>
+                    <option value="fuel" {{ request('type') == 'fuel' ? 'selected' : '' }}>Bahan Bakar</option>
+                    <option value="hotel" {{ request('type') == 'hotel' ? 'selected' : '' }}>Hotel</option>
+                    <option value="toll" {{ request('type') == 'toll' ? 'selected' : '' }}>Toll</option>
+                    <option value="transport" {{ request('type') == 'transport' ? 'selected' : '' }}>Transport</option>
+                    <option value="other" {{ request('type') == 'other' ? 'selected' : '' }}>Lainnya</option>
+                </select>
+            </div>
+            <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg font-bold text-sm">
+                Filter
+            </button>
+        </form>
+
+        {{-- BULK ACTION (jika ada data) --}}
+        @if($pendingReimburses->total() > 0)
+            <form id="bulkApproveForm" action="{{ route(auth()->user()->role . '.reimburse.bulk_approve') }}" method="POST" class="mb-4">
+                @csrf
+                <div class="flex items-center justify-between bg-blue-50 rounded-xl p-3">
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" id="selectAll" onchange="toggleAllCheckboxes()"
+                            class="w-5 h-5 text-blue-600 rounded">
+                        <span class="text-sm font-bold text-blue-700">Pilih Semua</span>
+                    </label>
+                    <button type="submit" onclick="return confirm('Setujui semua yang dipilih?')"
+                        class="bg-green-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-green-700">
+                        ✅ Bulk Approve
+                    </button>
+                </div>
+                <input type="hidden" name="expense_ids" value="">
+            </form>
+        @endif
+
         <div class="space-y-4 pb-24">
             @forelse($pendingReimburses as $expense)
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-                    {{-- Header: Nama & Tanggal --}}
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <h3 class="font-bold text-gray-800">{{ $expense->user->name }}
-                                <span class="text-xs text-gray-500">({{ ucfirst($expense->user->role) }})</span>
-                            </h3>
-                            <p class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($expense->date)->format('d M Y') }}</p>
-                        </div>
-                        <span class="bg-yellow-100 text-yellow-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase">
-                            @if(auth()->user()->isSupervisor())
-                                Menunggu SPV
-                            @elseif(auth()->user()->isHrd())
-                                Menunggu HRD
-                            @else
-                                {{ str_replace('_', ' ', $expense->status) }}
+                    {{-- Checkbox untuk bulk action --}}
+                    <div class="flex items-start gap-3">
+                        <input type="checkbox" class="expense-checkbox mt-4 w-5 h-5 text-blue-600 rounded"
+                            value="{{ $expense->id }}">
+
+                        <div class="flex-1">
+                            {{-- Header: Nama & Tanggal --}}
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 class="font-bold text-gray-800">{{ $expense->user->name }}
+                                        <span class="text-xs text-gray-500">({{ ucfirst($expense->user->role) }})</span>
+                                    </h3>
+                                    <p class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($expense->date)->format('d M Y') }}</p>
+                                </div>
+                                <span class="bg-yellow-100 text-yellow-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase">
+                                    @if(auth()->user()->isSupervisor())
+                                        Menunggu SPV
+                                    @elseif(auth()->user()->isHrd())
+                                        Menunggu HRD
+                                    @else
+                                        {{ str_replace('_', ' ', $expense->status) }}
+                                    @endif
+                                </span>
+                            </div>
+
+                            {{-- Approval History (SPV untuk HRD) --}}
+                            @if(auth()->user()->isHrd() && $expense->approved_by_spv_at)
+                                <div class="bg-green-50 border border-green-200 rounded-lg p-2 mb-3 text-xs">
+                                    <p class="text-green-700">✅ Disetujui SPV: {{ $expense->approvedBySpv?->name ?? '-' }}
+                                        ({{ \Carbon\Carbon::parse($expense->approved_by_spv_at)->format('d M H:i') }})</p>
+                                </div>
                             @endif
-                        </span>
+
+                            {{-- Detail Expense --}}
+                            <div class="bg-gray-50 rounded-xl p-3 mb-3">
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-600">{{ ucfirst($expense->type) }}</span>
+                                    <span class="font-bold text-gray-900">Rp {{ number_format($expense->amount, 0, ',', '.') }}</span>
+                                </div>
+                                @if($expense->note)
+                                    <p class="text-xs text-gray-500 italic">"{{ $expense->note }}"</p>
+                                @endif
+                                @if($expense->is_auto_calculated && $expense->km_total)
+                                    <p class="text-xs text-gray-400 mt-1">
+                                        *Auto calculated: {{ number_format($expense->km_total, 2) }} KM ÷ {{ $expense->km_per_liter ?? 30 }}
+                                        KM/L × Rp {{ number_format($expense->fuel_price ?? 10000, 0, ',', '.') }}/L
+                                    </p>
+                                @endif
+
+                                {{-- Link Foto/Struk --}}
+                                @if($expense->photo_receipt)
+                                    <button type="button" onclick="openImageModal('{{ route('expenses.receipt.show', $expense->id) }}')"
+                                        class="text-blue-500 text-xs flex items-center gap-1 mt-2 hover:underline">
+                                        📎 Lihat Struk/Bukti
+                                    </button>
+                                @endif
+                            </div>
+
+                            {{-- Revision Info (jika ada) --}}
+                            @if($expense->revision_count > 0)
+                                <div class="bg-orange-50 border border-orange-200 rounded-lg p-2 mb-3">
+                                    <p class="text-xs text-orange-700">🔄 Revisi ke-{{ $expense->revision_count }}</p>
+                                </div>
+                            @endif
+                        </div>
                     </div>
-
-                    {{-- Approval History (SPV untuk HRD) --}}
-                    @if(auth()->user()->isHrd() && $expense->approved_by_spv_at)
-                        <div class="bg-green-50 border border-green-200 rounded-lg p-2 mb-3 text-xs">
-                            <p class="text-green-700">✅ Disetujui SPV: {{ $expense->approvedBySpv?->name ?? '-' }}
-                                ({{ \Carbon\Carbon::parse($expense->approved_by_spv_at)->format('d M H:i') }})</p>
-                        </div>
-                    @endif
-
-                    {{-- Detail Expense --}}
-                    <div class="bg-gray-50 rounded-xl p-3 mb-3">
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="text-gray-600">{{ ucfirst($expense->type) }}</span>
-                            <span class="font-bold text-gray-900">Rp {{ number_format($expense->amount, 0, ',', '.') }}</span>
-                        </div>
-                        @if($expense->note)
-                            <p class="text-xs text-gray-500 italic">"{{ $expense->note }}"</p>
-                        @endif
-                        @if($expense->is_auto_calculated && $expense->km_total)
-                            <p class="text-xs text-gray-400 mt-1">
-                                *Auto calculated: {{ number_format($expense->km_total, 2) }} KM ÷ {{ $expense->km_per_liter ?? 30 }}
-                                KM/L × Rp {{ number_format($expense->fuel_price ?? 10000, 0, ',', '.') }}/L
-                            </p>
-                        @endif
-
-                        {{-- Link Foto/Struk --}}
-                        @if($expense->photo_receipt)
-                            <button type="button" onclick="openImageModal('{{ route('expenses.receipt.show', $expense->id) }}')"
-                                class="text-blue-500 text-xs flex items-center gap-1 mt-2 hover:underline">
-                                📎 Lihat Struk/Bukti
-                            </button>
-                        @endif
-                    </div>
-
-                    {{-- Revision Info (jika ada) --}}
-                    @if($expense->revision_count > 0)
-                        <div class="bg-orange-50 border border-orange-200 rounded-lg p-2 mb-3">
-                            <p class="text-xs text-orange-700">🔄 Revisi ke-{{ $expense->revision_count }}</p>
-                        </div>
-                    @endif
 
                     {{-- Action Buttons --}}
                     <div class="space-y-3">
@@ -162,6 +218,13 @@
                 </div>
             @endforelse
         </div>
+
+        {{-- Pagination --}}
+        @if($pendingReimburses->hasPages())
+            <div class="flex justify-center mt-6">
+                {{ $pendingReimburses->appends(request()->query())->links() }}
+            </div>
+        @endif
     </div>
 
     {{-- Image Modal (hidden) --}}
@@ -201,6 +264,14 @@
                     }
                 }
             });
+
+            // Toggle all checkboxes
+            function toggleAllCheckboxes() {
+                const selectAll = document.getElementById('selectAll');
+                const checkboxes = document.querySelectorAll('.expense-checkbox');
+                checkboxes.forEach(cb => cb.checked = selectAll.checked);
+            }
+
             function showRejectForm(id) {
                 document.getElementById('buttons-' + id).classList.add('hidden');
                 document.getElementById('reject-form-' + id).classList.remove('hidden');
@@ -218,6 +289,18 @@
                 document.getElementById('reject-form-' + id).classList.add('hidden');
                 document.getElementById('approve-form-' + id).classList.add('hidden');
             }
+
+            // Submit bulk approve dengan selected IDs
+            document.getElementById('bulkApproveForm')?.addEventListener('submit', function(e) {
+                const checked = document.querySelectorAll('.expense-checkbox:checked');
+                const ids = Array.from(checked).map(cb => cb.value);
+                if (ids.length === 0) {
+                    e.preventDefault();
+                    alert('Pilih minimal satu expense!');
+                    return false;
+                }
+                this.querySelector('input[name="expense_ids"]').value = ids.join(',');
+            });
         </script>
     @endsection
 @endsection

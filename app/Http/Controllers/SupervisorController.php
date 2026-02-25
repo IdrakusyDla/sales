@@ -46,7 +46,18 @@ class SupervisorController extends Controller
             ];
         }
 
-        return view('supervisor.dashboard', compact('sales', 'todayAbsensi'));
+        // Statistik pending reimburse untuk supervisor
+        $stats = [
+            'pending_spv' => Expense::where('status', 'pending_spv')
+                ->whereHas('user', function ($q) use ($supervisor) {
+                    $q->where('supervisor_id', $supervisor->id)
+                        ->orWhereHas('supervisors', function ($q2) use ($supervisor) {
+                            $q2->where('users.id', $supervisor->id);
+                        });
+                })->count(),
+        ];
+
+        return view('supervisor.dashboard', compact('sales', 'todayAbsensi', 'stats'));
     }
 
     // ==========================================

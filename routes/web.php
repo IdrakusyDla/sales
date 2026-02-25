@@ -76,6 +76,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/supervisor/approval/reimburse', [\App\Http\Controllers\ReimburseApprovalController::class, 'index'])->name('supervisor.reimburse.approval');
         Route::post('/supervisor/approval/reimburse/{id}/approve', [\App\Http\Controllers\ReimburseApprovalController::class, 'approve'])->name('supervisor.reimburse.approve');
         Route::post('/supervisor/approval/reimburse/{id}/reject', [\App\Http\Controllers\ReimburseApprovalController::class, 'reject'])->name('supervisor.reimburse.reject');
+        Route::post('/supervisor/approval/reimburse/bulk-approve', [\App\Http\Controllers\ReimburseApprovalController::class, 'bulkApprove'])->name('supervisor.reimburse.bulk_approve');
 
         // REVISI REIMBURSE (SPV - jika Finance reject ke SPV)
         Route::post('/supervisor/reimburse/{expenseId}/revise', [SupervisorController::class, 'reviseReimburse'])->name('supervisor.reimburse.revise');
@@ -140,6 +141,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/hrd/approval/reimburse', [\App\Http\Controllers\ReimburseApprovalController::class, 'index'])->name('hrd.reimburse.approval');
         Route::post('/hrd/approval/reimburse/{id}/approve', [\App\Http\Controllers\ReimburseApprovalController::class, 'approve'])->name('hrd.reimburse.approve');
         Route::post('/hrd/approval/reimburse/{id}/reject', [\App\Http\Controllers\ReimburseApprovalController::class, 'reject'])->name('hrd.reimburse.reject');
+        Route::post('/hrd/approval/reimburse/bulk-approve', [\App\Http\Controllers\ReimburseApprovalController::class, 'bulkApprove'])->name('hrd.reimburse.bulk_approve');
 
         // --- SETTING BAHAN BAKAR ---
         Route::get('/fuel-settings', [FuelSettingController::class, 'index'])->name('fuel_settings.index');
