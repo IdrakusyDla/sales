@@ -53,6 +53,22 @@
             height: 5rem;
         }
 
+        .w-5 {
+            width: 1.25rem;
+        }
+
+        .h-5 {
+            height: 1.25rem;
+        }
+
+        .w-3 {
+            width: 0.75rem;
+        }
+
+        .h-3 {
+            height: 0.75rem;
+        }
+
         .w-full {
             width: 100%;
         }
@@ -61,8 +77,32 @@
             background-color: #2563eb;
         }
 
+        .bg-red-500 {
+            background-color: #ef4444;
+        }
+        
+        .bg-red-50 {
+            background-color: #fef2f2;
+        }
+
+        .border-red-600 {
+            border-color: #dc2626;
+        }
+        
+        .border-red-200 {
+            border-color: #fecaca;
+        }
+
         .text-white {
             color: white;
+        }
+        
+        .text-red-600 {
+            color: #dc2626;
+        }
+        
+        .text-red-500 {
+            color: #ef4444;
         }
 
         .text-gray-900 {
@@ -117,6 +157,10 @@
             flex-direction: column;
         }
 
+        .flex-shrink-0 {
+            flex-shrink: 0;
+        }
+
         .items-center {
             align-items: center;
         }
@@ -158,14 +202,39 @@
             padding: 0.875rem;
         }
 
+        .p-4 {
+            padding: 1rem;
+        }
+
         .px-5 {
             padding-left: 1.25rem;
             padding-right: 1.25rem;
         }
 
+        .py-3 {
+            padding-top: 0.75rem;
+            padding-bottom: 0.75rem;
+        }
+
         .py-4 {
             padding-top: 1rem;
             padding-bottom: 1rem;
+        }
+
+        .mb-6 {
+            margin-bottom: 1.5rem;
+        }
+        
+        .gap-2 {
+            gap: 0.5rem;
+        }
+
+        .rounded-full {
+            border-radius: 9999px;
+        }
+
+        .shadow-sm {
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
         }
 
         .block {
@@ -187,12 +256,17 @@
         input[type="text"],
         input[type="password"] {
             width: 100%;
-            padding: 0.875rem;
-            padding-left: 2.5rem;
+            padding: 0.875rem 0.875rem 0.875rem 2.75rem;
             background-color: #f9fafb;
             border: 1px solid #e5e7eb;
             border-radius: 0.75rem;
             font-size: 0.875rem;
+        }
+
+        .relative input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
         button[type="submit"] {
@@ -235,37 +309,49 @@
     <form method="POST" action="{{ route('login') }}">
         @csrf
 
-        {{-- Error Message (Jika password salah) --}}
         @if ($errors->any())
-            <div
-                class="bg-red-100 text-red-700 text-sm font-bold p-4 rounded-xl mb-4 border-2 border-red-300 text-center shadow-sm">
-                ⚠️ Username atau Password salah.
+            <div class="flex justify-center mb-6">
+                <div
+                    class="bg-red-50 text-red-600 text-sm font-bold px-5 py-3 rounded-full shadow-sm border border-red-200 flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5 flex-shrink-0 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                        </path>
+                    </svg>
+                    <span>Username atau Password salah.</span>
+                </div>
             </div>
         @endif
 
         {{-- Input Username --}}
         <div class="mb-4">
-            <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Username</label>
+            <label class="block text-xs font-bold text-gray-500 uppercase mb-2 ml-1">Username</label>
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <span class="text-gray-400">👤</span> {{-- Ganti icon amplop jadi orang --}}
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
                 </div>
-                {{-- Name ganti jadi 'username', Type jadi 'text' --}}
                 <input type="text" name="username"
-                    class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block pl-10 p-3.5"
+                    class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl block pl-10 pr-3 py-3"
                     placeholder="Contoh: budi" required autofocus>
             </div>
         </div>
 
         {{-- Input Password --}}
         <div class="mb-8">
-            <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Password</label>
+            <label class="block text-xs font-bold text-gray-500 uppercase mb-2 ml-1">Password</label>
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <span class="text-gray-400">🔒</span>
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                        </path>
+                    </svg>
                 </div>
                 <input type="password" name="password"
-                    class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block pl-10 p-3.5"
+                    class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl block pl-10 pr-3 py-3"
                     placeholder="••••••••" required>
             </div>
         </div>

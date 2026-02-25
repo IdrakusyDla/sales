@@ -46,7 +46,7 @@
         <main class="flex-1 overflow-y-auto no-scrollbar pb-24 bg-gray-50">
             @if (session('success'))
                 <div class="bg-green-500 text-white p-3 text-center text-sm font-bold sticky top-0 z-50">
-                    ✅ {{ session('success') }}
+                    <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> {{ session('success') }}
                 </div>
             @endif
 
@@ -190,7 +190,7 @@
             <div class="max-w-4xl w-full mx-4">
                 <div class="bg-white rounded-xl overflow-hidden">
                     <div class="flex justify-end p-2">
-                        <button onclick="closeGlobalImageModal()" class="text-gray-600 px-3 py-1">Tutup ✖</button>
+                        <button onclick="closeGlobalImageModal()" class="text-gray-600 px-3 py-1">Tutup <svg class="w-4 h-4 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
                     </div>
                     <div class="p-4" style="max-height:calc(100vh - 180px); overflow:auto;">
                         <img id="global-image-modal-img" src="" alt="Foto" style="max-height:calc(100vh - 220px); max-width:100%; object-fit:contain; display:block; margin:0 auto;" />

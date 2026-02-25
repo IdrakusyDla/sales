@@ -56,7 +56,7 @@
                     </label>
                     <button type="submit" onclick="return confirm('Setujui semua yang dipilih?')"
                         class="bg-green-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-green-700">
-                        ✅ Bulk Approve
+                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Bulk Approve
                     </button>
                 </div>
                 <input type="hidden" name="expense_ids" value="">
@@ -94,7 +94,7 @@
                             {{-- Approval History (SPV untuk HRD) --}}
                             @if(auth()->user()->isHrd() && $expense->approved_by_spv_at)
                                 <div class="bg-green-50 border border-green-200 rounded-lg p-2 mb-3 text-xs">
-                                    <p class="text-green-700">✅ Disetujui SPV: {{ $expense->approvedBySpv?->name ?? '-' }}
+                                    <p class="text-green-700"><svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Disetujui SPV: {{ $expense->approvedBySpv?->name ?? '-' }}
                                         ({{ \Carbon\Carbon::parse($expense->approved_by_spv_at)->format('d M H:i') }})</p>
                                 </div>
                             @endif
@@ -119,7 +119,7 @@
                                 @if($expense->photo_receipt)
                                     <button type="button" onclick="openImageModal('{{ route('expenses.receipt.show', $expense->id) }}')"
                                         class="text-blue-500 text-xs flex items-center gap-1 mt-2 hover:underline">
-                                        📎 Lihat Struk/Bukti
+                                        <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg> Lihat Struk/Bukti
                                     </button>
                                 @endif
                             </div>
@@ -127,7 +127,7 @@
                             {{-- Revision Info (jika ada) --}}
                             @if($expense->revision_count > 0)
                                 <div class="bg-orange-50 border border-orange-200 rounded-lg p-2 mb-3">
-                                    <p class="text-xs text-orange-700">🔄 Revisi ke-{{ $expense->revision_count }}</p>
+                                    <p class="text-xs text-orange-700"><svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Revisi ke-{{ $expense->revision_count }}</p>
                                 </div>
                             @endif
                         </div>
@@ -139,11 +139,11 @@
                         <div id="buttons-{{ $expense->id }}" class="flex gap-3">
                             <button type="button" onclick="showRejectForm({{ $expense->id }})"
                                 class="flex-1 bg-red-100 text-red-700 py-3 rounded-xl font-bold text-sm hover:bg-red-200 transition">
-                                ❌ Tolak
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> Tolak
                             </button>
                             <button type="button" onclick="showApproveForm({{ $expense->id }})"
                                 class="flex-1 bg-green-100 text-green-700 py-3 rounded-xl font-bold text-sm hover:bg-green-200 transition">
-                                ✅ Setujui
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Setujui
                             </button>
                         </div>
 
@@ -171,13 +171,13 @@
                                             class="flex-1 flex items-center gap-2 bg-yellow-50 border border-yellow-200 rounded-lg p-3 cursor-pointer hover:bg-yellow-100">
                                             <input type="radio" name="rejection_type" value="revisi" required
                                                 class="text-yellow-600">
-                                            <span class="text-xs font-bold text-yellow-700">🔄 Minta Revisi</span>
+                                            <span class="text-xs font-bold text-yellow-700"><svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Minta Revisi</span>
                                         </label>
                                         <label
                                             class="flex-1 flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg p-3 cursor-pointer hover:bg-red-100">
                                             <input type="radio" name="rejection_type" value="permanent" required
                                                 class="text-red-600">
-                                            <span class="text-xs font-bold text-red-700">⛔ Tolak Permanen</span>
+                                            <span class="text-xs font-bold text-red-700"><svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg> Tolak Permanen</span>
                                         </label>
                                     </div>
 
@@ -205,7 +205,7 @@
                                 <p class="text-sm text-green-700 mb-3">Apakah Anda yakin ingin menyetujui reimburse ini?</p>
                                 <button type="submit"
                                     class="w-full bg-green-600 text-white py-3 rounded-xl font-bold text-sm hover:bg-green-700 transition">
-                                    ✅ Konfirmasi Persetujuan
+                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Konfirmasi Persetujuan
                                 </button>
                             </form>
                         </div>
@@ -213,7 +213,7 @@
                 </div>
             @empty
                 <div class="text-center py-10">
-                    <div class="text-4xl mb-2">✨</div>
+                    <svg class="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     <p class="text-sm text-gray-500">Tidak ada permintaan pending.</p>
                 </div>
             @endforelse
@@ -231,7 +231,7 @@
     <div id="image-modal-overlay" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50" onclick="if(event.target.id==='image-modal-overlay') closeImageModal()">
         <div class="bg-white rounded-xl overflow-hidden max-w-4xl w-full mx-4" role="dialog" aria-modal="true">
             <div class="flex justify-end p-2">
-                <button onclick="closeImageModal()" class="text-gray-600 px-3 py-1">Tutup ✖</button>
+                <button onclick="closeImageModal()" class="text-gray-600 px-3 py-1 flex items-center gap-1">Tutup <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
             </div>
             <div class="p-4" style="max-height:calc(100vh - 180px); overflow:auto;">
                 <img id="image-modal-img" src="" alt="Struk" style="max-height:calc(100vh - 220px); max-width:100%; object-fit:contain; display:block; margin:0 auto;" class="rounded-lg" />

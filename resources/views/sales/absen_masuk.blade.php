@@ -33,8 +33,8 @@
                     </button>
                     {{-- Tombol ambil ulang selfie --}}
                     <button type="button" onclick="retakeSelfie()" id="btn-retake-selfie"
-                        class="hidden absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg">
-                        🔄 Ambil Ulang
+                        class="hidden absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Ambil Ulang
                     </button>
                 </div>
                 <p id="selfie-status" class="text-xs text-gray-500 mt-2"></p>
@@ -62,8 +62,8 @@
                     </button>
                     {{-- Tombol ambil ulang odometer --}}
                     <button type="button" onclick="retakeOdometer()" id="btn-retake-odometer"
-                        class="hidden absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg">
-                        🔄 Ambil Ulang
+                        class="hidden absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Ambil Ulang
                     </button>
                 </div>
                 <p id="odometer-status" class="text-xs text-gray-500 mt-2"></p>
@@ -168,7 +168,7 @@
                 document.getElementById('btn-snap-selfie').classList.add('hidden');
                 document.getElementById('btn-switch-selfie').classList.add('hidden');
                 document.getElementById('btn-retake-selfie').classList.remove('hidden');
-                document.getElementById('selfie-status').textContent = '✅ Foto selfie berhasil diambil';
+                document.getElementById('selfie-status').innerHTML = '<svg class="w-5 h-5 inline text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Foto selfie berhasil diambil';
                 selfieTaken = true;
 
                 // Stop selfie camera and start odometer camera
@@ -198,7 +198,7 @@
                 document.getElementById('btn-snap-odometer').classList.remove('hidden');
                 document.getElementById('btn-switch-odometer').classList.remove('hidden');
                 document.getElementById('btn-retake-odometer').classList.add('hidden');
-                document.getElementById('odometer-status').textContent = '📷 Kamera odometer akan aktif setelah foto selfie diambil';
+                document.getElementById('odometer-status').innerHTML = '<svg class="w-5 h-5 inline text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> Kamera odometer akan aktif setelah foto selfie diambil';
 
                 initSelfieCamera();
                 checkSubmit();
@@ -221,7 +221,7 @@
                 document.getElementById('btn-snap-odometer').classList.add('hidden');
                 document.getElementById('btn-switch-odometer').classList.add('hidden');
                 document.getElementById('btn-retake-odometer').classList.remove('hidden');
-                document.getElementById('odometer-status').textContent = '✅ Foto odometer berhasil diambil';
+                document.getElementById('odometer-status').innerHTML = '<svg class="w-5 h-5 inline text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Foto odometer berhasil diambil';
                 odometerTaken = true;
 
                 // Stop odometer camera after photo taken
@@ -289,13 +289,13 @@
                 }
                 isSubmitting = true;
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = '<span class="inline-block animate-spin mr-2">⏳</span> Sedang diproses...';
+                submitBtn.innerHTML = '<svg class="w-5 h-5 inline animate-spin mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Sedang diproses...';
                 submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
             });
 
             // Init - hanya mulai kamera selfie, kamera odometer aktif setelah foto selfie diambil
             initSelfieCamera();
-            document.getElementById('odometer-status').textContent = '📷 Kamera odometer akan aktif setelah foto selfie diambil';
+            document.getElementById('odometer-status').innerHTML = '<svg class="w-5 h-5 inline text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> Kamera odometer akan aktif setelah foto selfie diambil';
             document.getElementById('odometer_value').addEventListener('input', checkSubmit);
         </script>
     @endsection

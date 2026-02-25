@@ -25,7 +25,7 @@
 
         {{-- Overlay Loading GPS --}}
         <div id="gps-loader" class="absolute top-4 left-4 bg-black/50 text-white text-xs px-3 py-1 rounded-full">
-            📡 Mencari GPS...
+            <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"></path></svg> Mencari GPS...
         </div>
     </div>
 
@@ -79,7 +79,8 @@
                             onchange="toggleReason(false); validateForm()">
                         <div
                             class="text-center p-3 border rounded-xl peer-checked:bg-green-50 peer-checked:border-green-500 peer-checked:text-green-600 transition text-sm font-bold opacity-50 peer-checked:opacity-100">
-                            ✅ Berhasil
+                            <svg class="w-5 h-5 inline mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            Berhasil
                         </div>
                     </label>
                     <label class="cursor-pointer">
@@ -87,7 +88,8 @@
                             onchange="toggleReason(true); validateForm()">
                         <div
                             class="text-center p-3 border rounded-xl peer-checked:bg-red-50 peer-checked:border-red-500 peer-checked:text-red-600 transition text-sm font-bold opacity-50 peer-checked:opacity-100">
-                            ❌ Gagal
+                            <svg class="w-5 h-5 inline mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            Gagal
                         </div>
                     </label>
                 </div>
@@ -256,7 +258,7 @@
         navigator.geolocation.getCurrentPosition(p => {
             document.getElementById('lat').value = p.coords.latitude;
             document.getElementById('long').value = p.coords.longitude;
-            document.getElementById('gps-loader').innerText = "📍 GPS Akurat";
+            document.getElementById('gps-loader').innerHTML = '<svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> GPS Akurat';
             document.getElementById('gps-loader').classList.replace('bg-black/50', 'bg-green-500');
         });
 

@@ -56,7 +56,7 @@
                     </label>
                     <button type="submit" onclick="return confirm('Setujui semua yang dipilih?')"
                         class="bg-green-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-green-700">
-                        ✅ Bulk Approve
+                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Bulk Approve
                     </button>
                 </div>
                 <input type="hidden" name="expense_ids" value="">
@@ -91,11 +91,11 @@
                             @if($expense->approved_by_spv_at || $expense->approved_by_hrd_at)
                                 <div class="bg-green-50 border border-green-200 rounded-lg p-2 mb-3 text-xs">
                                     @if($expense->approved_by_spv_at)
-                                        <p class="text-green-700">✅ Disetujui SPV: {{ $expense->approvedBySpv?->name ?? '-' }}
+                                        <p class="text-green-700"><svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Disetujui SPV: {{ $expense->approvedBySpv?->name ?? '-' }}
                                             ({{ \Carbon\Carbon::parse($expense->approved_by_spv_at)->format('d M H:i') }})</p>
                                     @endif
                                     @if($expense->approved_by_hrd_at)
-                                        <p class="text-green-700">✅ Disetujui HRD: {{ $expense->approvedByHrd?->name ?? '-' }}
+                                        <p class="text-green-700"><svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Disetujui HRD: {{ $expense->approvedByHrd?->name ?? '-' }}
                                             ({{ \Carbon\Carbon::parse($expense->approved_by_hrd_at)->format('d M H:i') }})</p>
                                     @endif
                                 </div>
@@ -120,7 +120,7 @@
                                 @if($expense->photo_receipt)
                                     <a href="{{ asset('storage/' . $expense->photo_receipt) }}" target="_blank"
                                         class="text-blue-500 text-xs flex items-center gap-1 mt-2 hover:underline">
-                                        📎 Lihat Struk/Bukti
+                                        <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg> Lihat Struk/Bukti
                                     </a>
                                 @endif
                             </div>
@@ -128,7 +128,7 @@
                             {{-- Revision Info --}}
                             @if($expense->revision_count > 0)
                                 <div class="bg-orange-50 border border-orange-200 rounded-lg p-2 mb-3">
-                                    <p class="text-xs text-orange-700">🔄 Revisi ke-{{ $expense->revision_count }}</p>
+                                    <p class="text-xs text-orange-700"><svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Revisi ke-{{ $expense->revision_count }}</p>
                                 </div>
                             @endif
                         </div>
@@ -140,11 +140,11 @@
                         <div id="buttons-{{ $expense->id }}" class="flex gap-3">
                             <button type="button" onclick="showRejectForm({{ $expense->id }})"
                                 class="flex-1 bg-red-100 text-red-700 py-3 rounded-xl font-bold text-sm hover:bg-red-200 transition">
-                                ❌ Tolak
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> Tolak
                             </button>
                             <button type="button" onclick="showApproveForm({{ $expense->id }})"
                                 class="flex-1 bg-green-100 text-green-700 py-3 rounded-xl font-bold text-sm hover:bg-green-200 transition">
-                                ✅ Setujui
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Setujui
                             </button>
                         </div>
 
@@ -191,7 +191,7 @@
                                     class="w-full border border-gray-300 rounded-lg p-2 text-sm mb-3">
                                 <button type="submit"
                                     class="w-full bg-green-600 text-white py-3 rounded-xl font-bold text-sm hover:bg-green-700 transition">
-                                    ✅ Konfirmasi Persetujuan
+                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Konfirmasi Persetujuan
                                 </button>
                             </form>
                         </div>
@@ -199,7 +199,7 @@
                 </div>
             @empty
                 <div class="text-center py-10">
-                    <div class="text-4xl mb-2">✨</div>
+                    <svg class="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     <p class="text-sm text-gray-500">Tidak ada permintaan pending.</p>
                 </div>
             @endforelse

@@ -74,11 +74,11 @@
                 <div class="grid grid-cols-2 gap-3">
                     <label class="flex items-center p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-green-500">
                         <input type="radio" name="status" value="completed" required class="mr-3">
-                        <span class="font-bold text-sm">✅ Berhasil</span>
+                        <span class="font-bold text-sm">Berhasil</span>
                     </label>
                     <label class="flex items-center p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-red-500">
                         <input type="radio" name="status" value="failed" required class="mr-3">
-                        <span class="font-bold text-sm">❌ Gagal</span>
+                        <span class="font-bold text-sm">Gagal</span>
                     </label>
                 </div>
             </div>
@@ -140,7 +140,7 @@
             video.classList.add('hidden');
             canvas.classList.remove('hidden');
             document.getElementById('btn-snap').classList.add('hidden');
-            document.getElementById('photo-status').textContent = '✅ Foto berhasil diambil';
+            document.getElementById('photo-status').innerHTML = '<svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Foto berhasil diambil';
             photoTaken = true;
             checkSubmit();
         }
@@ -231,7 +231,7 @@
             }
             isSubmitting = true;
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="inline-block animate-spin mr-2">⏳</span> Sedang diproses...';
+            submitBtn.innerHTML = '<span class="inline-block animate-spin mr-2"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></span> Sedang diproses...';
             submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
         });
 

@@ -25,8 +25,7 @@
                         class="text-red-500">*</span></label>
                 <div class="grid grid-cols-3 gap-3">
                     <label class="cursor-pointer">
-                        <input type="radio" name="type" value="gas" class="peer sr-only"
-                            onchange="handleTypeChange('gas')">
+                        <input type="radio" name="type" value="gas" class="peer sr-only" onchange="handleTypeChange('gas')">
                         <div
                             class="flex flex-col items-center justify-center p-3 border rounded-xl peer-checked:bg-orange-50 peer-checked:border-orange-500 peer-checked:text-orange-600 transition">
                             <span class="text-xl mb-1">⛽</span>
@@ -37,8 +36,20 @@
                         <input type="radio" name="type" value="parking" class="peer sr-only"
                             onchange="handleTypeChange('parking')">
                         <div
-                            class="flex flex-col items-center justify-center p-3 border rounded-xl peer-checked:bg-blue-50 peer-checked:border-blue-500 peer-checked:text-blue-600 transition">
-                            <span class="text-xl mb-1">🅿️</span>
+                            class="flex flex-col items-center justify-center p-3 border rounded-xl peer-checked:bg-orange-50 peer-checked:border-orange-500 peer-checked:text-orange-600 transition">
+                            <svg class="w-5 h-5 mb-1" version="1.1" id="_x32_" xmlns="http://www.w3.org/2000/svg"
+                                xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="-20 -20 552 552" xml:space="preserve"
+                                fill="currentColor">
+                                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                                <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                                <g id="SVGRepo_iconCarrier">
+                                    <g>
+                                        <path
+                                            d="M404.751,54.102C371.523,20.771,324.986-0.026,274.178,0h-90.85h-8.682H53.16v512h130.167V369.324h90.85 c50.808,0.026,97.333-20.771,130.573-54.074c33.331-33.229,54.115-79.78,54.089-130.575 C458.866,133.854,438.082,87.329,404.751,54.102z M321.923,232.394c-12.408,12.305-28.919,19.754-47.745,19.779h-90.85V117.15 h90.85c18.826,0.026,35.338,7.474,47.732,19.779c12.318,12.408,19.754,28.906,19.779,47.745 C341.664,203.488,334.228,219.988,321.923,232.394z">
+                                        </path>
+                                    </g>
+                                </g>
+                            </svg>
                             <span class="text-xs font-bold">Parkir</span>
                         </div>
                     </label>
@@ -47,7 +58,33 @@
                             onchange="handleTypeChange('toll')">
                         <div
                             class="flex flex-col items-center justify-center p-3 border rounded-xl peer-checked:bg-green-50 peer-checked:border-green-500 peer-checked:text-green-600 transition">
-                            <span class="text-xl mb-1">🛣️</span>
+                            <svg class="w-5 h-5 mb-1" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
+                                xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="-20 -20 440 440" xml:space="preserve"
+                                fill="currentColor">
+                                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                                <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                                <g id="SVGRepo_iconCarrier">
+                                    <g>
+                                        <g>
+                                            <path
+                                                d="M295.225,142.697c-9.9-44.668-19.801-89.336-29.707-134.003c-16.718,0-33.435,0-50.15,0 c2.389,44.668,4.781,89.336,7.172,134.003H295.225z">
+                                            </path>
+                                            <path
+                                                d="M226.354,214.003c3.145,58.703,6.286,117.404,9.426,176.107c38.094,0,76.188,0,114.281,0 c-13.014-58.702-26.021-117.404-39.029-176.107H226.354z">
+                                            </path>
+                                            <path
+                                                d="M183.435,8.694c-16.716,0-33.434,0-50.149,0c-9.902,44.667-19.798,89.335-29.698,134.003h72.682 C178.656,98.029,181.043,53.361,183.435,8.694z">
+                                            </path>
+                                            <path
+                                                d="M48.742,390.11c38.096,0,76.188,0,114.281,0c3.152-58.702,6.293-117.404,9.43-176.107H87.785 C74.775,272.706,61.763,331.409,48.742,390.11z">
+                                            </path>
+                                            <path
+                                                d="M394.176,161.212H4.628c-2.556,0-4.628,2.072-4.628,4.628v25.02c0,2.556,2.072,4.628,4.628,4.628h25.048v37.476 c0,2.556,2.071,4.629,4.627,4.629h24.996c2.117,0,3.964-1.438,4.484-3.488l9.818-38.615h251.602l9.816,38.615 c0.52,2.052,2.369,3.488,4.486,3.488h24.992c2.559,0,4.629-2.073,4.629-4.629v-37.476h25.049c2.557,0,4.629-2.072,4.629-4.628 v-25.02C398.805,163.284,396.732,161.212,394.176,161.212z">
+                                            </path>
+                                        </g>
+                                    </g>
+                                </g>
+                            </svg>
                             <span class="text-xs font-bold">E-Toll</span>
                         </div>
                     </label>
@@ -235,10 +272,10 @@
             if (currentStream) currentStream.getTracks().forEach(t => t.stop());
 
             navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: facingMode
-                    }
-                })
+                video: {
+                    facingMode: facingMode
+                }
+            })
                 .then(stream => {
                     currentStream = stream;
                     video.srcObject = stream;

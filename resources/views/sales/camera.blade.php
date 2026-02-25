@@ -8,7 +8,7 @@
         {{-- Loading GPS Badge --}}
         <div id="gps-badge"
             class="absolute top-4 left-4 bg-black/60 backdrop-blur text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-2">
-            <span class="animate-pulse">📡</span> Mencari GPS...
+            <span class="animate-pulse"><svg class="w-3 h-3 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"></path></svg></span> Mencari GPS...
         </div>
 
         {{-- Tombol Jepret (Floating) --}}
@@ -44,14 +44,16 @@
                             <input type="radio" name="status" value="completed" class="peer sr-only" checked>
                             <div
                                 class="text-center p-3 border rounded-xl peer-checked:bg-green-50 peer-checked:border-green-500 peer-checked:text-green-600 transition">
-                                ✅ Berhasil
+                                <svg class="w-5 h-5 inline mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                Berhasil
                             </div>
                         </label>
                         <label class="cursor-pointer">
                             <input type="radio" name="status" value="failed" class="peer sr-only">
                             <div
                                 class="text-center p-3 border rounded-xl peer-checked:bg-red-50 peer-checked:border-red-500 peer-checked:text-red-600 transition">
-                                ❌ Kendala
+                                <svg class="w-5 h-5 inline mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                Kendala
                             </div>
                         </label>
                     </div>
@@ -110,7 +112,7 @@
             navigator.geolocation.watchPosition(p => {
                 document.getElementById('lat').value = p.coords.latitude;
                 document.getElementById('long').value = p.coords.longitude;
-                document.getElementById('gps-badge').innerHTML = "📍 Lokasi Akurat";
+                document.getElementById('gps-badge').innerHTML = '<svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> Lokasi Akurat';
                 document.getElementById('gps-badge').classList.replace('bg-black/60', 'bg-green-500');
                 btnSnap.disabled = false; // Bisa foto kalau GPS sudah dapat
             });

@@ -12,7 +12,7 @@
 
         {{-- SETTING GENERAL --}}
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
-            <h2 class="font-bold text-lg mb-4">⚙️ Setting General (Untuk Semua Karyawan)</h2>
+            <h2 class="font-bold text-lg mb-4"><svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c-.94 1.543.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 002.573-1.066c.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> Setting General (Untuk Semua Karyawan)</h2>
             
             @if($generalSetting)
                 <div class="bg-blue-50 rounded-xl p-4 mb-4">
@@ -54,7 +54,7 @@
 
         {{-- SETTING INDIVIDUAL --}}
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
-            <h2 class="font-bold text-lg mb-4">👤 Setting Individual (Per Karyawan)</h2>
+            <h2 class="font-bold text-lg mb-4"><svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> Setting Individual (Per Karyawan)</h2>
             
             <form action="{{ Auth::user()->isIt() ? route('it.fuel_settings.store.individual') : route('fuel_settings.store.individual') }}" method="POST">
                 @csrf
@@ -92,7 +92,7 @@
         {{-- LIST SETTING INDIVIDUAL YANG SUDAH ADA --}}
         @if($individualSettings->count() > 0)
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                <h2 class="font-bold text-lg mb-4">📋 Setting Individual Aktif</h2>
+                <h2 class="font-bold text-lg mb-4"><svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg> Setting Individual Aktif</h2>
                 <div class="space-y-3">
                     @foreach($individualSettings as $setting)
                         <div class="bg-gray-50 rounded-xl p-4 flex justify-between items-center">
