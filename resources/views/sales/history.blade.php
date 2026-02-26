@@ -1,6 +1,6 @@
 @extends('layout')
 @section('content')
-    <div class="px-5 py-6">
+    <div class="px-5 md:px-8 py-6 md:py-8">
         <h1 class="text-2xl font-bold mb-2">Riwayat Aktivitas</h1>
         <p class="text-sm text-gray-600 mb-6">Lihat semua absensi dan kunjungan Anda</p>
 
@@ -24,7 +24,7 @@
         </form>
 
         {{-- LIST RIWAYAT --}}
-        <div class="space-y-4">
+        <div class="space-y-4 md:grid md:grid-cols-2 md:gap-6 md:space-y-0">
             @forelse($dailyLogs as $log)
                 <a href="{{ route('sales.history.detail', $log->id) }}" class="block">
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition">

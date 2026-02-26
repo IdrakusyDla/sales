@@ -1,11 +1,11 @@
 @extends('layout')
 @section('content')
-    <div class="px-5 py-6">
+    <div class="px-5 md:px-8 py-6 md:py-8">
         <h1 class="text-2xl font-bold mb-2">Dashboard Finance</h1>
         <p class="text-sm text-gray-600 mb-6">Approval reimburse & laporan keuangan</p>
 
         {{-- STATISTIK --}}
-        <div class="grid grid-cols-2 gap-3 mb-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
             <div class="bg-yellow-50 rounded-xl p-4">
                 <p class="text-xs text-gray-600 mb-1">Pending Approval</p>
                 <p class="text-2xl font-bold text-yellow-600">{{ $stats['pending_finance'] ?? 0 }}</p>
@@ -20,7 +20,8 @@
             </div>
             <div class="bg-blue-50 rounded-xl p-4">
                 <p class="text-xs text-gray-600 mb-1">Total Expenses Bulan Ini</p>
-                <p class="text-lg font-bold text-blue-600">Rp {{ number_format($stats['total_expenses_this_month'] ?? 0, 0, ',', '.') }}</p>
+                <p class="text-lg font-bold text-blue-600">Rp
+                    {{ number_format($stats['total_expenses_this_month'] ?? 0, 0, ',', '.') }}</p>
             </div>
         </div>
 
@@ -31,7 +32,9 @@
                 <div
                     class="w-10 h-10 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center font-bold mr-4">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                        </path>
                     </svg>
                 </div>
                 <div class="flex-1">
@@ -39,7 +42,8 @@
                     <p class="text-xs text-gray-500">Verifikasi & pencairan dana</p>
                 </div>
                 @if(($stats['pending_finance'] ?? 0) > 0)
-                    <span class="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">{{ $stats['pending_finance'] }}</span>
+                    <span
+                        class="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">{{ $stats['pending_finance'] }}</span>
                 @endif
                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -76,7 +80,9 @@
                 <div
                     class="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center font-bold mr-4">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                        </path>
                     </svg>
                 </div>
                 <div class="flex-1">
@@ -106,7 +112,7 @@
         </form>
 
         {{-- LIST KARYAWAN --}}
-        <div class="space-y-3">
+        <div class="space-y-3 md:grid md:grid-cols-2 md:gap-4 md:space-y-0">
             <h2 class="font-bold text-lg text-gray-800 mb-3">Daftar Karyawan</h2>
             @forelse($users as $user)
                 <a href="{{ route('finance.show.user', $user->id) }}"
@@ -132,7 +138,11 @@
                 </a>
             @empty
                 <div class="text-center py-10 bg-gray-50 rounded-xl">
-                    <svg class="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    <svg class="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                        </path>
+                    </svg>
                     <p class="text-sm text-gray-500">Tidak ada karyawan</p>
                 </div>
             @endforelse

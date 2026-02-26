@@ -1,7 +1,7 @@
 @extends('layout')
 
 @section('content')
-    <div class="px-5 py-6">
+    <div class="px-5 md:px-8 py-6 md:py-8">
         {{-- BACK BUTTON & HEADER --}}
         <div class="flex items-center gap-3 mb-6">
             <a href="{{ route('finance.dashboard') }}" class="text-gray-600">

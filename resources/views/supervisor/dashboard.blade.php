@@ -1,11 +1,11 @@
 @extends('layout')
 @section('content')
-    <div class="px-5 py-6">
+    <div class="px-5 md:px-8 py-6 md:py-8">
         <h1 class="text-2xl font-bold mb-2">Dashboard Supervisor</h1>
         <p class="text-sm text-gray-600 mb-6">Monitor absensi sales yang ditugaskan ke Anda</p>
 
         {{-- STATISTIK HARI INI --}}
-        <div class="grid grid-cols-2 gap-3 mb-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
             <div class="bg-blue-50 rounded-xl p-4">
                 <p class="text-xs text-gray-600 mb-1">Total Sales</p>
                 <p class="text-2xl font-bold text-blue-600">{{ count($sales) }}</p>
@@ -41,7 +41,7 @@
         </div>
 
         {{-- LIST SALES --}}
-        <div class="space-y-3">
+        <div class="space-y-3 md:grid md:grid-cols-2 md:gap-4 md:space-y-0">
             <h2 class="font-bold text-lg text-gray-800 mb-3">Tim Sales</h2>
             @forelse($sales as $sale)
                 @php

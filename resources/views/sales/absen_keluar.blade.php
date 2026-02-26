@@ -1,6 +1,6 @@
 @extends('layout')
 @section('content')
-    <div class="px-5 py-6">
+    <div class="px-5 md:px-8 py-6 md:py-8">
         <h1 class="text-2xl font-bold mb-2">Absen Keluar</h1>
         <p class="text-sm text-gray-600 mb-6">Setelah selesai kerja, ambil foto selfie dan foto odometer akhir</p>
 
