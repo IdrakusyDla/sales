@@ -1,6 +1,9 @@
 @extends('layout')
 @section('content')
-    <div class="px-5 md:px-8 py-6 md:py-8">
+    {{-- ========================================== --}}
+    {{-- TAMPILAN MOBILE (< 768px): KODE ASLI UTUH --}}
+    {{-- ========================================== --}}
+    <div class="md:hidden px-5 py-6">
         <h1 class="text-2xl font-bold mb-2">Riwayat Aktivitas</h1>
         <p class="text-sm text-gray-600 mb-6">Lihat semua absensi dan kunjungan Anda</p>
 
@@ -24,11 +27,12 @@
         </form>
 
         {{-- LIST RIWAYAT --}}
-        <div class="space-y-4 md:grid md:grid-cols-2 md:gap-6 md:space-y-0">
+        <div class="space-y-4">
             @forelse($dailyLogs as $log)
-                <a href="{{ route('sales.history.detail', $log->id) }}" class="block">
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition">
-                    {{-- HEADER TANGGAL --}}
+                <div class="relative bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition group">
+                    <a href="{{ route('sales.history.detail', $log->id) }}" class="absolute inset-0 z-10 rounded-2xl"></a>
+                    <div class="relative z-20 pointer-events-none">
+                        <div class="pointer-events-auto">
                     <div class="mb-3 pb-3 border-b border-gray-100">
                         <div class="flex justify-between items-start mb-2">
                             <div class="flex-1">
@@ -133,7 +137,10 @@
                         @endforeach
                     </div>
 
-                    {{-- REIMBURSE --}}
+                        </div>
+                    </div>
+                    <div class="pointer-events-auto">
+                        {{-- REIMBURSE --}}
                     @if($log->expenses->count() > 0)
                         <div class="mt-3 pt-3 border-t border-gray-100">
                             <p class="text-xs font-bold text-gray-600 mb-2">Reimburse:</p>
@@ -175,7 +182,7 @@
                             {{-- TOMBOL TAMBAH REIMBURSE (Jika belum lewat deadline) --}}
                             @if(!$log->hasEnded() || \Carbon\Carbon::today()->lte(\App\Models\Expense::calculateDeadline($log->date)))
                                 <a href="{{ route('sales.reimburse.form', $log->id) }}"
-                                    class="block mt-3 text-center bg-blue-50 text-blue-600 py-2 rounded-lg text-xs font-bold">
+                                    class="relative z-30 block mt-3 text-center bg-blue-50 text-blue-600 py-2 rounded-lg text-xs font-bold hover:bg-blue-100 transition">
                                     + Tambah Pengeluaran Lain
                                 </a>
                             @endif
@@ -184,13 +191,13 @@
                         {{-- TOMBOL TAMBAH REIMBURSE (Jika belum lewat deadline) --}}
                         @if(\Carbon\Carbon::today()->lte(\App\Models\Expense::calculateDeadline($log->date)))
                             <a href="{{ route('sales.reimburse.form', $log->id) }}"
-                                class="block mt-3 text-center bg-blue-50 text-blue-600 py-2 rounded-lg text-xs font-bold">
+                                class="relative z-30 block mt-3 text-center bg-blue-50 text-blue-600 py-2 rounded-lg text-xs font-bold hover:bg-blue-100 transition">
                                 + Tambah Pengeluaran
                             </a>
                         @endif
                     @endif
                 </div>
-                </a>
+                </div>
             @empty
                 <div class="text-center py-10">
                     <svg class="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
@@ -199,4 +206,7 @@
             @endforelse
         </div>
     </div>
+
+    @include('sales.desktop_history')
+
 @endsection
