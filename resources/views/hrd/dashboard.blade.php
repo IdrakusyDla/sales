@@ -5,7 +5,7 @@
         <p class="text-sm text-gray-600 mb-6">Manajemen karyawan sales & supervisor</p>
 
         {{-- STATISTIK --}}
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
             <div class="bg-blue-50 rounded-xl p-4">
                 <p class="text-xs text-gray-600 mb-1">Total Sales</p>
                 <p class="text-2xl font-bold text-blue-600">{{ $users->where('role', 'sales')->count() }}</p>
@@ -14,44 +14,51 @@
                 <p class="text-xs text-gray-600 mb-1">Total Supervisor</p>
                 <p class="text-2xl font-bold text-purple-600">{{ $users->where('role', 'supervisor')->count() }}</p>
             </div>
+            <div class="bg-green-50 rounded-xl p-4">
+                <p class="text-xs text-gray-600 mb-1">Total Finance</p>
+                <p class="text-2xl font-bold text-green-600">{{ $users->where('role', 'finance')->count() }}</p>
+            </div>
         </div>
 
         {{-- TOMBOL TAMBAH --}}
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
             <a href="{{ route('hrd.sales.create') }}"
                 class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center gap-3 hover:bg-gray-50">
-                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
                     <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
                 </div>
                 <div class="flex-1">
                     <h3 class="font-bold text-sm">Tambah Sales</h3>
-                    <p class="text-xs text-gray-500">Akun baru</p>
+                    <p class="text-xs text-gray-500 hidden md:block lg:hidden">Baru</p>
+                    <p class="text-xs text-gray-500 md:hidden lg:block">Akun baru</p>
                 </div>
             </a>
             <a href="{{ route('hrd.supervisor.create') }}"
                 class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center gap-3 hover:bg-gray-50">
-                <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center shrink-0">
                     <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
                 </div>
                 <div class="flex-1">
                     <h3 class="font-bold text-sm">Tambah Supervisor</h3>
-                    <p class="text-xs text-gray-500">Akun baru</p>
+                    <p class="text-xs text-gray-500 hidden md:block lg:hidden">Baru</p>
+                    <p class="text-xs text-gray-500 md:hidden lg:block">Akun baru</p>
                 </div>
             </a>
             <a href="{{ route('hrd.finance.create') }}"
-                class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center gap-3 hover:bg-gray-50 col-span-2">
-                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center gap-3 hover:bg-gray-50 col-span-2 md:col-span-1">
+                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center shrink-0">
                     <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
                 </div>
                 <div class="flex-1">
                     <h3 class="font-bold text-sm">Tambah Finance</h3>
-                    <p class="text-xs text-gray-500">Akun baru</p>
+                    <p class="text-xs text-gray-500 hidden md:block lg:hidden">Baru</p>
+                    <p class="text-xs text-gray-500 md:hidden lg:block">Akun baru</p>
                 </div>
             </a>
         </div>
@@ -123,15 +130,15 @@
         </form>
 
         {{-- LIST KARYAWAN --}}
-        <div class="space-y-3 md:grid md:grid-cols-2 md:gap-4 md:space-y-0">
-            <h2 class="font-bold text-lg text-gray-800 mb-3">Daftar Karyawan</h2>
+        <div class="space-y-3 md:grid md:grid-cols-2 md:gap-4 md:space-y-0 pb-8">
+            <h2 class="font-bold text-lg text-gray-800 mb-3 md:col-span-2">Daftar Karyawan</h2>
             @forelse($users as $user)
                 <a href="{{ route('hrd.show.user', $user->id) }}"
                     class="block bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3 flex-1">
                             <div
-                                class="w-12 h-12 bg-{{ $user->role == 'sales' ? 'blue' : 'purple' }}-100 rounded-full flex items-center justify-center text-{{ $user->role == 'sales' ? 'blue' : 'purple' }}-600 font-bold">
+                                class="w-12 h-12 bg-{{ $user->role == 'sales' ? 'blue' : ($user->role == 'finance' ? 'green' : 'purple') }}-100 rounded-full flex items-center justify-center text-{{ $user->role == 'sales' ? 'blue' : ($user->role == 'finance' ? 'green' : 'purple') }}-600 font-bold shrink-0">
                                 {{ substr($user->name, 0, 1) }}
                             </div>
                             <div class="flex-1">
@@ -148,7 +155,7 @@
                     </div>
                 </a>
             @empty
-                <div class="text-center py-10 bg-gray-50 rounded-xl">
+                <div class="text-center py-10 bg-gray-50 rounded-xl md:col-span-2">
                     <div class="text-4xl mb-2">
                         <svg class="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

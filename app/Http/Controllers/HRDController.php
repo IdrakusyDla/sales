@@ -165,10 +165,16 @@ class HRDController extends Controller
         // Hitung statistik
         $stats = [
             'total_absensi' => $dailyLogs->total(),
-            'total_visits' => Visit::whereHas('dailyLog', function ($q) use ($id) {
+            'total_visits' => Visit::whereHas('dailyLog', function ($q) use ($id, $request) {
                 $q->where('user_id', $id);
+                if ($request->filled('start_date') && $request->filled('end_date')) {
+                    $q->whereBetween('date', [$request->start_date, $request->end_date]);
+                }
             })->count(),
-            'total_expenses' => Expense::where('user_id', $id)->sum('amount'),
+            'total_expenses' => Expense::where('user_id', $id)
+                ->when($request->filled('start_date') && $request->filled('end_date'), function ($q) use ($request) {
+                    $q->whereBetween('date', [$request->start_date, $request->end_date]);
+                })->sum('amount'),
         ];
 
         // Ambil semua supervisor untuk dropdown tambah
