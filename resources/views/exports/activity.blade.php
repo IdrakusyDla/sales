@@ -203,15 +203,15 @@
                                 <span style="background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 4px; font-size: 9px; margin-left: 4px;">Dadakan</span>
                             @endif
                             <br>
-                            <span style="color: #6b7280;"><svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> {{ \Carbon\Carbon::parse($v->time)->format('H:i') }}</span>
+                            <span style="color: #6b7280;">{{ \Carbon\Carbon::parse($v->time)->format('H:i') }}</span>
                             <span style="margin: 0 4px; color: #d1d5db;">|</span>
                             <span style="color: {{ $v->status == 'completed' ? '#10b981' : ($v->status == 'failed' ? '#ef4444' : '#f59e0b') }}; font-weight: 600;">
                                 {{ strtoupper($v->status == 'completed' ? 'Berhasil' : ($v->status == 'failed' ? 'Gagal' : 'Pending')) }}
                             </span>
                             @if($v->status == 'failed' && $v->reason)
-                                <br><small style="color: #ef4444;"><svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> Alasan: {{ $v->reason }}</small>
+                                <br><small style="color: #ef4444;">Alasan: {{ $v->reason }}</small>
                             @elseif($v->status == 'completed' && $v->notes)
-                                <br><small style="color: #6b7280;"><svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg> {{ $v->notes }}</small>
+                                <br><small style="color: #6b7280;">{{ $v->notes }}</small>
                             @endif
                         </td>
                         <td style="border: 1px solid #000; padding: 8px; vertical-align: top;">

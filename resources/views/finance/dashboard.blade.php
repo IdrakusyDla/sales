@@ -21,7 +21,8 @@
             <div class="bg-blue-50 rounded-xl p-4">
                 <p class="text-xs text-gray-600 mb-1">Total Expenses Bulan Ini</p>
                 <p class="text-lg font-bold text-blue-600">Rp
-                    {{ number_format($stats['total_expenses_this_month'] ?? 0, 0, ',', '.') }}</p>
+                    {{ number_format($stats['total_expenses_this_month'] ?? 0, 0, ',', '.') }}
+                </p>
             </div>
         </div>
 
@@ -52,7 +53,7 @@
         </div>
 
         {{-- MENU SETTING BAHAN BAKAR --}}
-        <div class="mb-3">
+        <div class="mb-6">
             <a href="{{ route('finance.fuel_settings.index') }}"
                 class="flex items-center bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:bg-gray-50 transition">
                 <div
@@ -66,28 +67,6 @@
                 <div class="flex-1">
                     <h3 class="font-bold text-gray-800">Setting Bahan Bakar</h3>
                     <p class="text-xs text-gray-500">Atur ratio & harga bahan bakar</p>
-                </div>
-                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                </svg>
-            </a>
-        </div>
-
-        {{-- MENU EXPORT LAPORAN --}}
-        <div class="mb-6">
-            <a href="{{ route('finance.export.page') }}"
-                class="flex items-center bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:bg-gray-50 transition">
-                <div
-                    class="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center font-bold mr-4">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
-                        </path>
-                    </svg>
-                </div>
-                <div class="flex-1">
-                    <h3 class="font-bold text-gray-800">Export Laporan</h3>
-                    <p class="text-xs text-gray-500">Download laporan Excel</p>
                 </div>
                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -113,7 +92,7 @@
 
         {{-- LIST KARYAWAN --}}
         <div class="space-y-3 md:grid md:grid-cols-2 md:gap-4 md:space-y-0">
-            <h2 class="font-bold text-lg text-gray-800 mb-3">Daftar Karyawan</h2>
+            <h2 class="font-bold text-lg text-gray-800 mb-3 md:col-span-2">Daftar Karyawan</h2>
             @forelse($users as $user)
                 <a href="{{ route('finance.show.user', $user->id) }}"
                     class="block bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition">

@@ -413,6 +413,7 @@ class FinanceController extends Controller
         $dateFrom = $request->date_from;
         $dateTo = $request->date_to;
         $type = $request->type;
+        $userId = $request->user_id; // Bisa null (semua) atau ID tertentu
 
         $fileName = match ($type) {
             'activity' => "Laporan_Aktivitas_{$dateFrom}_sd_{$dateTo}.xlsx",
@@ -420,6 +421,6 @@ class FinanceController extends Controller
             'combined' => "Laporan_Combined_{$dateFrom}_sd_{$dateTo}.xlsx",
         };
 
-        return Excel::download(new RekapExport($type, $dateFrom, $dateTo), $fileName);
+        return Excel::download(new RekapExport($type, $dateFrom, $dateTo, $userId), $fileName);
     }
 }

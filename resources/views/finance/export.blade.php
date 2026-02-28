@@ -31,7 +31,7 @@
                 {{-- 1. PILIH JENIS LAPORAN --}}
                 <div class="mb-4">
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Jenis Laporan</label>
-                    <div class="grid grid-cols-3 gap-3">
+                    <div class="grid grid-cols-2 gap-3">
                         <label class="cursor-pointer">
                             <input type="radio" name="type" value="activity" class="peer sr-only">
                             <div
@@ -48,19 +48,6 @@
                             </div>
                         </label>
                         <label class="cursor-pointer">
-                            <input type="radio" name="type" value="expense" class="peer sr-only">
-                            <div
-                                class="text-center p-3 border rounded-xl peer-checked:bg-orange-50 peer-checked:border-orange-500 peer-checked:text-orange-600 transition">
-                                <span class="block text-lg"><svg class="w-5 h-5 inline" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
-                                        </path>
-                                    </svg></span>
-                                <span class="text-xs font-bold">Expense</span>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer">
                             <input type="radio" name="type" value="combined" class="peer sr-only" checked>
                             <div
                                 class="text-center p-3 border rounded-xl peer-checked:bg-purple-50 peer-checked:border-purple-500 peer-checked:text-purple-600 transition">
@@ -70,7 +57,7 @@
                                             d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
                                         </path>
                                     </svg></span>
-                                <span class="text-xs font-bold">Combined</span>
+                                <span class="text-xs font-bold">Reimburse</span>
                             </div>
                         </label>
                     </div>

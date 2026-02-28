@@ -1,25 +1,49 @@
 @extends('layout')
 @section('content')
-    <div class="px-5 md:px-8 py-6 md:py-8 md:max-w-3xl md:mx-auto">
-        <div class="flex items-center gap-3 mb-6">
-            <a href="{{ route('it.dashboard') }}" class="text-gray-600">
+    {{-- Header --}}
+    <div
+        class="bg-blue-600 text-white p-6 md:px-8 md:py-10 md:max-w-3xl md:mx-auto md:text-center rounded-b-3xl md:rounded-3xl shadow-lg mb-6 relative overflow-hidden md:mt-6">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-10 -mt-10 pointer-events-none">
+        </div>
+        <div class="relative z-10 flex items-center md:block gap-3">
+            <a href="{{ route('it.dashboard') }}" class="text-white md:hidden">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18">
                     </path>
                 </svg>
             </a>
-            <h1 class="text-2xl font-bold">Export Laporan</h1>
+            <div>
+                <h1 class="text-xl md:text-3xl font-bold">Pusat Laporan</h1>
+                <p class="text-blue-100 text-xs md:text-sm mt-1">Unduh rekap data sistem ke Excel (.xlsx)</p>
+            </div>
         </div>
+    </div>
 
-        <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100">
+    <div class="px-5 md:max-w-3xl md:mx-auto">
+
+        <div class="bg-white p-6 md:p-8 rounded-2xl md:rounded-[2rem] shadow-sm border border-gray-100">
             <form action="{{ route('it.export.excel') }}" method="GET">
+
+                {{-- Ilustrasi --}}
+                <div class="flex justify-center mb-6">
+                    <div
+                        class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 border border-blue-100">
+                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                            </path>
+                        </svg>
+                    </div>
+                </div>
+
+                {{-- 1. PILIH JENIS LAPORAN --}}
                 <div class="mb-4">
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Jenis Laporan</label>
                     <div class="grid grid-cols-2 gap-3">
                         <label class="cursor-pointer">
                             <input type="radio" name="report_type" value="activity" class="peer sr-only">
                             <div
-                                class="text-center p-3 border rounded-xl peer-checked:bg-indigo-50 peer-checked:border-indigo-500 peer-checked:text-indigo-600 transition">
+                                class="text-center p-3 border rounded-xl peer-checked:bg-blue-50 peer-checked:border-blue-500 peer-checked:text-blue-600 transition">
                                 <span class="block text-lg"><svg class="w-5 h-5 inline" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -47,31 +71,35 @@
                     </div>
                 </div>
 
+                {{-- 2. INPUT TANGGAL --}}
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <div>
                         <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Dari Tanggal</label>
                         <input type="date" name="start_date" value="{{ date('Y-m-01') }}" required
-                            class="w-full border border-gray-300 rounded-xl p-3 text-sm">
+                            class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:ring-blue-500">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Sampai Tanggal</label>
                         <input type="date" name="end_date" value="{{ date('Y-m-d') }}" required
-                            class="w-full border border-gray-300 rounded-xl p-3 text-sm">
+                            class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:ring-blue-500">
                     </div>
                 </div>
 
+                {{-- Filter Karyawan --}}
                 <div class="mb-6">
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Filter Karyawan (Opsional)</label>
-                    <select name="user_id" class="w-full border border-gray-300 rounded-xl p-3 text-sm">
-                        <option value="">-- Semua Karyawan --</option>
+                    <select name="user_id"
+                        class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:ring-blue-500 bg-white">
+                        <option value="">-- Download Semua --</option>
                         @foreach($users as $u)
                             <option value="{{ $u->id }}">{{ $u->name }} ({{ ucfirst($u->role) }})</option>
                         @endforeach
                     </select>
                 </div>
 
+                {{-- Tombol Download --}}
                 <button type="submit"
-                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-xl font-bold shadow-lg flex justify-center items-center gap-2">
+                    class="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl font-bold shadow-lg flex justify-center items-center gap-2 transition transform active:scale-95">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
@@ -80,5 +108,10 @@
                 </button>
             </form>
         </div>
+
+        <p class="mt-6 text-center text-gray-400 text-[10px] px-8 mb-8">
+            File akan terunduh dalam format <b>.XLSX</b>. <br>Kompatibel dengan Microsoft Excel & Google Sheets.
+        </p>
+
     </div>
 @endsection
