@@ -36,14 +36,17 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        // Ubah 'email' menjadi 'username' di sini
-        if (! Auth::attempt($this->only('username', 'password'), $this->boolean('remember'))) {
+        // Ubah 'email' menjadi 'username' di sini, force remember me jadi true
+        if (!Auth::attempt($this->only('username', 'password'), true)) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
                 'username' => trans('auth.failed'), // Ubah pesan error
             ]);
         }
+
+        // Log out sesi di device lain
+        Auth::logoutOtherDevices($this->input('password'));
 
         RateLimiter::clear($this->throttleKey());
     }
@@ -55,7 +58,7 @@ class LoginRequest extends FormRequest
      */
     public function ensureIsNotRateLimited(): void
     {
-        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+        if (!RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
             return;
         }
 
@@ -76,6 +79,6 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        return Str::transliterate(Str::lower($this->string('email')) . '|' . $this->ip());
     }
 }

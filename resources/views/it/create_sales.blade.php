@@ -12,15 +12,26 @@
 
         <form action="{{ route('it.sales.store') }}" method="POST" class="space-y-6">
             @csrf
+
+            @if ($errors->any())
+                <div class="bg-red-50 text-red-700 p-4 rounded-xl text-sm mb-4 border border-red-200">
+                    <ul class="list-disc list-inside">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <div>
                 <label class="block text-sm font-bold text-gray-700 mb-2">Nama Lengkap *</label>
-                <input type="text" name="name" required
+                <input type="text" name="name" required value="{{ old('name') }}"
                     class="w-full border border-gray-300 rounded-xl p-4 text-sm focus:ring-2 focus:ring-blue-500"
                     placeholder="Contoh: Budi Santoso">
             </div>
             <div>
                 <label class="block text-sm font-bold text-gray-700 mb-2">Username *</label>
-                <input type="text" name="username" required
+                <input type="text" name="username" required value="{{ old('username') }}"
                     class="w-full border border-gray-300 rounded-xl p-4 text-sm focus:ring-2 focus:ring-blue-500"
                     placeholder="Contoh: budi.santoso">
             </div>
@@ -29,7 +40,7 @@
                 <select name="supervisor_id" class="w-full border border-gray-300 rounded-xl p-4 text-sm">
                     <option value="">-- Pilih Supervisor --</option>
                     @foreach($supervisors as $supervisor)
-                        <option value="{{ $supervisor->id }}">{{ $supervisor->name }}</option>
+                        <option value="{{ $supervisor->id }}" {{ old('supervisor_id') == $supervisor->id ? 'selected' : '' }}>{{ $supervisor->name }}</option>
                     @endforeach
                 </select>
             </div>

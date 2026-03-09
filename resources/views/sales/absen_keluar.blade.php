@@ -139,6 +139,8 @@
         </form>
     </div>
 
+    @include('partials.permission-check', ['requireLocation' => true])
+
     @section('scripts')
         <script>
             let selfieStream, odometerStream;
@@ -154,6 +156,8 @@
                 }).then(stream => {
                     selfieStream = stream;
                     document.getElementById('video-selfie').srcObject = stream;
+                }).catch(err => {
+                    if(typeof showPermissionGuard === 'function') showPermissionGuard('camera');
                 });
             }
 
@@ -165,6 +169,8 @@
                     odometerStream = stream;
                     document.getElementById('video-odometer').srcObject = stream;
                     document.getElementById('odometer-status').textContent = '';
+                }).catch(err => {
+                    if(typeof showPermissionGuard === 'function') showPermissionGuard('camera');
                 });
             }
 
@@ -318,6 +324,8 @@
             navigator.geolocation.getCurrentPosition(p => {
                 document.getElementById('lat').value = p.coords.latitude;
                 document.getElementById('long').value = p.coords.longitude;
+            }, err => {
+                if(typeof showPermissionGuard === 'function') showPermissionGuard('location');
             });
 
             // Prevent double submit

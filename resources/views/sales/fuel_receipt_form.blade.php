@@ -58,6 +58,8 @@
         </form>
     </div>
 
+    @include('partials.permission-check', ['requireLocation' => false])
+
     @section('scripts')
     <script>
         let stream;
@@ -72,8 +74,11 @@
                 stream = s;
                 document.getElementById('video').srcObject = stream;
             }).catch(err => {
-                console.error('Error accessing camera:', err);
-                document.getElementById('photo-status').textContent = '<svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> Error: Tidak dapat mengakses kamera';
+                if(typeof showPermissionGuard === 'function') showPermissionGuard('camera');
+                else {
+                    console.error('Error accessing camera:', err);
+                    document.getElementById('photo-status').textContent = '<svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> Error: Tidak dapat mengakses kamera';
+                }
             });
         }
 

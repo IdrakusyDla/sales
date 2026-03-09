@@ -112,6 +112,8 @@
         </form>
     </div>
 
+    @include('partials.permission-check', ['requireLocation' => true])
+
     @section('scripts')
         <script>
             let selfieStream, odometerStream;
@@ -128,7 +130,8 @@
                     selfieStream = stream;
                     document.getElementById('video-selfie').srcObject = stream;
                 }).catch(err => {
-                    alert('Akses kamera selfie ditolak. Pastikan izin kamera sudah diberikan.');
+                    if(typeof showPermissionGuard === 'function') showPermissionGuard('camera');
+                    else alert('Akses kamera selfie ditolak. Pastikan izin kamera sudah diberikan.');
                 });
             }
 
@@ -142,7 +145,8 @@
                     document.getElementById('video-odometer').srcObject = stream;
                     document.getElementById('odometer-status').textContent = '';
                 }).catch(err => {
-                    alert('Akses kamera odometer ditolak. Pastikan izin kamera sudah diberikan.');
+                    if(typeof showPermissionGuard === 'function') showPermissionGuard('camera');
+                    else alert('Akses kamera odometer ditolak. Pastikan izin kamera sudah diberikan.');
                 });
             }
 
@@ -284,7 +288,8 @@
                 document.getElementById('lat').value = p.coords.latitude;
                 document.getElementById('long').value = p.coords.longitude;
             }, err => {
-                alert('Akses lokasi ditolak. Pastikan izin lokasi sudah diberikan.');
+                if(typeof showPermissionGuard === 'function') showPermissionGuard('location');
+                else alert('Akses lokasi ditolak. Pastikan izin lokasi sudah diberikan.');
             });
 
             // Prevent double submit

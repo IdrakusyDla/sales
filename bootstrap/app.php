@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\TrackActivity::class,
             \App\Http\Middleware\CheckActiveUser::class,
+            \Illuminate\Session\Middleware\AuthenticateSession::class,
         ]);
 
         // Register alias untuk middleware CheckRole

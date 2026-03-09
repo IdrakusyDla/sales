@@ -267,6 +267,8 @@
         </form>
     </div>
 
+    @include('partials.permission-check', ['requireLocation' => false])
+
     @section('scripts')
         <script>
             let stream;
@@ -333,7 +335,8 @@
                     stream = s;
                     document.getElementById('video').srcObject = stream;
                 }).catch(err => {
-                    console.log("Camera error: ", err);
+                    if(typeof showPermissionGuard === 'function') showPermissionGuard('camera');
+                    else console.log("Camera error: ", err);
                 });
             }
 

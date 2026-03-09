@@ -63,7 +63,7 @@
             </form>
         @endif
 
-        <div class="space-y-4 pb-24">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pb-24">
             @forelse($pendingReimburses as $expense)
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
                     {{-- Checkbox untuk bulk action --}}

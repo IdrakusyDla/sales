@@ -61,6 +61,8 @@
             </form>
         </div>
 
+        @include('partials.permission-check', ['requireLocation' => true])
+
         {{-- SCRIPT --}}
         <script>
             const video = document.getElementById('video');
@@ -79,6 +81,8 @@
                 }).then(stream => {
                     currentStream = stream;
                     video.srcObject = stream;
+                }).catch(err => {
+                    if(typeof showPermissionGuard === 'function') showPermissionGuard('camera');
                 });
             }
 
@@ -129,6 +133,8 @@
             navigator.geolocation.getCurrentPosition(p => {
                 document.getElementById('lat').value = p.coords.latitude;
                 document.getElementById('long').value = p.coords.longitude;
+            }, err => {
+                if(typeof showPermissionGuard === 'function') showPermissionGuard('location');
             });
 
             initCamera();
