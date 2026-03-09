@@ -9,6 +9,7 @@ class FuelSetting extends Model
 {
     protected $fillable = [
         'user_id', // null = general setting, ada nilai = individual setting
+        'role', // null = general/individual, ada nilai = role-based setting ('sales', 'supervisor')
         'km_per_liter', // KM per liter (misal: 10 berarti 1 liter = 10 km)
         'fuel_price', // Harga bahan bakar per liter
         'is_active', // Aktif atau tidak
@@ -41,7 +42,15 @@ class FuelSetting extends Model
      */
     public function isGeneral(): bool
     {
-        return is_null($this->user_id);
+        return is_null($this->user_id) && empty($this->role);
+    }
+
+    /**
+     * Cek apakah ini role-based setting
+     */
+    public function isRoleBase(): bool
+    {
+        return !empty($this->role) && is_null($this->user_id);
     }
 
     /**
@@ -63,23 +72,36 @@ class FuelSetting extends Model
 
     /**
      * Ambil setting aktif untuk user tertentu
-     * Priority: Individual > General
+     * Priority: Individual > Role > General
      */
-    public static function getActiveSettingForUser(?int $userId = null): ?self
+    public static function getActiveSettingForUser(?User $user = null): ?self
     {
-        // Cari individual setting dulu
-        if ($userId) {
-            $individual = self::where('user_id', $userId)
+        if ($user) {
+            // Priority 1: Individual Setting
+            $individual = self::where('user_id', $user->id)
                 ->where('is_active', true)
                 ->first();
             
             if ($individual) {
                 return $individual;
             }
+
+            // Priority 2: Role-based Setting
+            $roleSetting = self::whereNull('user_id')
+                ->where('role', $user->role)
+                ->where('is_active', true)
+                ->first();
+
+            if ($roleSetting) {
+                return $roleSetting;
+            }
         }
 
-        // Jika tidak ada individual, ambil general
+        // Priority 3: General Setting (user_id null, role null/empty)
         return self::whereNull('user_id')
+            ->where(function ($query) {
+                $query->whereNull('role')->orWhere('role', '');
+            })
             ->where('is_active', true)
             ->first();
     }

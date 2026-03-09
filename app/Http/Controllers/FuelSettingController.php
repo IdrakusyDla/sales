@@ -17,8 +17,18 @@ class FuelSettingController extends Controller
     {
         // Ambil general setting
         $generalSetting = FuelSetting::whereNull('user_id')
+            ->where(function ($q) {
+                $q->whereNull('role')->orWhere('role', '');
+            })
             ->where('is_active', true)
             ->first();
+
+        // Ambil role-based settings
+        $roleSettings = FuelSetting::whereNull('user_id')
+            ->whereNotNull('role')
+            ->where('role', '!=', '')
+            ->where('is_active', true)
+            ->get();
 
         // Ambil semua individual settings dengan user
         $individualSettings = FuelSetting::whereNotNull('user_id')
@@ -27,9 +37,9 @@ class FuelSettingController extends Controller
             ->get();
 
         // Ambil semua sales untuk dropdown
-        $sales = User::where('role', 'sales')->get();
+        $sales = User::whereIn('role', ['sales', 'supervisor'])->get();
 
-        return view('fuel_settings.index', compact('generalSetting', 'individualSettings', 'sales'));
+        return view('fuel_settings.index', compact('generalSetting', 'roleSettings', 'individualSettings', 'sales'));
     }
 
     // ==========================================
@@ -45,6 +55,9 @@ class FuelSettingController extends Controller
 
         // Cek apakah sudah ada general setting aktif
         $existing = FuelSetting::whereNull('user_id')
+            ->where(function ($q) {
+                $q->whereNull('role')->orWhere('role', '');
+            })
             ->where('is_active', true)
             ->first();
 
@@ -57,6 +70,9 @@ class FuelSettingController extends Controller
         } else {
             // Nonaktifkan general setting yang lama (jika ada)
             FuelSetting::whereNull('user_id')
+                ->where(function ($q) {
+                    $q->whereNull('role')->orWhere('role', '');
+                })
                 ->update(['is_active' => false]);
 
             // Buat general setting baru
@@ -74,6 +90,37 @@ class FuelSettingController extends Controller
     }
 
     // ==========================================
+    // SETTING ROLE (Per Jabatan)
+    // ==========================================
+
+    public function storeRoleSetting(Request $request)
+    {
+        $request->validate([
+            'role' => 'required|string|in:sales,supervisor',
+            'km_per_liter' => 'required|numeric|min:0.001',
+            'fuel_price' => 'required|numeric|min:0',
+        ]);
+
+        // Nonaktifkan setting role yang lama
+        FuelSetting::whereNull('user_id')
+            ->where('role', $request->role)
+            ->update(['is_active' => false]);
+
+        // Buat role setting baru
+        FuelSetting::create([
+            'user_id' => null,
+            'role' => $request->role,
+            'km_per_liter' => $request->km_per_liter,
+            'fuel_price' => $request->fuel_price,
+            'is_active' => true,
+        ]);
+
+        $routeName = Auth::user()->isIt() ? 'it.fuel_settings.index' : 'fuel_settings.index';
+        return redirect()->route($routeName)
+            ->with('success', 'Setting bahan bakar berdasarkan Role berhasil disimpan!');
+    }
+
+    // ==========================================
     // SETTING INDIVIDUAL (Per Karyawan)
     // ==========================================
 
@@ -85,10 +132,10 @@ class FuelSettingController extends Controller
             'fuel_price' => 'required|numeric|min:0',
         ]);
 
-        // Cek apakah user adalah sales
+        // Cek apakah user adalah sales atau supervisor
         $user = User::findOrFail($request->user_id);
-        if ($user->role !== 'sales') {
-            return back()->withErrors(['user_id' => 'Hanya bisa setting untuk sales.'])->withInput();
+        if (!in_array($user->role, ['sales', 'supervisor'])) {
+            return back()->withErrors(['user_id' => 'Hanya bisa setting untuk sales/supervisor.'])->withInput();
         }
 
         // Nonaktifkan setting individual yang lama untuk user ini

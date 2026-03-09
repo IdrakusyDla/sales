@@ -26,7 +26,7 @@
 
         {{-- TOMBOL TAMBAH --}}
         <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
-            <a href="{{ route('it.sales.create') }}"
+            <a href="{{ route('it.users.create') }}"
                 class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center gap-3 hover:bg-gray-50">
                 <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
                     <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -34,41 +34,11 @@
                     </svg>
                 </div>
                 <div class="flex-1">
-                    <h3 class="font-bold text-sm">Tambah Sales</h3>
+                    <h3 class="font-bold text-sm">Tambah <br> Akun Baru</h3>
                 </div>
-            </a>
-            <a href="{{ route('it.supervisor.create') }}"
-                class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center gap-3 hover:bg-gray-50">
-                <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center shrink-0">
-                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                    </svg>
-                </div>
-                <div class="flex-1">
-                    <h3 class="font-bold text-sm">Tambah Supervisor</h3>
-                </div>
-            </a>
-            <a href="{{ route('it.hrd.create') }}"
-                class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center gap-3 hover:bg-gray-50">
-                <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center shrink-0">
-                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                    </svg>
-                </div>
-                <div class="flex-1">
-                    <h3 class="font-bold text-sm">Tambah HRD</h3>
-                </div>
-            </a>
-            <a href="{{ route('it.finance.create') }}"
-                class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center gap-3 hover:bg-gray-50">
-                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center shrink-0">
-                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                    </svg>
-                </div>
-                <div class="flex-1">
-                    <h3 class="font-bold text-sm">Tambah Finance</h3>
-                </div>
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
             </a>
             <a href="{{ route('it.fuel_settings.index') }}"
                 class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center gap-3 hover:bg-gray-50">

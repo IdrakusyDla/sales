@@ -21,6 +21,16 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     // --- DASHBOARD UMUM (Redirect berdasarkan role) ---
     Route::get('/', function () {
         $user = Auth::user();
+
+        // 1. Cek explicit Role Model's dashboard_url
+        if ($user->roleData && !empty($user->roleData->dashboard_url)) {
+            // Kita pastikan rutenya ada, jika tidak fallback
+            if (Route::has($user->roleData->dashboard_url)) {
+                return redirect()->route($user->roleData->dashboard_url);
+            }
+        }
+
+        // 2. Fallback statis
         return match ($user->role) {
             'sales', 'supervisor' => redirect()->route('sales.dashboard'),
             'hrd' => redirect()->route('hrd.dashboard'),
@@ -104,17 +114,9 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         // --- DASHBOARD ---
         Route::get('/hrd/dashboard', [HRDController::class, 'dashboard'])->name('hrd.dashboard');
 
-        // --- MANAJEMEN AKUN SALES ---
-        Route::get('/hrd/sales/create', [HRDController::class, 'createSales'])->name('hrd.sales.create');
-        Route::post('/hrd/sales/store', [HRDController::class, 'storeSales'])->name('hrd.sales.store');
-
-        // --- MANAJEMEN AKUN SUPERVISOR ---
-        Route::get('/hrd/supervisor/create', [HRDController::class, 'createSupervisor'])->name('hrd.supervisor.create');
-        Route::post('/hrd/supervisor/store', [HRDController::class, 'storeSupervisor'])->name('hrd.supervisor.store');
-
-        // --- MANAJEMEN AKUN FINANCE ---
-        Route::get('/hrd/finance/create', [HRDController::class, 'createFinance'])->name('hrd.finance.create');
-        Route::post('/hrd/finance/store', [HRDController::class, 'storeFinance'])->name('hrd.finance.store');
+        // --- MANAJEMEN AKUN (DINAMIS UNTUK HRD) ---
+        Route::get('/hrd/users/create', [HRDController::class, 'createUser'])->name('hrd.users.create');
+        Route::post('/hrd/users', [HRDController::class, 'storeUser'])->name('hrd.users.store');
 
         // --- DETAIL KARYAWAN ---
         Route::get('/hrd/user/{id}', [HRDController::class, 'showUser'])->name('hrd.show.user');
@@ -146,6 +148,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         // --- SETTING BAHAN BAKAR ---
         Route::get('/fuel-settings', [FuelSettingController::class, 'index'])->name('fuel_settings.index');
         Route::post('/fuel-settings/general', [FuelSettingController::class, 'storeGeneral'])->name('fuel_settings.store.general');
+        Route::post('/fuel-settings/role', [FuelSettingController::class, 'storeRoleSetting'])->name('fuel_settings.store.role');
         Route::post('/fuel-settings/individual', [FuelSettingController::class, 'storeIndividual'])->name('fuel_settings.store.individual');
         Route::put('/fuel-settings/{id}', [FuelSettingController::class, 'update'])->name('fuel_settings.update');
         Route::post('/fuel-settings/{id}/deactivate', [FuelSettingController::class, 'deactivate'])->name('fuel_settings.deactivate');
@@ -172,6 +175,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         // --- FUEL SETTINGS ---
         Route::get('/finance/fuel-settings', [FinanceController::class, 'fuelSettingsIndex'])->name('finance.fuel_settings.index');
         Route::post('/finance/fuel-settings/general', [FinanceController::class, 'storeGeneralFuelSetting'])->name('finance.fuel_settings.store.general');
+        Route::post('/finance/fuel-settings/role', [FinanceController::class, 'storeRoleFuelSetting'])->name('finance.fuel_settings.store.role');
         Route::post('/finance/fuel-settings/individual', [FinanceController::class, 'storeIndividualFuelSetting'])->name('finance.fuel_settings.store.individual');
         Route::put('/finance/fuel-settings/{id}', [FinanceController::class, 'updateFuelSetting'])->name('finance.fuel_settings.update');
         Route::post('/finance/fuel-settings/{id}/deactivate', [FinanceController::class, 'deactivateFuelSetting'])->name('finance.fuel_settings.deactivate');
@@ -189,21 +193,9 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         // --- DASHBOARD ---
         Route::get('/it/dashboard', [ITController::class, 'dashboard'])->name('it.dashboard');
 
-        // --- MANAJEMEN AKUN SALES ---
-        Route::get('/it/sales/create', [ITController::class, 'createSales'])->name('it.sales.create');
-        Route::post('/it/sales/store', [ITController::class, 'storeSales'])->name('it.sales.store');
-
-        // --- MANAJEMEN AKUN SUPERVISOR ---
-        Route::get('/it/supervisor/create', [ITController::class, 'createSupervisor'])->name('it.supervisor.create');
-        Route::post('/it/supervisor/store', [ITController::class, 'storeSupervisor'])->name('it.supervisor.store');
-
-        // --- MANAJEMEN AKUN HRD (KHUSUS IT) ---
-        Route::get('/it/hrd/create', [ITController::class, 'createHrd'])->name('it.hrd.create');
-        Route::post('/it/hrd/store', [ITController::class, 'storeHrd'])->name('it.hrd.store');
-
-        // --- MANAJEMEN AKUN FINANCE (KHUSUS IT) ---
-        Route::get('/it/finance/create', [ITController::class, 'createFinance'])->name('it.finance.create');
-        Route::post('/it/finance/store', [ITController::class, 'storeFinance'])->name('it.finance.store');
+        // --- UNIFIED USER CREATION (RBAC DYNAMIC) ---
+        Route::get('/it/users/create', [ITController::class, 'createUser'])->name('it.users.create');
+        Route::post('/it/users', [ITController::class, 'storeUser'])->name('it.users.store');
 
         // --- DETAIL KARYAWAN ---
         Route::get('/it/user/{id}', [ITController::class, 'showUser'])->name('it.show.user');
@@ -221,6 +213,14 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/it/export', [ITController::class, 'exportPage'])->name('it.export.page');
         Route::get('/it/export/excel', [ITController::class, 'exportExcel'])->name('it.export.excel');
 
+        // --- MANAJEMEN ROLE & PERMISSION (RBAC) ---
+        Route::get('/it/roles', [\App\Http\Controllers\RoleController::class, 'index'])->name('it.roles.index');
+        Route::get('/it/roles/create', [\App\Http\Controllers\RoleController::class, 'create'])->name('it.roles.create');
+        Route::post('/it/roles', [\App\Http\Controllers\RoleController::class, 'store'])->name('it.roles.store');
+        Route::get('/it/roles/{id}/edit', [\App\Http\Controllers\RoleController::class, 'edit'])->name('it.roles.edit');
+        Route::put('/it/roles/{id}', [\App\Http\Controllers\RoleController::class, 'update'])->name('it.roles.update');
+        Route::delete('/it/roles/{id}', [\App\Http\Controllers\RoleController::class, 'destroy'])->name('it.roles.destroy');
+
         // --- CUSTOM RECEIPT GENERATION (IT) ---
         Route::post('/it/sales/expense/{id}/generate-custom-receipt', [SalesController::class, 'generateCustomReceipt'])->name('it.sales.expense.generate_custom_receipt');
         Route::post('/it/sales/expense/{id}/delete-receipt', [SalesController::class, 'deleteReceipt'])->name('it.sales.expense.delete_receipt');
@@ -228,6 +228,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         // --- SETTING BAHAN BAKAR ---
         Route::get('/it/fuel-settings', [FuelSettingController::class, 'index'])->name('it.fuel_settings.index');
         Route::post('/it/fuel-settings/general', [FuelSettingController::class, 'storeGeneral'])->name('it.fuel_settings.store.general');
+        Route::post('/it/fuel-settings/role', [FuelSettingController::class, 'storeRoleSetting'])->name('it.fuel_settings.store.role');
         Route::post('/it/fuel-settings/individual', [FuelSettingController::class, 'storeIndividual'])->name('it.fuel_settings.store.individual');
         Route::put('/it/fuel-settings/{id}', [FuelSettingController::class, 'update'])->name('it.fuel_settings.update');
         Route::post('/it/fuel-settings/{id}/deactivate', [FuelSettingController::class, 'deactivate'])->name('it.fuel_settings.deactivate');

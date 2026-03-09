@@ -21,9 +21,10 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Session\Middleware\AuthenticateSession::class,
         ]);
 
-        // Register alias untuk middleware CheckRole
+        // Register alias untuk middleware Role & Permission
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
+            'permission' => \App\Http\Middleware\CheckPermission::class,
             'force.password.change' => \App\Http\Middleware\ForcePasswordChange::class,
         ]);
     })

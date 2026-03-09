@@ -58,6 +58,68 @@
             </form>
         </div>
 
+        {{-- SETTING ROLE (Per Jabatan) --}}
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+            <h2 class="font-bold text-lg mb-4"><svg class="w-5 h-5 inline mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg> Setting Berdasarkan Role (Jabatan)</h2>
+            
+            <form action="{{ route('finance.fuel_settings.store.role') }}" method="POST">
+                @csrf
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-gray-700 mb-2">Pilih Role *</label>
+                    <select name="role" required class="w-full border border-gray-300 rounded-xl p-3 text-sm">
+                        <option value="">-- Pilih Role --</option>
+                        <option value="sales">Sales (Semua jenis akun sales)</option>
+                        <option value="supervisor">Supervisor</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">Setting role akan override setting general</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-2">KM per Liter *</label>
+                        <input type="number" name="km_per_liter" step="0.01" min="0.01" required
+                            class="w-full border border-gray-300 rounded-xl p-3 text-sm"
+                            placeholder="10">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-2">Harga per Liter (Rp) *</label>
+                        <input type="number" name="fuel_price" step="0.01" min="0" required
+                            class="w-full border border-gray-300 rounded-xl p-3 text-sm"
+                            placeholder="15000">
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold text-sm">
+                    Simpan Setting Role
+                </button>
+            </form>
+
+            {{-- LIST SETTING ROLE AKTIF --}}
+            @if(isset($roleSettings) && $roleSettings->count() > 0)
+                <div class="mt-6 border-t pt-4">
+                    <h3 class="font-bold text-sm mb-3">Setting Role Aktif:</h3>
+                    <div class="space-y-3">
+                        @foreach($roleSettings as $rs)
+                            @if($rs->is_active)
+                                <div class="bg-indigo-50 rounded-xl p-4 flex justify-between items-center">
+                                    <div class="flex-1">
+                                        <p class="font-bold text-sm text-indigo-900 capitalize">{{ $rs->role }}</p>
+                                        <p class="text-xs text-indigo-700">
+                                            {{ number_format($rs->km_per_liter, 2) }} KM/L × Rp {{ number_format($rs->fuel_price, 0, ',', '.') }}/L
+                                        </p>
+                                    </div>
+                                    <form action="{{ route('finance.fuel_settings.deactivate', $rs->id) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" onclick="return confirm('Nonaktifkan setting untuk role {{ $rs->role }}?')"
+                                            class="text-red-600 text-xs font-bold">Nonaktifkan</button>
+                                    </form>
+                                </div>
+                            @endif
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+        </div>
+
         {{-- SETTING INDIVIDUAL --}}
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
             <h2 class="font-bold text-lg mb-4"><svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> Setting Individual (Per Karyawan)</h2>

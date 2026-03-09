@@ -287,6 +287,15 @@ class FinanceController extends Controller
     public function fuelSettingsIndex()
     {
         $generalSettings = FuelSetting::whereNull('user_id')
+            ->where(function ($q) {
+                $q->whereNull('role')->orWhere('role', '');
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $roleSettings = FuelSetting::whereNull('user_id')
+            ->whereNotNull('role')
+            ->where('role', '!=', '')
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -303,6 +312,7 @@ class FinanceController extends Controller
 
         return view('finance.fuel_settings.index', compact(
             'generalSettings',
+            'roleSettings',
             'individualSettings',
             'users'
         ));
@@ -314,9 +324,16 @@ class FinanceController extends Controller
     public function storeGeneralFuelSetting(Request $request)
     {
         $request->validate([
-            'km_per_liter' => 'required|numeric|min:1',
-            'fuel_price' => 'required|numeric|min:1',
+            'km_per_liter' => 'required|numeric|min:0.001',
+            'fuel_price' => 'required|numeric|min:0',
         ]);
+
+        // Nonaktifkan general setting yang lama
+        FuelSetting::whereNull('user_id')
+            ->where(function ($q) {
+                $q->whereNull('role')->orWhere('role', '');
+            })
+            ->update(['is_active' => false]);
 
         FuelSetting::create([
             'user_id' => null,
@@ -329,14 +346,41 @@ class FinanceController extends Controller
     }
 
     /**
+     * Store role fuel setting
+     */
+    public function storeRoleFuelSetting(Request $request)
+    {
+        $request->validate([
+            'role' => 'required|string|in:sales,supervisor',
+            'km_per_liter' => 'required|numeric|min:0.001',
+            'fuel_price' => 'required|numeric|min:0',
+        ]);
+
+        // Nonaktifkan setting role yang lama
+        FuelSetting::whereNull('user_id')
+            ->where('role', $request->role)
+            ->update(['is_active' => false]);
+
+        FuelSetting::create([
+            'user_id' => null,
+            'role' => $request->role,
+            'km_per_liter' => $request->km_per_liter,
+            'fuel_price' => $request->fuel_price,
+            'is_active' => true,
+        ]);
+
+        return back()->with('success', 'Setting bahan bakar berdasarkan Role berhasil disimpan!');
+    }
+
+    /**
      * Store individual fuel setting
      */
     public function storeIndividualFuelSetting(Request $request)
     {
         $request->validate([
             'user_id' => 'required|exists:users,id',
-            'km_per_liter' => 'required|numeric|min:1',
-            'fuel_price' => 'required|numeric|min:1',
+            'km_per_liter' => 'required|numeric|min:0.001',
+            'fuel_price' => 'required|numeric|min:0',
         ]);
 
         // Validate user adalah sales atau supervisor
@@ -361,8 +405,8 @@ class FinanceController extends Controller
     public function updateFuelSetting(Request $request, $id)
     {
         $request->validate([
-            'km_per_liter' => 'required|numeric|min:1',
-            'fuel_price' => 'required|numeric|min:1',
+            'km_per_liter' => 'required|numeric|min:0.001',
+            'fuel_price' => 'required|numeric|min:0',
             'is_active' => 'boolean',
         ]);
 

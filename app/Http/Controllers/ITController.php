@@ -34,127 +34,68 @@ class ITController extends Controller
         }
 
         $users = $query->orderBy('name')->get();
+        $roles = \App\Models\Role::orderBy('name')->get();
 
-        return view('it.dashboard', compact('users'));
+        return view('it.dashboard', compact('users', 'roles'));
     }
 
     // ==========================================
-    // MANAJEMEN AKUN SALES (Sama seperti HRD)
+    // UNIFIED USER CREATION (SUPPORT DYNAMIC ROLES)
     // ==========================================
 
-    public function createSales()
+    public function createUser()
     {
+        $roles = \App\Models\Role::orderBy('name')->get();
         $supervisors = User::where('role', 'supervisor')->get();
-        return view('it.create_sales', compact('supervisors'));
+        return view('it.create_user', compact('roles', 'supervisors'));
     }
 
-    public function storeSales(Request $request)
+    public function storeUser(Request $request)
     {
         $request->validate([
             'name' => 'required|string',
             'username' => 'required|string|unique:users',
-            'supervisor_id' => 'nullable|exists:users,id',
+            'role' => 'required|exists:roles,slug',
+            'password' => 'nullable|string|min:6',
         ]);
 
-        if ($request->filled('supervisor_id')) {
+        $roleSlug = $request->role;
+
+        // Custom validation untuk sales
+        if ($roleSlug === 'sales' && $request->filled('supervisor_id')) {
             $supervisor = User::findOrFail($request->supervisor_id);
             if ($supervisor->role !== 'supervisor') {
                 return back()->withErrors(['supervisor_id' => 'User yang dipilih bukan supervisor.'])->withInput();
             }
         }
 
-        $sales = User::create([
+        // Tentukan password: jika diisi manual gunakan itu, jika kosong gunakan default password
+        $defaultPasswords = [
+            'sales' => 'sales123',
+            'supervisor' => 'supervisor123',
+            'hrd' => 'hrd123',
+            'it' => 'admin123',
+            'finance' => 'finance123',
+        ];
+
+        $password = $request->filled('password') 
+                    ? $request->password 
+                    : ($defaultPasswords[$roleSlug] ?? 'password123');
+
+        $user = User::create([
             'name' => $request->name,
             'username' => $request->username,
-            'password' => Hash::make('sales123'),
-            'role' => 'sales',
-            'supervisor_id' => $request->supervisor_id,
+            'password' => Hash::make($password),
+            'role' => $roleSlug,
+            'supervisor_id' => ($roleSlug === 'sales') ? $request->supervisor_id : null,
         ]);
 
-        // Attach ke relasi many-to-many supervisors jika supervisor dipilih
-        if ($request->filled('supervisor_id')) {
-            $sales->supervisors()->attach($request->supervisor_id);
+        // Support existing sales-supervisor many-to-many logic
+        if ($roleSlug === 'sales' && $request->filled('supervisor_id')) {
+            $user->supervisors()->attach($request->supervisor_id);
         }
 
-        return redirect()->route('it.dashboard')->with('success', 'Akun sales berhasil dibuat!');
-    }
-
-    // ==========================================
-    // MANAJEMEN AKUN SUPERVISOR (Sama seperti HRD)
-    // ==========================================
-
-    public function createSupervisor()
-    {
-        return view('it.create_supervisor');
-    }
-
-    public function storeSupervisor(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string',
-            'username' => 'required|string|unique:users',
-        ]);
-
-        User::create([
-            'name' => $request->name,
-            'username' => $request->username,
-            'password' => Hash::make('supervisor123'),
-            'role' => 'supervisor',
-        ]);
-
-        return redirect()->route('it.dashboard')->with('success', 'Akun supervisor berhasil dibuat!');
-    }
-
-    // ==========================================
-    // MANAJEMEN AKUN HRD (KHUSUS IT)
-    // ==========================================
-
-    public function createHrd()
-    {
-        return view('it.create_hrd');
-    }
-
-    public function storeHrd(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string',
-            'username' => 'required|string|unique:users',
-        ]);
-
-        User::create([
-            'name' => $request->name,
-            'username' => $request->username,
-            'password' => Hash::make('hrd123'),
-            'role' => 'hrd',
-        ]);
-
-        return redirect()->route('it.dashboard')->with('success', 'Akun HRD berhasil dibuat!');
-    }
-
-    // ==========================================
-    // MANAJEMEN AKUN FINANCE (KHUSUS IT)
-    // ==========================================
-
-    public function createFinance()
-    {
-        return view('it.create_finance');
-    }
-
-    public function storeFinance(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string',
-            'username' => 'required|string|unique:users',
-        ]);
-
-        User::create([
-            'name' => $request->name,
-            'username' => $request->username,
-            'password' => Hash::make('finance123'),
-            'role' => 'finance',
-        ]);
-
-        return redirect()->route('it.dashboard')->with('success', 'Akun Finance berhasil dibuat!');
+        return redirect()->route('it.dashboard')->with('success', "Akun baru ({$roleSlug}) berhasil dibuat!");
     }
 
     // ==========================================

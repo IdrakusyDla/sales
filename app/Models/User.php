@@ -114,8 +114,16 @@ class User extends Authenticatable
         return $this->hasMany(FuelSetting::class);
     }
 
+    /**
+     * Relasi: User memiliki Role mapping
+     */
+    public function roleData()
+    {
+        return $this->belongsTo(Role::class, 'role', 'slug');
+    }
+
     // ==========================================
-    // HELPER METHODS - CEK ROLE
+    // HELPER METHODS - CEK ROLE & PERMISSION
     // ==========================================
 
     /**
@@ -180,6 +188,29 @@ class User extends Authenticatable
     public function canCreateFinance(): bool
     {
         return $this->isIt() || $this->isHrd();
+    }
+
+    /**
+     * Cek apakah user memiliki permission tertentu (RBAC)
+     */
+    public function hasPermission(string $permission): bool
+    {
+        // IT / System Role has full access bypass
+        if ($this->role === 'it') {
+            return true; // Asumsikan IT selalu bisa segalanya, tapi kita juga bisa cek array-nya
+        }
+
+        $roleModel = $this->roleData;
+        if (!$roleModel || !is_array($roleModel->permissions)) {
+            return false;
+        }
+
+        // Kalau role punya permission 'all', dia bisa akses apa saja
+        if (in_array('all', $roleModel->permissions)) {
+            return true;
+        }
+
+        return in_array($permission, $roleModel->permissions);
     }
 
     /**

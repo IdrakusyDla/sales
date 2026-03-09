@@ -26,12 +26,12 @@
             </div>
         </div>
 
-        {{-- MENU APPROVAL REIMBURSE --}}
-        <div class="mb-3">
+        {{-- TOMBOL AKSI CEPAT --}}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
+            {{-- Persetujuan Reimburse --}}
             <a href="{{ route('finance.reimburse.approval') }}"
-                class="flex items-center bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:bg-gray-50 transition">
-                <div
-                    class="w-10 h-10 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center font-bold mr-4">
+                class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center gap-3 hover:bg-gray-50 mb-0 relative">
+                <div class="w-10 h-10 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center font-bold shrink-0">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
@@ -39,25 +39,23 @@
                     </svg>
                 </div>
                 <div class="flex-1">
-                    <h3 class="font-bold text-gray-800">Persetujuan Reimburse</h3>
-                    <p class="text-xs text-gray-500">Verifikasi & pencairan dana</p>
+                    <h3 class="font-bold text-sm text-gray-800">Persetujuan <br>Reimburse</h3>
                 </div>
-                @if(($stats['pending_finance'] ?? 0) > 0)
-                    <span
-                        class="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">{{ $stats['pending_finance'] }}</span>
-                @endif
-                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                </svg>
+                
+                <div class="flex items-center gap-2 shrink-0">
+                    @if(($stats['pending_finance'] ?? 0) > 0)
+                        <span class="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{{ $stats['pending_finance'] }}</span>
+                    @endif
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </div>
             </a>
-        </div>
 
-        {{-- MENU SETTING BAHAN BAKAR --}}
-        <div class="mb-6">
+            {{-- Setting Bahan Bakar --}}
             <a href="{{ route('finance.fuel_settings.index') }}"
-                class="flex items-center bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:bg-gray-50 transition">
-                <div
-                    class="w-10 h-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold mr-4">
+                class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center gap-3 hover:bg-gray-50 mb-0">
+                <div class="w-10 h-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold shrink-0">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4">
@@ -65,10 +63,9 @@
                     </svg>
                 </div>
                 <div class="flex-1">
-                    <h3 class="font-bold text-gray-800">Setting Bahan Bakar</h3>
-                    <p class="text-xs text-gray-500">Atur ratio & harga bahan bakar</p>
+                    <h3 class="font-bold text-sm text-gray-800">Setting Bahan <br>Bakar</h3>
                 </div>
-                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                 </svg>
             </a>

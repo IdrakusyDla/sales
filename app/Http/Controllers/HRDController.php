@@ -44,24 +44,33 @@ class HRDController extends Controller
     }
 
     // ==========================================
-    // MANAJEMEN AKUN SALES
+    // MANAJEMEN AKUN (DINAMIS UNTUK HRD)
     // ==========================================
 
-    public function createSales()
+    public function createUser()
     {
-        // Ambil semua supervisor untuk dropdown
+        // HRD hanya bisa melihat role yang hrd_can_create = true
+        $roles = \App\Models\Role::where('hrd_can_create', true)->orderBy('name')->get();
+        // Ambil supervisor untuk opsi
         $supervisors = User::where('role', 'supervisor')->get();
 
-        return view('hrd.create_sales', compact('supervisors'));
+        return view('hrd.create_user', compact('roles', 'supervisors'));
     }
 
-    public function storeSales(Request $request)
+    public function storeUser(Request $request)
     {
         $request->validate([
             'name' => 'required|string',
             'username' => 'required|string|unique:users',
+            'role' => 'required|exists:roles,slug',
             'supervisor_id' => 'nullable|exists:users,id',
         ]);
+
+        // PROTEKSI BACKEND: Pastikan role yang dikirim memang diizinkan untuk HRD
+        $role = \App\Models\Role::where('slug', $request->role)->firstOrFail();
+        if (!$role->hrd_can_create) {
+            abort(403, 'Akses Ditolak: HRD tidak diizinkan membuat akun dengan role ini.');
+        }
 
         // Cek supervisor jika diisi
         if ($request->filled('supervisor_id')) {
@@ -71,72 +80,23 @@ class HRDController extends Controller
             }
         }
 
-        $sales = User::create([
+        // Tentukan default password berdasarkan nama role (misal sales -> sales123)
+        $defaultPassword = $request->role . '123';
+
+        $user = User::create([
             'name' => $request->name,
             'username' => $request->username,
-            'password' => Hash::make('sales123'),
-            'role' => 'sales',
+            'password' => Hash::make($defaultPassword),
+            'role' => $request->role,
             'supervisor_id' => $request->supervisor_id,
         ]);
 
-        // Attach ke relasi many-to-many supervisors jika supervisor dipilih
-        if ($request->filled('supervisor_id')) {
-            $sales->supervisors()->attach($request->supervisor_id);
+        // Attach supervisor pivot kalau role-nya sales
+        if ($request->role === 'sales' && $request->filled('supervisor_id')) {
+            $user->supervisors()->attach($request->supervisor_id);
         }
 
-        return redirect()->route('hrd.dashboard')->with('success', 'Akun sales berhasil dibuat!');
-    }
-
-    // ==========================================
-    // MANAJEMEN AKUN SUPERVISOR
-    // ==========================================
-
-    public function createSupervisor()
-    {
-        return view('hrd.create_supervisor');
-    }
-
-    public function storeSupervisor(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string',
-            'username' => 'required|string|unique:users',
-        ]);
-
-        User::create([
-            'name' => $request->name,
-            'username' => $request->username,
-            'password' => Hash::make('supervisor123'),
-            'role' => 'supervisor',
-        ]);
-
-        return redirect()->route('hrd.dashboard')->with('success', 'Akun supervisor berhasil dibuat!');
-    }
-
-    // ==========================================
-    // MANAJEMEN AKUN FINANCE
-    // ==========================================
-
-    public function createFinance()
-    {
-        return view('hrd.create_finance');
-    }
-
-    public function storeFinance(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string',
-            'username' => 'required|string|unique:users',
-        ]);
-
-        User::create([
-            'name' => $request->name,
-            'username' => $request->username,
-            'password' => Hash::make('finance123'),
-            'role' => 'finance',
-        ]);
-
-        return redirect()->route('hrd.dashboard')->with('success', 'Akun finance berhasil dibuat!');
+        return redirect()->route('hrd.dashboard')->with('success', "Akun ({$role->name}) berhasil dibuat!");
     }
 
     // ==========================================
