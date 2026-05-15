@@ -21,7 +21,7 @@ class ITController extends Controller
     public function dashboard(Request $request)
     {
         // Ambil semua sales, supervisor, HRD, dan Finance
-        $query = User::whereIn('role', ['sales', 'supervisor', 'hrd', 'finance']);
+        $query = User::whereIn('role', ['sales', 'supervisor', 'hrd', 'finance', 'it']);
 
         // Fitur Search
         if ($request->filled('search')) {
@@ -106,32 +106,37 @@ class ITController extends Controller
     {
         $user = User::findOrFail($id);
 
-        if (!in_array($user->role, ['sales', 'supervisor', 'hrd', 'finance'])) {
+        if (!in_array($user->role, ['sales', 'supervisor', 'hrd', 'finance', 'it'])) {
             return redirect()->route('it.dashboard')->with('error', 'User tidak valid.');
         }
 
-        $dailyLogsQuery = DailyLog::where('user_id', $id)
-            ->with(['visits', 'expenses']);
+        $dailyLogs = collect();
+        $stats = ['total_absensi' => 0, 'total_visits' => 0, 'total_expenses' => 0];
 
-        if ($request->filled('start_date') && $request->filled('end_date')) {
-            $dailyLogsQuery->whereBetween('date', [$request->start_date, $request->end_date]);
+        if (in_array($user->role, ['sales', 'supervisor'])) {
+            $dailyLogsQuery = DailyLog::where('user_id', $id)
+                ->with(['visits', 'expenses']);
+
+            if ($request->filled('start_date') && $request->filled('end_date')) {
+                $dailyLogsQuery->whereBetween('date', [$request->start_date, $request->end_date]);
+            }
+
+            $dailyLogs = $dailyLogsQuery->orderBy('date', 'desc')->paginate(10);
+
+            $stats = [
+                'total_absensi' => $dailyLogs->total(),
+                'total_visits' => \App\Models\Visit::whereHas('dailyLog', function ($q) use ($id, $request) {
+                    $q->where('user_id', $id);
+                    if ($request->filled('start_date') && $request->filled('end_date')) {
+                        $q->whereBetween('date', [$request->start_date, $request->end_date]);
+                    }
+                })->count(),
+                'total_expenses' => \App\Models\Expense::where('user_id', $id)
+                    ->when($request->filled('start_date') && $request->filled('end_date'), function ($q) use ($request) {
+                        $q->whereBetween('date', [$request->start_date, $request->end_date]);
+                    })->sum('amount'),
+            ];
         }
-
-        $dailyLogs = $dailyLogsQuery->orderBy('date', 'desc')->paginate(10);
-
-        $stats = [
-            'total_absensi' => $dailyLogs->total(),
-            'total_visits' => \App\Models\Visit::whereHas('dailyLog', function ($q) use ($id, $request) {
-                $q->where('user_id', $id);
-                if ($request->filled('start_date') && $request->filled('end_date')) {
-                    $q->whereBetween('date', [$request->start_date, $request->end_date]);
-                }
-            })->count(),
-            'total_expenses' => \App\Models\Expense::where('user_id', $id)
-                ->when($request->filled('start_date') && $request->filled('end_date'), function ($q) use ($request) {
-                    $q->whereBetween('date', [$request->start_date, $request->end_date]);
-                })->sum('amount'),
-        ];
 
         return view('it.show_user', compact('user', 'dailyLogs', 'stats'));
     }

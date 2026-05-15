@@ -25,6 +25,7 @@
             </div>
         </div>
 
+        @if(in_array($user->role, ['sales', 'supervisor']))
         {{-- STATISTIK --}}
         <div class="grid grid-cols-3 gap-3 mb-6">
             <div class="bg-blue-50 rounded-xl p-3 text-center">
@@ -40,10 +41,12 @@
                 <p class="text-xl font-bold text-orange-600">Rp {{ number_format($stats['total_expenses'] / 1000, 0) }}K</p>
             </div>
         </div>
+        @endif
 
-        {{-- MAIN ACTION CONTAINER: Desktop Reordering --}}
+        {{-- MAIN ACTION CONTAINER --}}
+        @if(in_array($user->role, ['sales', 'supervisor']))
         <div class="flex flex-col md:grid md:grid-cols-2 gap-6 mb-6 md:items-start">
-            
+
             {{-- KOLOM KIRI: FILTER TANGGAL (Desktop Kiri, Mobile Bawah) --}}
             <div class="order-2 md:order-1">
                 <div class="bg-blue-50/50 rounded-2xl p-5 border border-blue-100 h-full">
@@ -73,6 +76,9 @@
 
             {{-- KOLOM KANAN: TOMBOL AKSI (Desktop Kanan, Mobile Atas) --}}
             <div class="order-1 md:order-2 space-y-4">
+        @else
+        <div class="space-y-4 mb-6">
+        @endif
                 {{-- TOMBOL RESET PASSWORD --}}
                 <form action="{{ route('it.reset.password', $user->id) }}" method="POST">
                     @csrf
@@ -112,6 +118,7 @@
             </div>
         </div>
 
+        @if(in_array($user->role, ['sales', 'supervisor']))
         {{-- LIST RIWAYAT --}}
         <div class="space-y-4 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4">
             @forelse($dailyLogs as $log)
@@ -284,6 +291,7 @@
             <div class="mt-6">
                 {{ $dailyLogs->links() }}
             </div>
+        @endif
         @endif
     </div>
 @endsection

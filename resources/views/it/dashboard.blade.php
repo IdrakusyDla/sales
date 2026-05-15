@@ -5,7 +5,7 @@
         <p class="text-sm text-gray-600 mb-6">Manajemen semua karyawan</p>
 
         {{-- STATISTIK --}}
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
             <div class="bg-blue-50 rounded-xl p-4">
                 <p class="text-xs text-gray-600 mb-1">Sales</p>
                 <p class="text-2xl font-bold text-blue-600">{{ $users->where('role', 'sales')->count() }}</p>
@@ -21,6 +21,10 @@
             <div class="bg-green-50 rounded-xl p-4">
                 <p class="text-xs text-gray-600 mb-1">Finance</p>
                 <p class="text-2xl font-bold text-green-600">{{ $users->where('role', 'finance')->count() }}</p>
+            </div>
+            <div class="bg-red-50 rounded-xl p-4">
+                <p class="text-xs text-gray-600 mb-1">IT</p>
+                <p class="text-2xl font-bold text-red-600">{{ $users->where('role', 'it')->count() }}</p>
             </div>
         </div>
 
@@ -86,6 +90,7 @@
                     <option value="supervisor" {{ request('role') == 'supervisor' ? 'selected' : '' }}>Supervisor</option>
                     <option value="hrd" {{ request('role') == 'hrd' ? 'selected' : '' }}>HRD</option>
                     <option value="finance" {{ request('role') == 'finance' ? 'selected' : '' }}>Finance</option>
+                    <option value="it" {{ request('role') == 'it' ? 'selected' : '' }}>IT</option>
                 </select>
             </div>
             <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold text-sm mt-3">
@@ -102,7 +107,7 @@
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3 flex-1">
                             <div
-                                class="w-12 h-12 bg-{{ $user->role == 'sales' ? 'blue' : ($user->role == 'supervisor' ? 'purple' : ($user->role == 'hrd' ? 'indigo' : 'green')) }}-100 rounded-full flex items-center justify-center text-{{ $user->role == 'sales' ? 'blue' : ($user->role == 'supervisor' ? 'purple' : ($user->role == 'hrd' ? 'indigo' : 'green')) }}-600 font-bold shrink-0">
+                                class="w-12 h-12 bg-{{ $user->role == 'sales' ? 'blue' : ($user->role == 'supervisor' ? 'purple' : ($user->role == 'hrd' ? 'indigo' : ($user->role == 'finance' ? 'green' : 'red'))) }}-100 rounded-full flex items-center justify-center text-{{ $user->role == 'sales' ? 'blue' : ($user->role == 'supervisor' ? 'purple' : ($user->role == 'hrd' ? 'indigo' : ($user->role == 'finance' ? 'green' : 'red'))) }}-600 font-bold shrink-0">
                                 {{ substr($user->name, 0, 1) }}
                             </div>
                             <div class="flex-1">
