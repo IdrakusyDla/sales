@@ -2,7 +2,7 @@
 @section('content')
     <div class="px-5 md:px-8 py-6 md:py-8">
         <h1 class="text-2xl font-bold mb-2">Dashboard HRD</h1>
-        <p class="text-sm text-gray-600 mb-6">Manajemen karyawan sales & supervisor</p>
+        <p class="text-sm text-gray-600 mb-6">Manajemen karyawan sales, supervisor & finance</p>
 
         {{-- STATISTIK --}}
         <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
@@ -90,6 +90,7 @@
                     <option value="">Semua Role</option>
                     <option value="sales" {{ request('role') == 'sales' ? 'selected' : '' }}>Sales</option>
                     <option value="supervisor" {{ request('role') == 'supervisor' ? 'selected' : '' }}>Supervisor</option>
+                    <option value="finance" {{ request('role') == 'finance' ? 'selected' : '' }}>Finance</option>
                 </select>
                 <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold text-sm">
                     Cari

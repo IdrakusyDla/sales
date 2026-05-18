@@ -20,8 +20,8 @@ class HRDController extends Controller
 
     public function dashboard(Request $request)
     {
-        // Ambil semua sales dan supervisor
-        $query = User::whereIn('role', ['sales', 'supervisor']);
+        // Ambil semua sales, supervisor, dan finance
+        $query = User::whereIn('role', ['sales', 'supervisor', 'finance']);
 
         // Fitur Search
         if ($request->filled('search')) {
@@ -107,8 +107,8 @@ class HRDController extends Controller
     {
         $user = User::findOrFail($id);
 
-        // Cek apakah user adalah sales atau supervisor
-        if (!in_array($user->role, ['sales', 'supervisor'])) {
+        // Cek apakah user adalah sales, supervisor, atau finance
+        if (!in_array($user->role, ['sales', 'supervisor', 'finance'])) {
             return redirect()->route('hrd.dashboard')->with('error', 'User tidak valid.');
         }
 
@@ -259,8 +259,8 @@ class HRDController extends Controller
 
     public function exportPage()
     {
-        // Ambil semua sales dan supervisor untuk filter
-        $users = User::whereIn('role', ['sales', 'supervisor'])->get();
+        // Ambil semua sales, supervisor, dan finance untuk filter
+        $users = User::whereIn('role', ['sales', 'supervisor', 'finance'])->get();
 
         return view('hrd.export', compact('users'));
     }

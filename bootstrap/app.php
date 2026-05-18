@@ -29,5 +29,12 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, $request) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Sesi telah berakhir. Silakan refresh halaman.'], 419);
+            }
+
+            return redirect()->back()->withInput($request->except('_token', 'password', 'password_confirmation'))
+                ->with('error', 'Sesi telah berakhir. Silakan coba lagi.');
+        });
     })->create();

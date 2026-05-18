@@ -147,6 +147,14 @@
                     </div>
                 @endif
 
+                @if (session('error'))
+                    <div class="bg-red-500 text-white p-3 text-center text-sm font-bold sticky top-0 z-50">
+                        <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg> {{ session('error') }}
+                    </div>
+                @endif
+
                 @yield('content')
             </div>
 
