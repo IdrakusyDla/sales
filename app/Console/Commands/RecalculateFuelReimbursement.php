@@ -76,7 +76,7 @@ class RecalculateFuelReimbursement extends Command
                 ->first();
 
             // Ambil setting untuk user ini (individual atau general)
-            $userFuelSetting = FuelSetting::getActiveSettingForUser($dailyLog->user_id);
+            $userFuelSetting = FuelSetting::getActiveSettingForUser($dailyLog->user);
             
             if (!$userFuelSetting) {
                 $this->warn("⚠️  Daily Log #{$dailyLog->id} ({$dailyLog->date->format('d/m/Y')}): Tidak ada fuel setting untuk user ini, menggunakan general setting");

@@ -129,14 +129,40 @@
                 container.appendChild(div);
             }
 
-            // GPS Init
-            navigator.geolocation.getCurrentPosition(p => {
-                document.getElementById('lat').value = p.coords.latitude;
-                document.getElementById('long').value = p.coords.longitude;
-            }, err => {
-                if(typeof showPermissionGuard === 'function') showPermissionGuard('location');
-            });
+            // GPS Init - request jika granted/prompt, tolak jika denied
+            async function initGPS() {
+                if (navigator.permissions && navigator.permissions.query) {
+                    try {
+                        const perm = await navigator.permissions.query({ name: 'geolocation' });
+                        if (perm.state === 'denied') {
+                            if(typeof showPermissionGuard === 'function') showPermissionGuard('location');
+                            return;
+                        }
+                    } catch(e) {}
+                }
+                navigator.geolocation.getCurrentPosition(p => {
+                    document.getElementById('lat').value = p.coords.latitude;
+                    document.getElementById('long').value = p.coords.longitude;
+                }, err => {
+                    if(typeof showPermissionGuard === 'function') showPermissionGuard('location');
+                });
+            }
 
-            initCamera();
+            // Camera init - request jika granted/prompt, tolak jika denied
+            async function safeInitCamera() {
+                if (navigator.permissions && navigator.permissions.query) {
+                    try {
+                        const perm = await navigator.permissions.query({ name: 'camera' });
+                        if (perm.state === 'denied') {
+                            if(typeof showPermissionGuard === 'function') showPermissionGuard('camera');
+                            return;
+                        }
+                    } catch(e) {}
+                }
+                initCamera();
+            }
+
+            safeInitCamera();
+            initGPS();
         </script>
 @endsection

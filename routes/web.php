@@ -111,7 +111,10 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     // ==========================================
     Route::middleware(['role:hrd'])->group(function () {
 
-        // --- DASHBOARD ---
+        // --- HOME (AKTIVITAS FEED) ---
+        Route::get('/hrd/home', [HRDController::class, 'home'])->name('hrd.home');
+
+        // --- DASHBOARD (KARYAWAN) ---
         Route::get('/hrd/dashboard', [HRDController::class, 'dashboard'])->name('hrd.dashboard');
 
         // --- MANAJEMEN AKUN (DINAMIS UNTUK HRD) ---

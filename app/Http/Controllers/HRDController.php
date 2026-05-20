@@ -15,7 +15,102 @@ use Carbon\Carbon;
 class HRDController extends Controller
 {
     // ==========================================
-    // DASHBOARD HRD
+    // HOME - AKTIVITAS FEED
+    // ==========================================
+
+    public function home()
+    {
+        // Ambil ID user yang role-nya sales atau supervisor
+        $targetUserIds = User::whereIn('role', ['sales', 'supervisor'])->pluck('id');
+
+        // Ambil daily logs terbaru (absensi masuk/keluar)
+        $dailyLogs = DailyLog::whereIn('user_id', $targetUserIds)
+            ->where(function ($q) {
+                $q->whereNotNull('start_time')->orWhereNotNull('end_time');
+            })
+            ->with('user')
+            ->orderBy('created_at', 'desc')
+            ->limit(50)
+            ->get();
+
+        // Ambil kunjungan terbaru
+        $visits = Visit::whereHas('dailyLog', function ($q) use ($targetUserIds) {
+            $q->whereIn('user_id', $targetUserIds);
+        })
+            ->with(['dailyLog.user'])
+            ->orderBy('created_at', 'desc')
+            ->limit(50)
+            ->get();
+
+        // Gabungkan jadi satu collection dengan timestamp unified
+        $activities = collect();
+
+        foreach ($dailyLogs as $log) {
+            if ($log->start_time) {
+                $activities->push([
+                    'type' => 'check_in',
+                    'user' => $log->user,
+                    'time' => $log->start_time,
+                    'date' => $log->date,
+                    'meta' => $log,
+                    'sort_time' => $log->start_time,
+                ]);
+            }
+            if ($log->end_time) {
+                $activities->push([
+                    'type' => 'check_out',
+                    'user' => $log->user,
+                    'time' => $log->end_time,
+                    'date' => $log->date,
+                    'meta' => $log,
+                    'sort_time' => $log->end_time,
+                ]);
+            }
+        }
+
+        foreach ($visits as $visit) {
+            $activities->push([
+                'type' => 'visit',
+                'user' => $visit->dailyLog->user,
+                'time' => $visit->time,
+                'date' => $visit->dailyLog->date,
+                'meta' => $visit,
+                'sort_time' => $visit->time,
+            ]);
+        }
+
+        // Sort by time descending dan paginate manual
+        $activities = $activities->sortByDesc('sort_time')->values();
+        $activities = new \Illuminate\Pagination\LengthAwarePaginator(
+            $activities->forPage(request()->get('page', 1), 20),
+            $activities->count(),
+            20,
+            request()->get('page', 1),
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
+
+        // Statistik hari ini
+        $today = Carbon::today();
+        $todayStats = [
+            'check_in' => DailyLog::whereIn('user_id', $targetUserIds)
+                ->whereDate('date', $today)
+                ->whereNotNull('start_time')
+                ->count(),
+            'check_out' => DailyLog::whereIn('user_id', $targetUserIds)
+                ->whereDate('date', $today)
+                ->whereNotNull('end_time')
+                ->count(),
+            'visits' => Visit::whereHas('dailyLog', function ($q) use ($targetUserIds, $today) {
+                $q->whereIn('user_id', $targetUserIds)->whereDate('date', $today);
+            })->count(),
+            'total_active' => User::whereIn('role', ['sales', 'supervisor'])->where('is_active', true)->count(),
+        ];
+
+        return view('hrd.home', compact('activities', 'todayStats'));
+    }
+
+    // ==========================================
+    // DASHBOARD HRD (KARYAWAN)
     // ==========================================
 
     public function dashboard(Request $request)

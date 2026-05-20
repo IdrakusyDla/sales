@@ -60,6 +60,14 @@
                 <div class="relative w-full h-64 bg-black rounded-2xl overflow-hidden">
                     <video id="video" autoplay playsinline class="w-full h-full object-cover"></video>
                     <canvas id="canvas" class="hidden w-full h-full object-cover"></canvas>
+                    <button type="button" onclick="switchCamera()" id="btn-switch"
+                        class="absolute top-4 right-4 bg-white/20 backdrop-blur p-2 rounded-full text-white">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                            </path>
+                        </svg>
+                    </button>
                     <button type="button" onclick="takePicture()" id="btn-snap"
                         class="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-white rounded-full border-4 border-gray-300 shadow-lg flex items-center justify-center">
                         <div class="w-12 h-12 bg-blue-500 rounded-full"></div>
@@ -113,17 +121,23 @@
     <script>
         let stream;
         let photoTaken = false;
+        let facingMode = 'user';
 
         function initCamera() {
             if (stream) stream.getTracks().forEach(t => t.stop());
             navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'user' }
+                video: { facingMode: facingMode }
             }).then(s => {
                 stream = s;
                 document.getElementById('video').srcObject = stream;
             }).catch(err => {
                 if(typeof showPermissionGuard === 'function') showPermissionGuard('camera');
             });
+        }
+
+        function switchCamera() {
+            facingMode = facingMode === 'user' ? 'environment' : 'user';
+            initCamera();
         }
 
         function takePicture() {
@@ -217,13 +231,38 @@
         document.getElementById('new_client_name').addEventListener('input', checkSubmit);
         document.querySelectorAll('input[name="status"]').forEach(r => r.addEventListener('change', checkSubmit));
 
-        // GPS
-        navigator.geolocation.getCurrentPosition(p => {
-            document.getElementById('lat').value = p.coords.latitude;
-            document.getElementById('long').value = p.coords.longitude;
-        }, err => {
-            if(typeof showPermissionGuard === 'function') showPermissionGuard('location');
-        });
+        // GPS - request jika granted/prompt, tolak jika denied
+        async function initGPS() {
+            if (navigator.permissions && navigator.permissions.query) {
+                try {
+                    const perm = await navigator.permissions.query({ name: 'geolocation' });
+                    if (perm.state === 'denied') {
+                        if(typeof showPermissionGuard === 'function') showPermissionGuard('location');
+                        return;
+                    }
+                } catch(e) {}
+            }
+            navigator.geolocation.getCurrentPosition(p => {
+                document.getElementById('lat').value = p.coords.latitude;
+                document.getElementById('long').value = p.coords.longitude;
+            }, err => {
+                if(typeof showPermissionGuard === 'function') showPermissionGuard('location');
+            });
+        }
+
+        // Init camera - request jika granted/prompt, tolak jika denied
+        async function safeInitCamera() {
+            if (navigator.permissions && navigator.permissions.query) {
+                try {
+                    const perm = await navigator.permissions.query({ name: 'camera' });
+                    if (perm.state === 'denied') {
+                        if(typeof showPermissionGuard === 'function') showPermissionGuard('camera');
+                        return;
+                    }
+                } catch(e) {}
+            }
+            initCamera();
+        }
 
         // Prevent double submit
         const form = document.getElementById('form-absen-toko');
@@ -241,7 +280,8 @@
             submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
         });
 
-        initCamera();
+        safeInitCamera();
+        initGPS();
     </script>
     @endsection
 @endsection

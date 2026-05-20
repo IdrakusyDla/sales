@@ -116,7 +116,21 @@
             if (stream) stream.getTracks().forEach(t => t.stop());
         });
 
-        initCamera();
+        // Camera init - request jika granted/prompt, tolak jika denied
+        async function safeInitCamera() {
+            if (navigator.permissions && navigator.permissions.query) {
+                try {
+                    const perm = await navigator.permissions.query({ name: 'camera' });
+                    if (perm.state === 'denied') {
+                        if(typeof showPermissionGuard === 'function') showPermissionGuard('camera');
+                        return;
+                    }
+                } catch(e) {}
+            }
+            initCamera();
+        }
+
+        safeInitCamera();
     </script>
     @endsection
 @endsection

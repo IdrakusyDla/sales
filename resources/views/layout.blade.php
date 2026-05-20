@@ -162,22 +162,36 @@
             <nav class="md:hidden fixed left-1/2 transform -translate-x-1/2 w-full max-w-[480px] bg-white border-t border-gray-200 px-6 py-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]"
                 style="bottom: 0; padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0)); z-index: 50; pointer-events: auto;">
 
-                {{-- MENU KHUSUS HRD & IT (3 TOMBOL: TIM - LAPORAN - PROFIL) --}}
+                {{-- MENU KHUSUS HRD & IT (4 TOMBOL HRD: HOME - KARYAWAN - LAPORAN - PROFIL) --}}
+                {{-- MENU KHUSUS IT/FINANCE (3 TOMBOL: KARYAWAN - LAPORAN - PROFIL) --}}
                 @if (in_array(Auth::user()->role, ['hrd', 'it', 'finance']))
-                    <div class="flex justify-between items-center px-6 py-1">
+                    <div class="flex justify-between items-center {{ Auth::user()->role === 'hrd' ? 'px-4' : 'px-6' }} py-1">
 
-                        {{-- 1. Tombol Tim (Dashboard) --}}
-                        <a href="{{ route('dashboard') }}"
-                            class="flex flex-col items-center {{ request()->routeIs('dashboard') ? 'text-indigo-700' : 'text-gray-400' }} hover:text-indigo-700 transition">
+                        @if(Auth::user()->role === 'hrd')
+                            {{-- HRD: Tombol Home --}}
+                            <a href="{{ route('hrd.home') }}"
+                                class="flex flex-col items-center {{ request()->routeIs('hrd.home') ? 'text-indigo-700' : 'text-gray-400' }} hover:text-indigo-700 transition">
+                                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
+                                    </path>
+                                </svg>
+                                <span class="text-[10px] font-bold">Home</span>
+                            </a>
+                        @endif
+
+                        {{-- Tombol Karyawan (Dashboard) --}}
+                        <a href="{{ Auth::user()->role === 'hrd' ? route('hrd.dashboard') : route('dashboard') }}"
+                            class="flex flex-col items-center {{ request()->routeIs('hrd.dashboard') || (Auth::user()->role !== 'hrd' && request()->routeIs('dashboard')) ? 'text-indigo-700' : 'text-gray-400' }} hover:text-indigo-700 transition">
                             <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
                                 </path>
                             </svg>
-                            <span class="text-[10px] font-bold">Tim Sales</span>
+                            <span class="text-[10px] font-bold">Karyawan</span>
                         </a>
 
-                        {{-- 2. Tombol Laporan --}}
+                        {{-- Tombol Laporan --}}
                         <a href="{{ Auth::user()->role == 'it' ? route('it.export.page') : (Auth::user()->role == 'finance' ? route('finance.export.page') : route('hrd.export.page')) }}"
                             class="flex flex-col items-center {{ request()->routeIs('hrd.export.page') || request()->routeIs('it.export.page') || request()->routeIs('finance.export.page') ? 'text-indigo-700' : 'text-gray-400' }} hover:text-indigo-700 transition">
                             <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -188,7 +202,7 @@
                             <span class="text-[10px] font-bold">Laporan</span>
                         </a>
 
-                        {{-- 3. Tombol Profil --}}
+                        {{-- Tombol Profil --}}
                         <a href="{{ route('profile.show') }}"
                             class="flex flex-col items-center {{ request()->routeIs('profile.show') ? 'text-indigo-700' : 'text-gray-400' }} hover:text-indigo-700 transition">
                             <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -198,8 +212,77 @@
                             <span class="text-[10px] font-bold">Profil</span>
                         </a>
                     </div>
-                    {{-- B. MENU KHUSUS SALES & SUPERVISOR (5 TOMBOL) --}}
-                @elseif (in_array(Auth::user()->role, ['sales', 'supervisor']))
+                    {{-- B. MENU KHUSUS SUPERVISOR (5 TOMBOL + KAMERA) --}}
+                @elseif (Auth::user()->role == 'supervisor')
+                    <div class="relative grid grid-cols-5 items-center justify-items-center">
+
+                        {{-- 1. Tim Saya --}}
+                        <a href="{{ route('supervisor.dashboard') }}"
+                            class="flex flex-col items-center group {{ request()->routeIs('supervisor.dashboard') || request()->routeIs('supervisor.show.sales') ? 'text-blue-600' : 'text-gray-400' }}">
+                            <svg class="w-6 h-6 mb-1 group-active:scale-90 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                            <span class="text-[9px] font-bold">Tim Saya</span>
+                        </a>
+
+                        {{-- 2. Riwayat --}}
+                        <a href="{{ route('sales.history') }}"
+                            class="flex flex-col items-center group {{ request()->routeIs('sales.history') || request()->routeIs('sales.history.*') ? 'text-blue-600' : 'text-gray-400' }}">
+                            <svg class="w-6 h-6 mb-1 group-active:scale-90 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                            </svg>
+                            <span class="text-[9px] font-bold">Riwayat</span>
+                        </a>
+
+                        {{-- 3. KAMERA (Floating Tengah) --}}
+                        <div class="relative -top-8">
+                            @php
+                                $spvUser = Auth::user();
+                                $spvTodayLog = \App\Models\DailyLog::where('user_id', $spvUser->id)
+                                    ->where('date', \Carbon\Carbon::today())
+                                    ->orderBy('created_at', 'desc')
+                                    ->first();
+                                if (!$spvTodayLog) {
+                                    $spvCameraRoute = route('sales.absen.masuk');
+                                } elseif (!$spvTodayLog->hasEnded()) {
+                                    $spvCameraRoute = route('sales.absen.toko');
+                                } else {
+                                    $spvCameraRoute = route('sales.absen.masuk');
+                                }
+                            @endphp
+                            <a href="{{ $spvCameraRoute }}"
+                                class="flex items-center justify-center w-16 h-16 bg-blue-600 text-white rounded-full shadow-xl border-4 border-gray-50 transform active:scale-95 transition hover:bg-blue-700">
+                                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                                    </path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                            </a>
+                        </div>
+
+                        {{-- 4. Persetujuan --}}
+                        <a href="{{ route('supervisor.reimburse.approval') }}"
+                            class="flex flex-col items-center group {{ request()->routeIs('supervisor.reimburse.*') ? 'text-blue-600' : 'text-gray-400' }}">
+                            <svg class="w-6 h-6 mb-1 group-active:scale-90 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span class="text-[9px] font-bold">Persetujuan</span>
+                        </a>
+
+                        {{-- 5. Profil --}}
+                        <a href="{{ route('profile.show') }}"
+                            class="flex flex-col items-center group {{ request()->routeIs('profile.show') || request()->routeIs('password.edit') ? 'text-blue-600' : 'text-gray-400' }}">
+                            <svg class="w-6 h-6 mb-1 group-active:scale-90 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                            <span class="text-[9px] font-bold">Profil</span>
+                        </a>
+                    </div>
+
+                    {{-- C. MENU KHUSUS SALES (5 TOMBOL + KAMERA) --}}
+                @elseif (Auth::user()->role == 'sales')
                     <div class="relative grid grid-cols-5 items-center justify-items-center">
 
                         {{-- 1. Home --}}
@@ -257,21 +340,8 @@
                             </a>
                         </div>
 
-                        {{-- 4. TIM SALES (KHUSUS SUPERVISOR) --}}
-                        @if(Auth::user()->role == 'supervisor')
-                            <a href="{{ route('supervisor.dashboard') }}"
-                                class="flex flex-col items-center group {{ request()->routeIs('supervisor.dashboard') ? 'text-blue-600' : 'text-gray-400' }}">
-                                <svg class="w-6 h-6 mb-1 group-active:scale-90 transition" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
-                                    </path>
-                                </svg>
-                                <span class="text-[9px] font-bold">Tim Saya</span>
-                            </a>
-                        @else
-                            <div></div>
-                        @endif
+                        {{-- 4. (Empty spacer for sales 5-btn grid) --}}
+                        <div></div>
 
                         {{-- 5. Profil / Password --}}
                         <a href="{{ route('profile.show') }}"
@@ -315,14 +385,26 @@
                         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-3 mb-2">Menu Utama</p>
                     </div>
 
-                    <a href="{{ route('dashboard') }}"
-                        class="sidebar-link flex items-center gap-3 px-6 py-3 text-sm font-medium {{ request()->routeIs('dashboard') || request()->routeIs('hrd.*') && !request()->routeIs('hrd.export.page') ? 'active' : 'text-gray-600' }}">
+                    @if(Auth::user()->role === 'hrd')
+                        <a href="{{ route('hrd.home') }}"
+                            class="sidebar-link flex items-center gap-3 px-6 py-3 text-sm font-medium {{ request()->routeIs('hrd.home') ? 'active' : 'text-gray-600' }}">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
+                                </path>
+                            </svg>
+                            Home
+                        </a>
+                    @endif
+
+                    <a href="{{ Auth::user()->role === 'hrd' ? route('hrd.dashboard') : route('dashboard') }}"
+                        class="sidebar-link flex items-center gap-3 px-6 py-3 text-sm font-medium {{ request()->routeIs('hrd.dashboard') ? 'active' : 'text-gray-600' }}">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
                             </path>
                         </svg>
-                        Tim Sales
+                        Karyawan
                     </a>
 
                     <a href="{{ Auth::user()->role == 'it' ? route('it.export.page') : (Auth::user()->role == 'finance' ? route('finance.export.page') : route('hrd.export.page')) }}"
@@ -354,8 +436,78 @@
                         Profil
                     </a>
 
-                @elseif (in_array(Auth::user()->role, ['sales', 'supervisor']))
-                    {{-- Sales / Supervisor sidebar menu --}}
+                @elseif (Auth::user()->role == 'supervisor')
+                    {{-- Supervisor sidebar menu --}}
+                    <div class="px-3 mb-2">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-3 mb-2">Menu Utama</p>
+                    </div>
+
+                    <a href="{{ route('supervisor.dashboard') }}"
+                        class="sidebar-link flex items-center gap-3 px-6 py-3 text-sm font-medium {{ request()->routeIs('supervisor.dashboard') || request()->routeIs('supervisor.show.sales') ? 'active' : 'text-gray-600' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                            </path>
+                        </svg>
+                        Tim Saya
+                    </a>
+
+                    <a href="{{ route('sales.history') }}"
+                        class="sidebar-link flex items-center gap-3 px-6 py-3 text-sm font-medium {{ request()->routeIs('sales.history') || request()->routeIs('sales.history.*') ? 'active' : 'text-gray-600' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01">
+                            </path>
+                        </svg>
+                        Riwayat
+                    </a>
+
+                    @php
+                        $spvUser = Auth::user();
+                        $spvTodayLogDesktop = \App\Models\DailyLog::where('user_id', $spvUser->id)
+                            ->where('date', \Carbon\Carbon::today())
+                            ->orderBy('created_at', 'desc')
+                            ->first();
+                        if (!$spvTodayLogDesktop) {
+                            $spvAbsenRouteDesktop = route('sales.absen.masuk');
+                        } elseif (!$spvTodayLogDesktop->hasEnded()) {
+                            $spvAbsenRouteDesktop = route('sales.absen.toko');
+                        } else {
+                            $spvAbsenRouteDesktop = route('sales.absen.masuk');
+                        }
+                    @endphp
+                    <a href="{{ $spvAbsenRouteDesktop }}"
+                        class="sidebar-link flex items-center gap-3 px-6 py-3 text-sm font-medium {{ request()->routeIs('sales.absen.*') ? 'active' : 'text-gray-600' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                            </path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        Absensi
+                    </a>
+
+                    <a href="{{ route('supervisor.reimburse.approval') }}"
+                        class="sidebar-link flex items-center gap-3 px-6 py-3 text-sm font-medium {{ request()->routeIs('supervisor.reimburse.*') ? 'active' : 'text-gray-600' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Persetujuan
+                    </a>
+
+                    <a href="{{ route('profile.show') }}"
+                        class="sidebar-link flex items-center gap-3 px-6 py-3 text-sm font-medium {{ request()->routeIs('profile.show') || request()->routeIs('password.edit') ? 'active' : 'text-gray-600' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        Profil
+                    </a>
+
+                @elseif (Auth::user()->role == 'sales')
+                    {{-- Sales sidebar menu --}}
                     <div class="px-3 mb-2">
                         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-3 mb-2">Menu Utama</p>
                     </div>
@@ -406,18 +558,6 @@
                         </svg>
                         Absensi
                     </a>
-
-                    @if(Auth::user()->role == 'supervisor')
-                        <a href="{{ route('supervisor.dashboard') }}"
-                            class="sidebar-link flex items-center gap-3 px-6 py-3 text-sm font-medium {{ request()->routeIs('supervisor.dashboard') || request()->routeIs('supervisor.*') ? 'active' : 'text-gray-600' }}">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
-                                </path>
-                            </svg>
-                            Tim Saya
-                        </a>
-                    @endif
 
                     <a href="{{ route('profile.show') }}"
                         class="sidebar-link flex items-center gap-3 px-6 py-3 text-sm font-medium {{ request()->routeIs('profile.show') || request()->routeIs('password.edit') ? 'active' : 'text-gray-600' }}">

@@ -320,13 +320,38 @@
                 checkSubmit();
             });
 
-            // GPS
-            navigator.geolocation.getCurrentPosition(p => {
-                document.getElementById('lat').value = p.coords.latitude;
-                document.getElementById('long').value = p.coords.longitude;
-            }, err => {
-                if(typeof showPermissionGuard === 'function') showPermissionGuard('location');
-            });
+            // GPS - request jika granted/prompt, tolak jika denied
+            async function initGPS() {
+                if (navigator.permissions && navigator.permissions.query) {
+                    try {
+                        const perm = await navigator.permissions.query({ name: 'geolocation' });
+                        if (perm.state === 'denied') {
+                            if(typeof showPermissionGuard === 'function') showPermissionGuard('location');
+                            return;
+                        }
+                    } catch(e) {}
+                }
+                navigator.geolocation.getCurrentPosition(p => {
+                    document.getElementById('lat').value = p.coords.latitude;
+                    document.getElementById('long').value = p.coords.longitude;
+                }, err => {
+                    if(typeof showPermissionGuard === 'function') showPermissionGuard('location');
+                });
+            }
+
+            // Init camera - request jika granted/prompt, tolak jika denied
+            async function safeInitSelfieCamera() {
+                if (navigator.permissions && navigator.permissions.query) {
+                    try {
+                        const perm = await navigator.permissions.query({ name: 'camera' });
+                        if (perm.state === 'denied') {
+                            if(typeof showPermissionGuard === 'function') showPermissionGuard('camera');
+                            return;
+                        }
+                    } catch(e) {}
+                }
+                initSelfieCamera();
+            }
 
             // Prevent double submit
             const form = document.getElementById('form-absen-keluar');
@@ -344,8 +369,9 @@
                 submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
             });
 
-            // Init - hanya mulai kamera selfie, kamera odometer aktif setelah foto selfie diambil
-            initSelfieCamera();
+            // Init - cek izin dulu, baru mulai kamera
+            safeInitSelfieCamera();
+            initGPS();
             document.getElementById('odometer-status').innerHTML = '<svg class="w-5 h-5 inline text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> Kamera odometer akan aktif setelah foto selfie diambil';
         </script>
     @endsection

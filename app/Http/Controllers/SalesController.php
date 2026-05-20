@@ -703,7 +703,7 @@ class SalesController extends Controller
         }
 
         // Ambil setting bahan bakar aktif untuk user
-        $fuelSetting = FuelSetting::getActiveSettingForUser($dailyLog->user_id);
+        $fuelSetting = FuelSetting::getActiveSettingForUser($dailyLog->user);
 
         if (!$fuelSetting) {
             return; // Tidak ada setting, skip
