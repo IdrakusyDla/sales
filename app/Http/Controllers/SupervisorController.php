@@ -13,7 +13,25 @@ use Carbon\Carbon;
 class SupervisorController extends Controller
 {
     // ==========================================
-    // DASHBOARD SUPERVISOR
+    // HOME SUPERVISOR (Sama seperti Sales Home)
+    // ==========================================
+
+    public function home()
+    {
+        $user = Auth::user();
+
+        $todayLogs = DailyLog::where('user_id', $user->id)
+            ->where('date', Carbon::today())
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $latestLog = $todayLogs->first();
+
+        return view('sales.home', compact('user', 'todayLogs', 'latestLog'));
+    }
+
+    // ==========================================
+    // DASHBOARD SUPERVISOR (Tim Saya)
     // ==========================================
 
     public function dashboard()

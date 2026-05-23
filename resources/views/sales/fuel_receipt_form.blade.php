@@ -77,7 +77,7 @@
                 if(typeof showPermissionGuard === 'function') showPermissionGuard('camera');
                 else {
                     console.error('Error accessing camera:', err);
-                    document.getElementById('photo-status').textContent = '<svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> Error: Tidak dapat mengakses kamera';
+                    document.getElementById('photo-status').innerHTML = '<svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> Error: Tidak dapat mengakses kamera';
                 }
             });
         }
@@ -102,7 +102,7 @@
             video.classList.add('hidden');
             canvas.classList.remove('hidden');
             document.getElementById('btn-snap').classList.add('hidden');
-            document.getElementById('photo-status').textContent = '<svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Foto berhasil diambil';
+            document.getElementById('photo-status').innerHTML = '<svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Foto berhasil diambil';
             photoTaken = true;
             checkSubmit();
         }
@@ -131,6 +131,12 @@
         }
 
         safeInitCamera();
+
+        // Prevent double submit
+        document.getElementById('form-fuel-receipt').addEventListener('submit', function() {
+            document.getElementById('btn-submit').disabled = true;
+            document.getElementById('btn-submit').textContent = 'Menyimpan...';
+        });
     </script>
     @endsection
 @endsection

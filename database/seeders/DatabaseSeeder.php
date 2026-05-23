@@ -44,7 +44,7 @@ class DatabaseSeeder extends Seeder
             ['name' => 'IT System', 'slug' => 'it', 'permissions' => json_encode(['all']), 'dashboard_url' => 'it.dashboard', 'is_system_role' => true, 'hrd_can_create' => false],
             ['name' => 'Human Resources (HRD)', 'slug' => 'hrd', 'permissions' => json_encode(['manage_users', 'view_reports', 'approve_reimburse']), 'dashboard_url' => 'hrd.dashboard', 'is_system_role' => true, 'hrd_can_create' => false],
             ['name' => 'Finance', 'slug' => 'finance', 'permissions' => json_encode(['approve_reimburse', 'view_reports']), 'dashboard_url' => 'finance.dashboard', 'is_system_role' => true, 'hrd_can_create' => false],
-            ['name' => 'Supervisor', 'slug' => 'supervisor', 'permissions' => json_encode(['approve_reimburse', 'view_sales']), 'dashboard_url' => 'supervisor.dashboard', 'is_system_role' => true, 'hrd_can_create' => false],
+            ['name' => 'Supervisor', 'slug' => 'supervisor', 'permissions' => json_encode(['approve_reimburse', 'view_sales']), 'dashboard_url' => 'supervisor.home', 'is_system_role' => true, 'hrd_can_create' => false],
             ['name' => 'Sales', 'slug' => 'sales', 'permissions' => json_encode(['create_visits', 'create_reimburse']), 'dashboard_url' => 'sales.dashboard', 'is_system_role' => true, 'hrd_can_create' => false],
         ];
         DB::table('roles')->insert($roles);

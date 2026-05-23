@@ -177,6 +177,12 @@
                     Mulai Absen Masuk
                 </a>
             @elseif ($latestLog && !$latestLog->hasEnded())
+                {{-- Tombol Absen Toko/Kunjungan --}}
+                <a href="{{ route('sales.absen.toko') }}" class="flex items-center justify-center gap-3 w-full bg-blue-600 text-white p-5 rounded-[2rem] shadow-xl shadow-blue-600/20 hover:bg-blue-700 transition-all font-bold text-lg active:scale-95 group">
+                    <svg class="w-7 h-7 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    Lapor Kunjungan
+                </a>
+
                 @if (!$hasPendingVisits)
                     <a href="{{ route('sales.absen.keluar') }}" class="flex items-center justify-center gap-3 w-full bg-red-600 text-white p-6 rounded-[2rem] shadow-xl shadow-red-600/20 hover:bg-red-700 hover:shadow-red-700/30 transition-all font-bold text-xl active:scale-95 group">
                         <svg class="w-8 h-8 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>

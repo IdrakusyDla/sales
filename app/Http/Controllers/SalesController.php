@@ -60,6 +60,14 @@ class SalesController extends Controller
 
     public function storeAbsenMasuk(Request $request)
     {
+        // Validasi manual odometer (pesan ramah via session)
+        if (!$request->odometer_value || !is_numeric($request->odometer_value) || $request->odometer_value < 0) {
+            return back()->with('error', 'Nilai odometer wajib diisi dengan angka yang valid.')->withInput();
+        }
+        if ($request->odometer_value > 99999999) {
+            return back()->with('error', 'Nilai odometer terlalu besar. Maksimal 8 digit (99.999.999 km).')->withInput();
+        }
+
         $request->validate([
             'photo' => 'required',
             'odometer_photo' => 'required',
@@ -247,6 +255,14 @@ class SalesController extends Controller
 
     public function storeAbsenKeluar(Request $request)
     {
+        // Validasi manual odometer (pesan ramah via session)
+        if (!$request->odometer_value || !is_numeric($request->odometer_value) || $request->odometer_value < 0) {
+            return back()->with('error', 'Nilai odometer wajib diisi dengan angka yang valid.')->withInput();
+        }
+        if ($request->odometer_value > 99999999) {
+            return back()->with('error', 'Nilai odometer terlalu besar. Maksimal 8 digit (99.999.999 km).')->withInput();
+        }
+
         $request->validate([
             'photo' => 'required',
             'odometer_photo' => 'required',
@@ -298,7 +314,12 @@ class SalesController extends Controller
 
         // Validasi: odometer akhir harus >= odometer awal
         if ($request->odometer_value < $todayLog->start_odo_value) {
-            return back()->withErrors(['odometer_value' => 'Nilai odometer akhir tidak boleh kurang dari odometer awal.'])->withInput();
+            return back()->with('error', 'Nilai odometer akhir tidak boleh kurang dari odometer awal.')->withInput();
+        }
+
+        // Validasi: odometer maksimal 8 digit (99.999.999)
+        if ($request->odometer_value > 99999999) {
+            return back()->with('error', 'Nilai odometer terlalu besar. Maksimal 8 digit (99.999.999 km).')->withInput();
         }
 
         // Upload foto selfie
@@ -385,6 +406,12 @@ class SalesController extends Controller
 
         // A. JIKA AUTO GENERATE RECEIPT (PARKIR)
         if ($request->generate_receipt && $request->type == 'parking') {
+            if (!extension_loaded('gd')) {
+                return back()->withErrors([
+                    'generate_receipt' => 'Fitur buat struk otomatis memerlukan ekstensi GD di PHP aktif. Silakan hubungi IT Administrator atau aktifkan "extension=gd" di php.ini Anda lalu restart server, ATAU matikan pilihan ini dan upload/foto struk manual.'
+                ])->withInput();
+            }
+
             $receiptPath = $this->generateParkingReceipt(
                 $request->amount,
                 $dailyLog->date,
@@ -521,6 +548,12 @@ class SalesController extends Controller
         $useGenerateReceipt = $request->input('generate_receipt') == '1' && $expense->type === 'parking';
 
         if ($useGenerateReceipt) {
+            if (!extension_loaded('gd')) {
+                return back()->withErrors([
+                    'generate_receipt' => 'Fitur buat struk otomatis memerlukan ekstensi GD di PHP aktif. Silakan hubungi IT Administrator atau aktifkan "extension=gd" di php.ini Anda lalu restart server, ATAU upload/foto struk manual.'
+                ])->withInput();
+            }
+
             // Validasi untuk generate receipt
             $request->validate([
                 'license_plate' => 'required|string',
@@ -843,6 +876,12 @@ class SalesController extends Controller
         // Cek akses (HRD/IT only)
         if (!in_array(Auth::user()->role, ['hrd', 'it'])) {
             return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        if (!extension_loaded('gd')) {
+            return response()->json([
+                'message' => 'Gagal: Fitur generate struk memerlukan ekstensi GD di PHP aktif. Silakan hubungi IT Administrator atau aktifkan "extension=gd" di php.ini Anda lalu restart server.'
+            ], 422);
         }
 
         $request->validate([

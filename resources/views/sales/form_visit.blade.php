@@ -296,5 +296,11 @@
 
         safeInitCamera();
         initGPS();
+
+        // Prevent double submit
+        document.getElementById('visitForm').addEventListener('submit', function() {
+            document.getElementById('btn-submit').disabled = true;
+            document.getElementById('btn-submit').textContent = 'Menyimpan...';
+        });
     </script>
 @endsection

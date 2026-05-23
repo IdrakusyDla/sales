@@ -30,6 +30,14 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, $request) {
+            // Kalau token expired saat logout, langsung logout saja
+            if ($request->is('logout')) {
+                auth()->logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                return redirect('/');
+            }
+
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Sesi telah berakhir. Silakan refresh halaman.'], 419);
             }

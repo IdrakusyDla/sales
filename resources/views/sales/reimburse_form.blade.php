@@ -274,7 +274,7 @@
             let stream;
             let photoTaken = false;
             let facingMode = 'environment';
-            const typeSelect = document.querySelector('select[name="type"]');
+            const typeRadios = document.querySelectorAll('input[name="type"]');
             const autoReceiptSection = document.getElementById('auto-receipt-section');
             const parkingDetailsSection = document.getElementById('parking-details-section');
             const generateReceiptCheckbox = document.getElementById('generate_receipt');
@@ -284,14 +284,16 @@
             const locationInput = document.querySelector('input[name="parking_location"]');
 
             // Event Listener untuk Jenis Pengeluaran
-            typeSelect.addEventListener('change', function () {
-                if (this.value === 'parking') {
-                    autoReceiptSection.classList.remove('hidden');
-                } else {
-                    autoReceiptSection.classList.add('hidden');
-                    generateReceiptCheckbox.checked = false;
-                    toggleReceiptMode();
-                }
+            typeRadios.forEach(radio => {
+                radio.addEventListener('change', function () {
+                    if (this.value === 'parking') {
+                        autoReceiptSection.classList.remove('hidden');
+                    } else {
+                        autoReceiptSection.classList.add('hidden');
+                        generateReceiptCheckbox.checked = false;
+                        toggleReceiptMode();
+                    }
+                });
             });
 
             // Event Listener untuk Checkbox Auto Receipt
@@ -394,6 +396,12 @@
             }
 
             safeInitCamera();
+
+            // Prevent double submit
+            document.getElementById('form-reimburse').addEventListener('submit', function() {
+                btnSubmit.disabled = true;
+                btnSubmit.textContent = 'Menyimpan...';
+            });
         </script>
     @endsection
 @endsection

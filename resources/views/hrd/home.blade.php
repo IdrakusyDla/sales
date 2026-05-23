@@ -310,5 +310,8 @@
             item.style.display = (dateMatch && typeMatch) ? '' : 'none';
         });
     }
+
+    // Jalankan filter saat halaman pertama kali dimuat
+    applyFilters();
 </script>
 @endsection

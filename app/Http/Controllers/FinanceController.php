@@ -214,7 +214,7 @@ class FinanceController extends Controller
                 'status' => $newStatus,
                 'rejection_note' => $request->rejection_note,
                 'rejection_type' => 'permanent',
-                'revision_count' => DB::raw('revision_count + 1'),
+                'revision_count' => $expense->revision_count + 1,
                 'revised_at' => now(),
             ]);
 

@@ -116,6 +116,20 @@
             </div>
         @elseif ($latestLog && !$latestLog->hasEnded())
             {{-- B. Jika Sedang Kerja (Belum Checkout) --}}
+            <div class="px-5 md:px-8 mb-3">
+                <a href="{{ route('sales.absen.toko') }}"
+                    class="block w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-2xl shadow-lg text-center font-bold hover:from-blue-600 hover:to-blue-700 transition transform active:scale-95">
+                    <div class="flex items-center justify-center gap-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        <span>Lapor Kunjungan</span>
+                    </div>
+                </a>
+            </div>
             @if (!$hasPendingVisits)
                 <div class="px-5 md:px-8 mb-6">
                     <a href="{{ route('sales.absen.keluar') }}"

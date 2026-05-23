@@ -154,7 +154,7 @@ class ReimburseApprovalController extends Controller
                     'status' => 'rejected_permanent',
                     'rejection_note' => $request->reason,
                     'rejection_type' => 'permanent',
-                    'revision_count' => DB::raw('revision_count + 1'),
+                    'revision_count' => $expense->revision_count + 1,
                     'revised_at' => now(),
                 ]);
 
@@ -177,7 +177,7 @@ class ReimburseApprovalController extends Controller
                     'status' => 'needs_revision_sales',
                     'rejection_note' => $request->reason,
                     'rejection_type' => 'revisi',
-                    'revision_count' => DB::raw('revision_count + 1'),
+                    'revision_count' => $expense->revision_count + 1,
                     'revised_at' => now(),
                 ]);
 
@@ -204,7 +204,7 @@ class ReimburseApprovalController extends Controller
                         'status' => 'needs_revision_spv',
                         'rejection_note' => $request->reason,
                         'rejection_type' => 'revisi',
-                        'revision_count' => DB::raw('revision_count + 1'),
+                        'revision_count' => $expense->revision_count + 1,
                         'revised_at' => now(),
                     ]);
 
@@ -224,7 +224,7 @@ class ReimburseApprovalController extends Controller
                         'status' => 'needs_revision_sales',
                         'rejection_note' => $request->reason,
                         'rejection_type' => 'revisi',
-                        'revision_count' => DB::raw('revision_count + 1'),
+                        'revision_count' => $expense->revision_count + 1,
                         'revised_at' => now(),
                     ]);
 

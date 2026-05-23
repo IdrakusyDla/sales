@@ -32,7 +32,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
 
         // 2. Fallback statis
         return match ($user->role) {
-            'sales', 'supervisor' => redirect()->route('sales.dashboard'),
+            'sales' => redirect()->route('sales.dashboard'),
+            'supervisor' => redirect()->route('supervisor.home'),
             'hrd' => redirect()->route('hrd.dashboard'),
             'finance' => redirect()->route('finance.dashboard'),
             'it' => redirect()->route('it.dashboard'),
@@ -79,6 +80,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     // ROUTE SUPERVISOR (Lihat Tim Sales)
     // ==========================================
     Route::middleware(['role:supervisor'])->group(function () {
+        Route::get('/supervisor/home', [SupervisorController::class, 'home'])->name('supervisor.home');
         Route::get('/supervisor/dashboard', [SupervisorController::class, 'dashboard'])->name('supervisor.dashboard');
         Route::get('/supervisor/sales/{id}', [SupervisorController::class, 'showSales'])->name('supervisor.show.sales');
 

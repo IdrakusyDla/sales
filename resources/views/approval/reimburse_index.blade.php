@@ -158,7 +158,7 @@
                             </div>
 
                             <form action="{{ route(auth()->user()->role . '.reimburse.reject', $expense->id) }}" method="POST"
-                                onsubmit="return confirm('Tolak reimburse ini?')">
+                                onsubmit="return showRejectConfirm(event, this)">
                                 @csrf
                                 <div class="space-y-3">
                                     {{-- Alasan Penolakan --}}
@@ -227,6 +227,25 @@
         @endif
     </div>
 
+    {{-- Confirm Reject Modal --}}
+    <div id="reject-confirm-modal" class="hidden modal-overlay fixed inset-0 z-[60] flex items-center justify-center bg-black/50" onclick="if(event.target===this) closeRejectConfirm()">
+        <div class="modal-box bg-white rounded-2xl shadow-xl w-[90%] max-w-sm overflow-hidden">
+            <div class="p-6 text-center">
+                <div class="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                </div>
+                <h3 class="text-lg font-bold text-gray-800 mb-2">Konfirmasi Penolakan</h3>
+                <p class="text-sm text-gray-500">Apakah Anda yakin ingin menolak reimburse ini?</p>
+            </div>
+            <div class="flex border-t border-gray-100">
+                <button type="button" onclick="closeRejectConfirm()"
+                    class="flex-1 py-3.5 text-sm font-bold text-gray-600 hover:bg-gray-50 transition">Batal</button>
+                <button type="button" onclick="confirmReject()"
+                    class="flex-1 py-3.5 text-sm font-bold text-white bg-red-600 hover:bg-red-700 transition">Ya, Tolak</button>
+            </div>
+        </div>
+    </div>
+
     {{-- Image Modal (hidden) --}}
     <div id="image-modal-overlay" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50" onclick="if(event.target.id==='image-modal-overlay') closeImageModal()">
         <div class="bg-white rounded-xl overflow-hidden max-w-4xl w-full mx-4" role="dialog" aria-modal="true">
@@ -241,6 +260,27 @@
 
     @section('scripts')
         <script>
+            // Reject confirmation modal
+            let pendingRejectForm = null;
+
+            function showRejectConfirm(e, form) {
+                e.preventDefault();
+                pendingRejectForm = form;
+                document.getElementById('reject-confirm-modal').classList.remove('hidden');
+                return false;
+            }
+
+            function confirmReject() {
+                if (pendingRejectForm) {
+                    pendingRejectForm.submit();
+                    pendingRejectForm = null;
+                }
+            }
+
+            function closeRejectConfirm() {
+                document.getElementById('reject-confirm-modal').classList.add('hidden');
+                pendingRejectForm = null;
+            }
             // Modal image viewer
             function openImageModal(url) {
                 var overlay = document.getElementById('image-modal-overlay');

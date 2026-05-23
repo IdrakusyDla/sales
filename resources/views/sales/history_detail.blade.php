@@ -283,194 +283,196 @@
 
         {{-- TAB CONTENT: ABSENSI --}}
         <div id="content-absensi" class="tab-content hidden">
-            {{-- ABSEN MASUK --}}
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-4">
-                <h2 class="font-bold text-lg mb-4 flex items-center gap-2">
-                    <span
-                        class="bg-green-100 text-green-600 w-8 h-8 rounded-full flex items-center justify-center text-sm">✓</span>
-                    Absen Masuk
-                </h2>
-
-                @if($dailyLog->hasStarted())
-                    <div class="space-y-4">
-                        {{-- Foto Selfie --}}
-                        @if($dailyLog->start_photo)
-                            <div>
-                                <p class="text-xs font-bold text-gray-600 mb-2">Foto Selfie</p>
-                                <button type="button"
-                                    onclick="openImageModal('{{ route('files.daily.photo', [$dailyLog->id, 'start_photo']) }}')"
-                                    class="block w-full p-0 bg-transparent border-0 focus:outline-none">
-                                    <img src="{{ route('files.daily.photo', [$dailyLog->id, 'start_photo']) }}"
-                                        alt="Foto Absen Masuk" class="w-full rounded-xl border border-gray-200">
-                                </button>
-                            </div>
-                        @endif
-
-                        {{-- Foto Odometer --}}
-                        @if($dailyLog->start_odo_photo)
-                            <div>
-                                <p class="text-xs font-bold text-gray-600 mb-2">Foto Odometer Awal</p>
-                                <button type="button"
-                                    onclick="openImageModal('{{ route('files.daily.photo', [$dailyLog->id, 'start_odo_photo']) }}')"
-                                    class="block w-full p-0 bg-transparent border-0 focus:outline-none">
-                                    <img src="{{ route('files.daily.photo', [$dailyLog->id, 'start_odo_photo']) }}"
-                                        alt="Foto Odometer Awal" class="w-full rounded-xl border border-gray-200">
-                                </button>
-                            </div>
-                        @endif
-
-                        {{-- Info Odometer --}}
-                        @if($dailyLog->start_odo_value)
-                            <div class="bg-blue-50 rounded-xl p-3">
-                                <p class="text-xs text-gray-600 mb-1">Odometer Awal</p>
-                                <p class="text-lg font-bold text-blue-600">{{ number_format($dailyLog->start_odo_value, 2) }} KM</p>
-                            </div>
-                        @endif
-
-                        {{-- Lokasi --}}
-                        @if($dailyLog->lat && $dailyLog->long)
-                            <div>
-                                <p class="text-xs font-bold text-gray-600 mb-2">Lokasi Absen Masuk</p>
-                                <div class="bg-gray-50 rounded-xl p-3 border border-gray-200 mb-2">
-                                    <p class="text-xs text-gray-500 mb-2">{{ $dailyLog->lat }}, {{ $dailyLog->long }}</p>
-                                    <iframe
-                                        src="https://www.google.com/maps?q={{ $dailyLog->lat }},{{ $dailyLog->long }}&output=embed&zoom=15"
-                                        width="100%" height="200" style="border:0; border-radius: 8px;" allowfullscreen=""
-                                        loading="lazy" referrerpolicy="no-referrer-when-downgrade">
-                                    </iframe>
-                                </div>
-                                <a href="https://www.google.com/maps?q={{ $dailyLog->lat }},{{ $dailyLog->long }}" target="_blank"
-                                    class="flex items-center gap-2 text-blue-600 text-xs hover:text-blue-700">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                                    </svg>
-                                    Buka di Google Maps
-                                </a>
-                            </div>
-                        @endif
-                    </div>
-                @else
-                    <p class="text-sm text-gray-500">Belum absen masuk</p>
-                @endif
-            </div>
-
-            {{-- ABSEN KELUAR --}}
-            @if($dailyLog->hasEnded())
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-24">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-24">
+                {{-- ABSEN MASUK --}}
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
                     <h2 class="font-bold text-lg mb-4 flex items-center gap-2">
                         <span
-                            class="bg-red-100 text-red-600 w-8 h-8 rounded-full flex items-center justify-center text-sm">→</span>
-                        Absen Keluar
+                            class="bg-green-100 text-green-600 w-8 h-8 rounded-full flex items-center justify-center text-sm">✓</span>
+                        Absen Masuk
                     </h2>
 
-                    <div class="space-y-4">
-                        {{-- Foto Selfie --}}
-                        @if($dailyLog->end_photo)
-                            <div>
-                                <p class="text-xs font-bold text-gray-600 mb-2">Foto Selfie</p>
-                                <button type="button"
-                                    onclick="openImageModal('{{ route('files.daily.photo', [$dailyLog->id, 'end_photo']) }}')"
-                                    class="block w-full p-0 bg-transparent border-0 focus:outline-none">
-                                    <img src="{{ route('files.daily.photo', [$dailyLog->id, 'end_photo']) }}"
-                                        alt="Foto Absen Keluar" class="w-full rounded-xl border border-gray-200">
-                                </button>
-                            </div>
-                        @endif
-
-                        {{-- Foto Odometer --}}
-                        @if($dailyLog->end_odo_photo)
-                            <div>
-                                <p class="text-xs font-bold text-gray-600 mb-2">Foto Odometer Akhir</p>
-                                <button type="button"
-                                    onclick="openImageModal('{{ route('files.daily.photo', [$dailyLog->id, 'end_odo_photo']) }}')"
-                                    class="block w-full p-0 bg-transparent border-0 focus:outline-none">
-                                    <img src="{{ route('files.daily.photo', [$dailyLog->id, 'end_odo_photo']) }}"
-                                        alt="Foto Odometer Akhir" class="w-full rounded-xl border border-gray-200">
-                                </button>
-                            </div>
-                        @endif
-
-                        {{-- Info Odometer & Total KM --}}
-                        @if($dailyLog->end_odo_value)
-                            <div class="bg-blue-50 rounded-xl p-3 space-y-2">
-                                <div class="flex justify-between">
-                                    <span class="text-xs text-gray-600">Odometer Akhir:</span>
-                                    <span class="text-sm font-bold text-blue-600">{{ number_format($dailyLog->end_odo_value, 2) }}
-                                        KM</span>
+                    @if($dailyLog->hasStarted())
+                        <div class="space-y-4">
+                            {{-- Foto Selfie --}}
+                            @if($dailyLog->start_photo)
+                                <div>
+                                    <p class="text-xs font-bold text-gray-600 mb-2">Foto Selfie</p>
+                                    <button type="button"
+                                        onclick="openImageModal('{{ route('files.daily.photo', [$dailyLog->id, 'start_photo']) }}')"
+                                        class="block w-full p-0 bg-transparent border-0 focus:outline-none">
+                                        <img src="{{ route('files.daily.photo', [$dailyLog->id, 'start_photo']) }}"
+                                            alt="Foto Absen Masuk" class="w-full rounded-xl border border-gray-200">
+                                    </button>
                                 </div>
-                                @if($dailyLog->total_km > 0)
-                                    <div class="flex justify-between pt-2 border-t border-blue-200">
-                                        <span class="text-xs font-bold text-gray-700">Total KM:</span>
-                                        <span class="text-lg font-bold text-blue-600">{{ number_format($dailyLog->total_km, 2) }}
+                            @endif
+
+                            {{-- Foto Odometer --}}
+                            @if($dailyLog->start_odo_photo)
+                                <div>
+                                    <p class="text-xs font-bold text-gray-600 mb-2">Foto Odometer Awal</p>
+                                    <button type="button"
+                                        onclick="openImageModal('{{ route('files.daily.photo', [$dailyLog->id, 'start_odo_photo']) }}')"
+                                        class="block w-full p-0 bg-transparent border-0 focus:outline-none">
+                                        <img src="{{ route('files.daily.photo', [$dailyLog->id, 'start_odo_photo']) }}"
+                                            alt="Foto Odometer Awal" class="w-full rounded-xl border border-gray-200">
+                                    </button>
+                                </div>
+                            @endif
+
+                            {{-- Info Odometer --}}
+                            @if($dailyLog->start_odo_value)
+                                <div class="bg-blue-50 rounded-xl p-3">
+                                    <p class="text-xs text-gray-600 mb-1">Odometer Awal</p>
+                                    <p class="text-lg font-bold text-blue-600">{{ number_format($dailyLog->start_odo_value, 2) }} KM</p>
+                                </div>
+                            @endif
+
+                            {{-- Lokasi --}}
+                            @if($dailyLog->lat && $dailyLog->long)
+                                <div>
+                                    <p class="text-xs font-bold text-gray-600 mb-2">Lokasi Absen Masuk</p>
+                                    <div class="bg-gray-50 rounded-xl p-3 border border-gray-200 mb-2">
+                                        <p class="text-xs text-gray-500 mb-2">{{ $dailyLog->lat }}, {{ $dailyLog->long }}</p>
+                                        <iframe
+                                            src="https://www.google.com/maps?q={{ $dailyLog->lat }},{{ $dailyLog->long }}&output=embed&zoom=15"
+                                            width="100%" height="200" style="border:0; border-radius: 8px;" allowfullscreen=""
+                                            loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+                                        </iframe>
+                                    </div>
+                                    <a href="https://www.google.com/maps?q={{ $dailyLog->lat }},{{ $dailyLog->long }}" target="_blank"
+                                        class="flex items-center gap-2 text-blue-600 text-xs hover:text-blue-700">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                        </svg>
+                                        Buka di Google Maps
+                                    </a>
+                                </div>
+                            @endif
+                        </div>
+                    @else
+                        <p class="text-sm text-gray-500">Belum absen masuk</p>
+                    @endif
+                </div>
+
+                {{-- ABSEN KELUAR --}}
+                @if($dailyLog->hasEnded())
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+                        <h2 class="font-bold text-lg mb-4 flex items-center gap-2">
+                            <span
+                                class="bg-red-100 text-red-600 w-8 h-8 rounded-full flex items-center justify-center text-sm">→</span>
+                            Absen Keluar
+                        </h2>
+
+                        <div class="space-y-4">
+                            {{-- Foto Selfie --}}
+                            @if($dailyLog->end_photo)
+                                <div>
+                                    <p class="text-xs font-bold text-gray-600 mb-2">Foto Selfie</p>
+                                    <button type="button"
+                                        onclick="openImageModal('{{ route('files.daily.photo', [$dailyLog->id, 'end_photo']) }}')"
+                                        class="block w-full p-0 bg-transparent border-0 focus:outline-none">
+                                        <img src="{{ route('files.daily.photo', [$dailyLog->id, 'end_photo']) }}"
+                                            alt="Foto Absen Keluar" class="w-full rounded-xl border border-gray-200">
+                                    </button>
+                                </div>
+                            @endif
+
+                            {{-- Foto Odometer --}}
+                            @if($dailyLog->end_odo_photo)
+                                <div>
+                                    <p class="text-xs font-bold text-gray-600 mb-2">Foto Odometer Akhir</p>
+                                    <button type="button"
+                                        onclick="openImageModal('{{ route('files.daily.photo', [$dailyLog->id, 'end_odo_photo']) }}')"
+                                        class="block w-full p-0 bg-transparent border-0 focus:outline-none">
+                                        <img src="{{ route('files.daily.photo', [$dailyLog->id, 'end_odo_photo']) }}"
+                                            alt="Foto Odometer Akhir" class="w-full rounded-xl border border-gray-200">
+                                    </button>
+                                </div>
+                            @endif
+
+                            {{-- Info Odometer & Total KM --}}
+                            @if($dailyLog->end_odo_value)
+                                <div class="bg-blue-50 rounded-xl p-3 space-y-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-xs text-gray-600">Odometer Akhir:</span>
+                                        <span class="text-sm font-bold text-blue-600">{{ number_format($dailyLog->end_odo_value, 2) }}
                                             KM</span>
                                     </div>
-                                @endif
-                            </div>
-                        @endif
-
-                        {{-- Lokasi --}}
-                        @if($dailyLog->end_lat && $dailyLog->end_long)
-                            <div>
-                                <p class="text-xs font-bold text-gray-600 mb-2">Lokasi Absen Keluar</p>
-                                <div class="bg-gray-50 rounded-xl p-3 border border-gray-200 mb-2">
-                                    <p class="text-xs text-gray-500 mb-2">{{ $dailyLog->end_lat }}, {{ $dailyLog->end_long }}</p>
-                                    <iframe
-                                        src="https://www.google.com/maps?q={{ $dailyLog->end_lat }},{{ $dailyLog->end_long }}&output=embed&zoom=15"
-                                        width="100%" height="200" style="border:0; border-radius: 8px;" allowfullscreen=""
-                                        loading="lazy" referrerpolicy="no-referrer-when-downgrade">
-                                    </iframe>
-                                </div>
-                                <a href="https://www.google.com/maps?q={{ $dailyLog->end_lat }},{{ $dailyLog->end_long }}"
-                                    target="_blank" class="flex items-center gap-2 text-blue-600 text-xs hover:text-blue-700">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                                    </svg>
-                                    Buka di Google Maps
-                                </a>
-                            </div>
-                        @endif
-
-                        {{-- Tipe & Catatan --}}
-                        @if($dailyLog->end_type)
-                            <div>
-                                <p class="text-xs font-bold text-gray-600 mb-1">Tipe Keluar</p>
-                                <p class="text-sm text-gray-800 flex items-center gap-2">
-                                    @if($dailyLog->end_type === 'home')
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
-                                            </path>
-                                        </svg> Pulang ke Rumah
-                                    @elseif($dailyLog->end_type === 'last_store')
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
-                                            </path>
-                                        </svg> Dari Toko Terakhir
-                                    @else
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
-                                            </path>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                        </svg> Lokasi Lain
+                                    @if($dailyLog->total_km > 0)
+                                        <div class="flex justify-between pt-2 border-t border-blue-200">
+                                            <span class="text-xs font-bold text-gray-700">Total KM:</span>
+                                            <span class="text-lg font-bold text-blue-600">{{ number_format($dailyLog->total_km, 2) }}
+                                                KM</span>
+                                        </div>
                                     @endif
-                                </p>
-                            </div>
-                        @endif
+                                </div>
+                            @endif
 
-                        @if($dailyLog->end_notes)
-                            <div>
-                                <p class="text-xs font-bold text-gray-600 mb-1">Catatan</p>
-                                <p class="text-sm text-gray-800 bg-gray-50 rounded-xl p-3">{{ $dailyLog->end_notes }}</p>
-                            </div>
-                        @endif
+                            {{-- Lokasi --}}
+                            @if($dailyLog->end_lat && $dailyLog->end_long)
+                                <div>
+                                    <p class="text-xs font-bold text-gray-600 mb-2">Lokasi Absen Keluar</p>
+                                    <div class="bg-gray-50 rounded-xl p-3 border border-gray-200 mb-2">
+                                        <p class="text-xs text-gray-500 mb-2">{{ $dailyLog->end_lat }}, {{ $dailyLog->end_long }}</p>
+                                        <iframe
+                                            src="https://www.google.com/maps?q={{ $dailyLog->end_lat }},{{ $dailyLog->end_long }}&output=embed&zoom=15"
+                                            width="100%" height="200" style="border:0; border-radius: 8px;" allowfullscreen=""
+                                            loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+                                        </iframe>
+                                    </div>
+                                    <a href="https://www.google.com/maps?q={{ $dailyLog->end_lat }},{{ $dailyLog->end_long }}"
+                                        target="_blank" class="flex items-center gap-2 text-blue-600 text-xs hover:text-blue-700">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                        </svg>
+                                        Buka di Google Maps
+                                    </a>
+                                </div>
+                            @endif
+
+                            {{-- Tipe & Catatan --}}
+                            @if($dailyLog->end_type)
+                                <div>
+                                    <p class="text-xs font-bold text-gray-600 mb-1">Tipe Keluar</p>
+                                    <p class="text-sm text-gray-800 flex items-center gap-2">
+                                        @if($dailyLog->end_type === 'home')
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
+                                                </path>
+                                            </svg> Pulang ke Rumah
+                                        @elseif($dailyLog->end_type === 'last_store')
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                                                </path>
+                                            </svg> Dari Toko Terakhir
+                                        @else
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
+                                                </path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            </svg> Lokasi Lain
+                                        @endif
+                                    </p>
+                                </div>
+                            @endif
+
+                            @if($dailyLog->end_notes)
+                                <div>
+                                    <p class="text-xs font-bold text-gray-600 mb-1">Catatan</p>
+                                    <p class="text-sm text-gray-800 bg-gray-50 rounded-xl p-3">{{ $dailyLog->end_notes }}</p>
+                                </div>
+                            @endif
+                        </div>
                     </div>
-                </div>
-            @endif
+                @endif
+            </div>
         </div>
 
         {{-- TAB CONTENT: KUNJUNGAN --}}
@@ -490,7 +492,7 @@
                         Kunjungan ({{ $dailyLog->visits->count() }})
                     </h2>
 
-                    <div class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         @foreach($dailyLog->visits as $visit)
                             <div
                                 class="border border-gray-200 rounded-xl p-4 {{ $visit->status === 'completed' ? 'bg-green-50' : ($visit->status === 'failed' ? 'bg-red-50' : 'bg-yellow-50') }}">
@@ -542,11 +544,11 @@
                                 @if($visit->lat && $visit->long)
                                     <div class="mb-3">
                                         <p class="text-xs font-bold text-gray-600 mb-2">Lokasi Kunjungan</p>
-                                        <div class="bg-white rounded-xl p-2 border border-gray-200 mb-2">
+                                        <div class="bg-gray-50 rounded-xl p-3 border border-gray-200 mb-2">
                                             <p class="text-xs text-gray-500 mb-2">{{ $visit->lat }}, {{ $visit->long }}</p>
                                             <iframe
                                                 src="https://www.google.com/maps?q={{ $visit->lat }},{{ $visit->long }}&output=embed&zoom=15"
-                                                width="100%" height="150" style="border:0; border-radius: 8px;" allowfullscreen=""
+                                                width="100%" height="200" style="border:0; border-radius: 8px;" allowfullscreen=""
                                                 loading="lazy" referrerpolicy="no-referrer-when-downgrade">
                                             </iframe>
                                         </div>
@@ -937,7 +939,7 @@
                             </div>
 
                             {{-- TOMBOL TAMBAH BIAYA TAMBAHAN --}}
-                            @if(\Carbon\Carbon::today()->lte(\App\Models\Expense::calculateDeadline($dailyLog->date)) && Auth::user()->role === 'sales')
+                            @if(\Carbon\Carbon::today()->lte(\App\Models\Expense::calculateDeadline($dailyLog->date)) && in_array(Auth::user()->role, ['sales', 'supervisor']))
                                 <a href="{{ route('sales.reimburse.form', $dailyLog->id) }}"
                                     class="block w-full bg-green-600 text-white py-4 rounded-xl font-bold text-center mt-4 shadow-lg hover:bg-green-700 transition">
                                     <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1004,6 +1006,7 @@
             document.getElementById('tab-btn-' + tab).className =
                 "flex-1 py-2 text-xs font-bold rounded-lg bg-blue-600 text-white shadow-sm transition-all";
         }
+
     </script>
 @endsection
 

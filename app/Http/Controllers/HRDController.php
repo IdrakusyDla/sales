@@ -53,7 +53,7 @@ class HRDController extends Controller
                     'time' => $log->start_time,
                     'date' => $log->date,
                     'meta' => $log,
-                    'sort_time' => $log->start_time,
+                    'sort_time' => $log->date . ' ' . $log->start_time,
                 ]);
             }
             if ($log->end_time) {
@@ -63,7 +63,7 @@ class HRDController extends Controller
                     'time' => $log->end_time,
                     'date' => $log->date,
                     'meta' => $log,
-                    'sort_time' => $log->end_time,
+                    'sort_time' => $log->date . ' ' . $log->end_time,
                 ]);
             }
         }
@@ -75,7 +75,7 @@ class HRDController extends Controller
                 'time' => $visit->time,
                 'date' => $visit->dailyLog->date,
                 'meta' => $visit,
-                'sort_time' => $visit->time,
+                'sort_time' => $visit->dailyLog->date . ' ' . $visit->time,
             ]);
         }
 

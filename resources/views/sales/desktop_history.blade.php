@@ -34,8 +34,6 @@
                 <div class="relative bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition h-full flex flex-col justify-between group">
                     <a href="{{ route('sales.history.detail', $log->id) }}" class="absolute inset-0 z-10 rounded-2xl"></a>
                     <div class="relative z-20 pointer-events-none">
-                        {{-- Make sure content that shouldn't be clicked doesn't block the link, EXCEPT for the buttons below --}}
-                        <div class="pointer-events-auto">
                         {{-- HEADER TANGGAL --}}
                         <div class="mb-3 pb-3 border-b border-gray-100">
                             <div class="flex justify-between items-start mb-2">
@@ -140,8 +138,6 @@
                                 </div>
                             @endforeach
                         </div>
-                    </div>
-
                     </div>
                     <div class="pointer-events-auto">
                         {{-- REIMBURSE --}}
