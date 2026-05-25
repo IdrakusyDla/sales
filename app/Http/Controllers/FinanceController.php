@@ -69,7 +69,7 @@ class FinanceController extends Controller
     public function reimbursementApproval(Request $request)
     {
         // Query: expenses yang statusnya pending_finance
-        $query = Expense::with(['user', 'dailyLog', 'histories'])
+        $query = Expense::with(['user', 'dailyLog.visits', 'histories'])
             ->where('status', 'pending_finance')
             ->orderBy('date', 'desc');
 
@@ -191,7 +191,8 @@ class FinanceController extends Controller
     public function rejectReimburse(Request $request, $id)
     {
         $request->validate([
-            'rejection_note' => 'required|string',
+            'rejection_note' => 'required|string|min:5',
+            'rejection_type' => 'required|in:revisi,permanent',
         ]);
 
         $expense = Expense::findOrFail($id);
@@ -203,17 +204,20 @@ class FinanceController extends Controller
 
         DB::beginTransaction();
         try {
-            // Tentukan status reject
-            // Jika dari Supervisor, return ke Supervisor
-            // Jika dari Sales, return ke Sales
-            $newStatus = $expense->isFromSupervisor()
-                ? 'needs_revision_spv'
-                : 'needs_revision_sales';
+            if ($request->rejection_type === 'permanent') {
+                $newStatus = 'rejected_permanent';
+                $notes = 'Ditolak permanen oleh Finance: ' . $request->rejection_note;
+            } else {
+                $newStatus = $expense->isFromSupervisor()
+                    ? 'needs_revision_spv'
+                    : 'needs_revision_sales';
+                $notes = 'Perlu revisi - Finance: ' . $request->rejection_note;
+            }
 
             $expense->update([
                 'status' => $newStatus,
                 'rejection_note' => $request->rejection_note,
-                'rejection_type' => 'permanent',
+                'rejection_type' => $request->rejection_type,
                 'revision_count' => $expense->revision_count + 1,
                 'revised_at' => now(),
             ]);
@@ -223,11 +227,14 @@ class FinanceController extends Controller
                 'expense_id' => $expense->id,
                 'status' => $newStatus,
                 'changed_by' => auth()->id(),
-                'notes' => 'Ditolak oleh Finance: ' . $request->rejection_note,
+                'notes' => $notes,
             ]);
 
             DB::commit();
-            return back()->with('success', 'Reimburse berhasil ditolak. User telah diberitahu.');
+            $message = $request->rejection_type === 'permanent' 
+                ? 'Reimburse berhasil ditolak permanen.' 
+                : 'Reimburse berhasil dikembalikan untuk direvisi.';
+            return back()->with('success', $message);
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withErrors(['msg' => 'Gagal reject: ' . $e->getMessage()]);

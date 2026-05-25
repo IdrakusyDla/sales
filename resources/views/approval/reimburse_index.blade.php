@@ -78,7 +78,15 @@
                                     <h3 class="font-bold text-gray-800">{{ $expense->user->name }}
                                         <span class="text-xs text-gray-500">({{ ucfirst($expense->user->role) }})</span>
                                     </h3>
-                                    <p class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($expense->date)->format('d M Y') }}</p>
+                                    <div class="space-y-0.5 mt-1">
+                                        <p class="text-xs text-blue-600 font-bold flex items-center gap-1">
+                                            <svg class="w-3.5 h-3.5 inline text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                            Kegiatan: {{ \Carbon\Carbon::parse($expense->date)->format('d M Y') }}
+                                        </p>
+                                        <p class="text-[10px] text-gray-400">
+                                            Diajukan: {{ \Carbon\Carbon::parse($expense->created_at)->format('d M Y H:i') }}
+                                        </p>
+                                    </div>
                                 </div>
                                 <span class="bg-yellow-100 text-yellow-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase">
                                     @if(auth()->user()->isSupervisor())
@@ -122,6 +130,27 @@
                                         <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg> Lihat Struk/Bukti
                                     </button>
                                 @endif
+
+                                {{-- Daftar Kunjungan --}}
+                                @if($expense->dailyLog && $expense->dailyLog->visits->count() > 0)
+                                    <div class="mt-3 pt-2 border-t border-gray-200/60">
+                                        <p class="text-[10px] font-bold text-gray-400 uppercase mb-1.5 tracking-wider">Aktivitas Kunjungan Toko:</p>
+                                        <div class="flex flex-wrap gap-1.5">
+                                            @foreach($expense->dailyLog->visits as $visit)
+                                                <span class="text-[10px] px-2 py-0.5 rounded-full font-medium bg-blue-50 text-blue-700 border border-blue-100 flex items-center gap-1">
+                                                    @if($visit->status === 'completed')
+                                                        <span class="text-green-500 font-bold">✓</span>
+                                                    @elseif($visit->status === 'failed')
+                                                        <span class="text-red-500 font-bold">✗</span>
+                                                    @else
+                                                        <span class="text-yellow-500 font-bold">?</span>
+                                                    @endif
+                                                    {{ $visit->client_name }}
+                                                </span>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
 
                             {{-- Revision Info (jika ada) --}}
@@ -158,7 +187,7 @@
                             </div>
 
                             <form action="{{ route(auth()->user()->role . '.reimburse.reject', $expense->id) }}" method="POST"
-                                onsubmit="return showRejectConfirm(event, this)">
+                                onsubmit="return showRejectConfirm(event, this)" class="card-form">
                                 @csrf
                                 <div class="space-y-3">
                                     {{-- Alasan Penolakan --}}
@@ -200,7 +229,7 @@
                                 </button>
                             </div>
 
-                            <form action="{{ route(auth()->user()->role . '.reimburse.approve', $expense->id) }}" method="POST">
+                            <form action="{{ route(auth()->user()->role . '.reimburse.approve', $expense->id) }}" method="POST" class="card-form">
                                 @csrf
                                 <p class="text-sm text-green-700 mb-3">Apakah Anda yakin ingin menyetujui reimburse ini?</p>
                                 <button type="submit"

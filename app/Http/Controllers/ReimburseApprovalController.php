@@ -17,7 +17,7 @@ class ReimburseApprovalController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $query = Expense::with(['dailyLog.user', 'user', 'histories']);
+        $query = Expense::with(['dailyLog.user', 'dailyLog.visits', 'user', 'histories']);
 
         // LOGIKA SPV: Hanya lihat milik sales bawahan yang statusnya 'pending_spv'
         if ($user->role === 'supervisor') {

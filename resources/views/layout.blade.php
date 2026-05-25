@@ -7,7 +7,7 @@
     <title>Sales App</title>
     <link rel="icon" href="{{ asset('logo.png?v=2') }}" type="image/png">
     <link rel="apple-touch-icon" href="{{ asset('logo.png?v=2') }}">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <link rel="manifest" href="{{ asset('manifest.json') }}">
     <meta name="theme-color" content="#2563eb">
     <style>
@@ -94,7 +94,7 @@
             }
 
             /* Forms: readable max width on desktop */
-            .desktop-main form {
+            .desktop-main form:not(.card-form) {
                 max-width: 720px;
             }
 

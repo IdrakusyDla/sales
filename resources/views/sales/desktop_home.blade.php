@@ -148,7 +148,7 @@
             {{-- REIMBURSE NOTIF --}}
             @php
                 $expensesNeedingRevision = \App\Models\Expense::where('user_id', $user->id)
-                    ->where('status', 'needs_revision_sales')
+                    ->whereIn('status', ['needs_revision_sales', 'needs_revision_spv'])
                     ->count();
             @endphp
             @if($expensesNeedingRevision > 0)

@@ -166,7 +166,7 @@
                                                 @if(!$expense->photo_receipt && $expense->isFuel())
                                                     <span class="text-orange-600 text-[10px]">(Belum ada struk)</span>
                                                 @endif
-                                                @if($expense->status === 'needs_revision_sales')
+                                                @if($expense->canRevise())
                                                     <span class="bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-1">REVISI</span>
                                                 @endif
                                             </span>

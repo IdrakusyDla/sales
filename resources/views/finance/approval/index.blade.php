@@ -80,7 +80,15 @@
                                     <h3 class="font-bold text-gray-800">{{ $expense->user->name }}
                                         <span class="text-xs text-gray-500">({{ ucfirst($expense->user->role) }})</span>
                                     </h3>
-                                    <p class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($expense->date)->format('d M Y') }}</p>
+                                    <div class="space-y-0.5 mt-1">
+                                        <p class="text-xs text-blue-600 font-bold flex items-center gap-1">
+                                            <svg class="w-3.5 h-3.5 inline text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z"></path></svg>
+                                            Kegiatan: {{ \Carbon\Carbon::parse($expense->date)->format('d M Y') }}
+                                        </p>
+                                        <p class="text-[10px] text-gray-400">
+                                            Diajukan: {{ \Carbon\Carbon::parse($expense->created_at)->format('d M Y H:i') }}
+                                        </p>
+                                    </div>
                                 </div>
                                 <span class="bg-yellow-100 text-yellow-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase">
                                     Menunggu Finance
@@ -123,6 +131,27 @@
                                         <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg> Lihat Struk/Bukti
                                     </a>
                                 @endif
+
+                                {{-- Daftar Kunjungan --}}
+                                @if($expense->dailyLog && $expense->dailyLog->visits->count() > 0)
+                                    <div class="mt-3 pt-2 border-t border-gray-200/60">
+                                        <p class="text-[10px] font-bold text-gray-400 uppercase mb-1.5 tracking-wider">Aktivitas Kunjungan Toko:</p>
+                                        <div class="flex flex-wrap gap-1.5">
+                                            @foreach($expense->dailyLog->visits as $visit)
+                                                <span class="text-[10px] px-2 py-0.5 rounded-full font-medium bg-blue-50 text-blue-700 border border-blue-100 flex items-center gap-1">
+                                                    @if($visit->status === 'completed')
+                                                        <span class="text-green-500 font-bold">✓</span>
+                                                    @elseif($visit->status === 'failed')
+                                                        <span class="text-red-500 font-bold">✗</span>
+                                                    @else
+                                                        <span class="text-yellow-500 font-bold">?</span>
+                                                    @endif
+                                                    {{ $visit->client_name }}
+                                                </span>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
 
                             {{-- Revision Info --}}
@@ -159,11 +188,27 @@
                             </div>
 
                             <form action="{{ route('finance.reimburse.reject', $expense->id) }}" method="POST"
-                                onsubmit="return showRejectConfirm(event, this)">
+                                onsubmit="return showRejectConfirm(event, this)" class="card-form">
                                 @csrf
                                 <div class="space-y-3">
                                     <input type="text" name="rejection_note" placeholder="Masukkan alasan penolakan..." required
                                         class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-red-300 focus:border-red-400">
+
+                                    {{-- Tipe Penolakan --}}
+                                    <div class="flex gap-2">
+                                        <label
+                                            class="flex-1 flex items-center gap-2 bg-yellow-50 border border-yellow-200 rounded-lg p-3 cursor-pointer hover:bg-yellow-100">
+                                            <input type="radio" name="rejection_type" value="revisi" required
+                                                class="text-yellow-600">
+                                            <span class="text-xs font-bold text-yellow-700"><svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Minta Revisi</span>
+                                        </label>
+                                        <label
+                                            class="flex-1 flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg p-3 cursor-pointer hover:bg-red-100">
+                                            <input type="radio" name="rejection_type" value="permanent" required
+                                                class="text-red-600">
+                                            <span class="text-xs font-bold text-red-700"><svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg> Tolak Permanen</span>
+                                        </label>
+                                    </div>
 
                                     <button type="submit"
                                         class="w-full bg-red-600 text-white py-3 rounded-xl font-bold text-sm hover:bg-red-700 transition">
@@ -184,7 +229,7 @@
                                 </button>
                             </div>
 
-                            <form action="{{ route('finance.reimburse.approve', $expense->id) }}" method="POST">
+                            <form action="{{ route('finance.reimburse.approve', $expense->id) }}" method="POST" class="card-form">
                                 @csrf
                                 <p class="text-sm text-green-700 mb-3">Apakah Anda yakin ingin menyetujui reimburse ini?</p>
                                 <input type="text" name="notes" placeholder="Catatan (opsional)..."

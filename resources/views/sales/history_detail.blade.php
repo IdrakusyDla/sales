@@ -805,8 +805,8 @@
                                         </div>
                                     @endif
 
-                                    {{-- FORM REVISI UNTUK SALES --}}
-                                    @if($expense->needsRevisionBySales() && Auth::user()->id === $expense->user_id)
+                                    {{-- FORM REVISI UNTUK SALES & SUPERVISOR --}}
+                                    @if(($expense->needsRevisionBySales() || $expense->needsRevisionBySPV()) && Auth::user()->id === $expense->user_id)
                                         <div class="mt-3 bg-orange-50 border-2 border-orange-300 rounded-xl p-4">
                                             <p class="text-sm font-bold text-orange-800 mb-3"><svg class="w-4 h-4 inline mr-1" fill="none"
                                                     stroke="currentColor" viewBox="0 0 24 24">
@@ -816,7 +816,7 @@
                                                 </svg> Lakukan Revisi</p>
 
                                             {{-- OPSI: Generate Struk Parkir jika tipe parkir --}}
-                                            @if($expense->type === 'parking')
+                                            @if($expense->type === 'parking' && $expense->needsRevisionBySales())
                                                 <div class="mb-3">
                                                     <label
                                                         class="flex items-center space-x-3 p-3 bg-blue-50 border border-blue-100 rounded-xl cursor-pointer">
@@ -842,7 +842,7 @@
                                                 </div>
                                             @endif
 
-                                            <form action="{{ route('sales.reimburse.revise', $expense->id) }}" method="POST"
+                                            <form action="{{ $expense->needsRevisionBySPV() ? route('supervisor.reimburse.revise', $expense->id) : route('sales.reimburse.revise', $expense->id) }}" method="POST"
                                                 id="revise-form-{{ $expense->id }}">
                                                 @csrf
                                                 <input type="hidden" name="photo_receipt" id="revise_photo_{{ $expense->id }}">

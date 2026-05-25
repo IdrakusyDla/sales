@@ -583,11 +583,16 @@ class SalesController extends Controller
             $expense->is_generated_receipt = false;
         }
 
+        // Tentukan status target setelah revisi:
+        // Jika sudah di-approve oleh HRD sebelumnya (berarti Finance yang meminta revisi), langsung ke Finance.
+        // Jika belum, kembalikan ke SPV.
+        $targetStatus = $expense->approved_by_hrd_at ? 'pending_finance' : 'pending_spv';
+
         // Update expense dengan data baru
         $expense->update([
             'photo_receipt' => $receiptPath,
             'note' => $request->note ?? $expense->note,
-            'status' => 'pending_spv', // Reset ke pending SPV
+            'status' => $targetStatus,
             'rejection_note' => null, // Clear rejection note
             'rejection_type' => null,
             'revised_at' => now(),
@@ -595,8 +600,9 @@ class SalesController extends Controller
             'is_generated_receipt' => $expense->is_generated_receipt,
         ]);
 
+        $approverLabel = $targetStatus === 'pending_finance' ? 'Finance' : 'SPV';
         return redirect()->route('sales.history.detail', $expense->daily_log_id)
-            ->with('success', 'Revisi berhasil dikirim! Menunggu persetujuan SPV.');
+            ->with('success', "Revisi berhasil dikirim! Menunggu persetujuan {$approverLabel}.");
     }
 
     // ==========================================

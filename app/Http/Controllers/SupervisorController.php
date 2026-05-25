@@ -143,18 +143,24 @@ class SupervisorController extends Controller
         // Upload foto struk baru
         $receiptPath = $this->saveBase64Image($request->photo_receipt, 'expenses');
 
-        // Update expense dengan data baru - SPV langsung ke Finance
+        // Tentukan status target setelah revisi:
+        // Jika sudah di-approve oleh HRD sebelumnya, berarti Finance yang meminta revisi, kembalikan ke Finance.
+        // Jika belum di-approve oleh HRD, berarti HRD yang meminta revisi, kembalikan ke HRD.
+        $targetStatus = $expense->approved_by_hrd_at ? 'pending_finance' : 'pending_hrd';
+
+        // Update expense dengan data baru
         $expense->update([
             'photo_receipt' => $receiptPath,
             'note' => $request->note ?? $expense->note,
-            'status' => 'pending_finance', // Langsung ke Finance karena SPV sudah revisi
+            'status' => $targetStatus,
             'rejection_note' => null,
             'rejection_type' => null,
             'revised_at' => now(),
             'revision_count' => $expense->revision_count + 1,
         ]);
 
-        return back()->with('success', 'Revisi berhasil dikirim! Menunggu persetujuan Finance.');
+        $approverLabel = $targetStatus === 'pending_finance' ? 'Finance' : 'HRD';
+        return back()->with('success', "Revisi berhasil dikirim! Menunggu persetujuan {$approverLabel}.");
     }
 
     /**
