@@ -664,7 +664,7 @@ class SalesController extends Controller
                     abort(403, 'Anda tidak memiliki akses untuk melihat detail ini.');
                 }
             }
-        } elseif (!in_array($user->role, ['hrd', 'it'])) {
+        } elseif (!in_array($user->role, ['hrd', 'it', 'finance'])) {
             abort(403, 'Anda tidak memiliki akses.');
         }
 

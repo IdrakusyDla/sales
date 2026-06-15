@@ -72,6 +72,15 @@
                         class="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-white rounded-full border-4 border-gray-300 shadow-lg flex items-center justify-center">
                         <div class="w-12 h-12 bg-blue-500 rounded-full"></div>
                     </button>
+                    {{-- Tombol ambil ulang foto --}}
+                    <button type="button" onclick="retakePicture()" id="btn-retake"
+                        class="hidden absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                            </path>
+                        </svg> Ambil Ulang
+                    </button>
                 </div>
                 <p id="photo-status" class="text-xs text-gray-500 mt-2"></p>
             </div>
@@ -153,13 +162,34 @@
             ctx.font = "bold 20px sans-serif";
             ctx.fillStyle = "white";
             ctx.fillText(new Date().toLocaleString('id-ID'), 20, canvas.height - 30);
-            
+
             document.getElementById('photo_data').value = canvas.toDataURL('image/png');
             video.classList.add('hidden');
             canvas.classList.remove('hidden');
             document.getElementById('btn-snap').classList.add('hidden');
-            document.getElementById('photo-status').innerHTML = '<svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Foto berhasil diambil';
+            document.getElementById('btn-switch').classList.add('hidden');
+            document.getElementById('btn-retake').classList.remove('hidden');
+            document.getElementById('photo-status').innerHTML = '<svg class="w-5 h-5 inline text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Foto berhasil diambil';
             photoTaken = true;
+
+            // Stop camera after photo taken
+            if (stream) stream.getTracks().forEach(t => t.stop());
+
+            checkSubmit();
+        }
+
+        function retakePicture() {
+            // Reset photo state
+            photoTaken = false;
+            document.getElementById('photo_data').value = '';
+            document.getElementById('canvas').classList.add('hidden');
+            document.getElementById('video').classList.remove('hidden');
+            document.getElementById('btn-snap').classList.remove('hidden');
+            document.getElementById('btn-switch').classList.remove('hidden');
+            document.getElementById('btn-retake').classList.add('hidden');
+            document.getElementById('photo-status').textContent = '';
+
+            initCamera();
             checkSubmit();
         }
 
@@ -276,7 +306,7 @@
             }
             isSubmitting = true;
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="inline-block animate-spin mr-2"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></span> Sedang diproses...';
+            submitBtn.innerHTML = '<svg class="w-5 h-5 inline animate-spin mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Sedang diproses...';
             submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
         });
 

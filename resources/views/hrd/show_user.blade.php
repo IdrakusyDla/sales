@@ -159,10 +159,8 @@
         {{-- LIST RIWAYAT --}}
         <div class="space-y-4 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4">
             @forelse($dailyLogs as $log)
-                <div class="relative bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition group h-full flex flex-col justify-between">
-                    <a href="{{ route('sales.history.detail', $log->id) }}" class="absolute inset-0 z-10 rounded-2xl"></a>
-                    <div class="relative z-20 pointer-events-none">
-                        <div class="pointer-events-auto">
+                <a href="{{ route('sales.history.detail', $log->id) }}" class="block">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition h-full flex flex-col justify-between">
                     <div class="mb-3 pb-3 border-b border-gray-100">
                         <div class="flex justify-between items-start mb-2">
                             <div class="flex-1">
@@ -267,10 +265,7 @@
                         @endforeach
                     </div>
 
-                        </div>
-                    </div>
-                    <div class="pointer-events-auto">
-                        {{-- REIMBURSE --}}
+                    {{-- REIMBURSE --}}
                     @if($log->expenses->count() > 0)
                         <div class="mt-3 pt-3 border-t border-gray-100">
                             <p class="text-xs font-bold text-gray-600 mb-2">Reimburse:</p>
@@ -308,14 +303,10 @@
                                     <span class="font-bold text-green-600">Rp {{ number_format($log->expenses->sum('amount'), 0, ',', '.') }}</span>
                                 </div>
                             </div>
-                            
-                            
                         </div>
-                    @elseif($log->hasEnded())
-                        
                     @endif
                 </div>
-                </div>
+                </a>
             @empty
                 <div class="text-center py-10">
                     <svg class="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>

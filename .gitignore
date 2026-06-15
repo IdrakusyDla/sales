@@ -17,18 +17,34 @@ Thumbs.db
 /.phpunit.cache
 /.vscode
 /.zed
+/.claude
 /auth.json
+
+# Dependencies
 /node_modules
+/vendor
+
+# Public assets
 /public/build
 /public/hot
 /public/storage
-/storage/*.key
-/storage/pail
-/vendor
+/public/css
+/public/js
+/public/mix-manifest.json
 
-# Ignore gambar dan file upload di storage, tapi tetap keep .gitignore
+# Storage - uploaded files (jangan ikut deploy!)
 /storage/app/public/attendance/*
 !/storage/app/public/attendance/.gitignore
+/storage/app/public/visits/*
+!/storage/app/public/visits/.gitignore
+/storage/app/public/odometer/*
+!/storage/app/public/odometer/.gitignore
+/storage/app/public/expenses/*
+!/storage/app/public/expenses/.gitignore
+
+# Storage - framework internal
+/storage/*.key
+/storage/pail
 /storage/framework/cache/*
 !/storage/framework/cache/.gitignore
 /storage/framework/sessions/*

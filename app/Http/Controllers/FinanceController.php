@@ -248,7 +248,7 @@ class FinanceController extends Controller
     /**
      * Lihat detail user (seperti Supervisor/HRD)
      */
-    public function showUser($id)
+    public function showUser(Request $request, $id)
     {
         $user = User::findOrFail($id);
 
@@ -257,13 +257,26 @@ class FinanceController extends Controller
             abort(403, 'Finance hanya bisa melihat data Sales dan Supervisor.');
         }
 
-        // Get daily logs
-        $dailyLogs = DailyLog::where('user_id', $id)
+        // Get daily logs with relations
+        $query = DailyLog::where('user_id', $id)
             ->with('visits', 'expenses')
-            ->orderBy('date', 'desc')
-            ->paginate(20);
+            ->orderBy('date', 'desc');
 
-        return view('finance.show_user', compact('user', 'dailyLogs'));
+        // Filter tanggal
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $query->whereBetween('date', [$request->start_date, $request->end_date]);
+        }
+
+        $dailyLogs = $query->paginate(20);
+
+        // Statistik
+        $stats = [
+            'total_absensi' => DailyLog::where('user_id', $id)->count(),
+            'total_visits' => Visit::whereHas('dailyLog', fn($q) => $q->where('user_id', $id))->count(),
+            'total_expenses' => Expense::where('user_id', $id)->sum('amount'),
+        ];
+
+        return view('finance.show_user', compact('user', 'dailyLogs', 'stats'));
     }
 
     /**

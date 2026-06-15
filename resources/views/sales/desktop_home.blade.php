@@ -200,9 +200,9 @@
                     </div>
                 @endif
             @elseif ($latestLog && $latestLog->hasEnded())
-                <a href="{{ route('sales.absen.masuk') }}" onclick="return confirm('Mulai sesi darurat/lembur?')" class="flex items-center justify-center gap-3 w-full bg-white text-blue-700 p-6 rounded-[2rem] border-2 border-blue-200 border-dashed hover:bg-blue-50 hover:border-blue-400 transition-all font-bold text-lg group shadow-sm">
-                    <svg class="w-7 h-7 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                    Kunjungan Tambahan
+                <a href="{{ route('sales.absen.masuk') }}" onclick="return confirm('Apakah Anda ingin memulai sesi baru (Lembur/Emergency)?')" class="flex items-center justify-center gap-3 w-full bg-white text-blue-700 p-6 rounded-[2rem] border-2 border-blue-200 border-dashed hover:bg-blue-50 hover:border-blue-400 transition-all font-bold text-lg group shadow-sm">
+                    <svg class="w-7 h-7 group-hover:rotate-180 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    Kunjungan Tambahan (Urgent)
                 </a>
             @endif
         </div>

@@ -7,8 +7,7 @@
     <title>Sales App</title>
     <link rel="icon" href="{{ asset('logo.png?v=2') }}" type="image/png">
     <link rel="apple-touch-icon" href="{{ asset('logo.png?v=2') }}">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <meta name="theme-color" content="#2563eb">
     <style>
         /* Agar font mirip aplikasi */
@@ -130,15 +129,6 @@
             animation: scaleIn 0.2s ease-out;
         }
     </style>
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(reg => console.log('SW registered!', reg))
-                    .catch(err => console.log('SW registration failed', err));
-            });
-        }
-    </script>
 </head>
 
 <body class="bg-gray-100 text-gray-800">

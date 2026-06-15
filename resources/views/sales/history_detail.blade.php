@@ -14,6 +14,8 @@
                     }
                 } elseif (in_array(Auth::user()->role, ['hrd', 'it'])) {
                     $backUrl = route('hrd.show.user', $dailyLog->user_id);
+                } elseif (Auth::user()->role === 'finance') {
+                    $backUrl = route('finance.show.user', $dailyLog->user_id);
                 }
             @endphp
             <a href="{{ $backUrl }}" class="text-gray-600">
@@ -191,8 +193,8 @@
                         </div>
                     @endif
 
-                    {{-- Verifikasi Jarak (HRD/IT/SPV) --}}
-                    @if(in_array(Auth::user()->role, ['hrd', 'it', 'supervisor']) && $dailyLog->lat && $dailyLog->end_lat)
+                    {{-- Verifikasi Jarak (HRD/IT/SPV/Finance) --}}
+                    @if(in_array(Auth::user()->role, ['hrd', 'it', 'supervisor', 'finance']) && $dailyLog->lat && $dailyLog->end_lat)
                         <div class="bg-indigo-50 rounded-xl p-4 border border-indigo-200">
                             <h3 class="text-sm font-bold text-indigo-800 mb-3">Estimasi Jarak (Sistem)</h3>
 
