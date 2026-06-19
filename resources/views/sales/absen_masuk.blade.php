@@ -128,7 +128,7 @@
                         <p class="text-sm text-gray-500">Sebelum berangkat kerja, ambil foto selfie dan foto odometer kendaraan</p>
                     </div>
 
-                    <form action="{{ route('sales.absen.masuk.store') }}" method="POST" id="form-absen-masuk" class="px-8 py-8">
+                    <form action="{{ route('sales.absen.masuk.store') }}" method="POST" id="form-absen-masuk" class="px-8 py-8 card-form" style="max-width: none !important;">
                         @csrf
                         <input type="hidden" name="lat" id="lat">
                         <input type="hidden" name="long" id="long">
