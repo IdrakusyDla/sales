@@ -31,7 +31,7 @@
         {{-- LIST RIWAYAT GRID 3 KOLOM --}}
         <div class="grid grid-cols-3 gap-6">
             @forelse($dailyLogs as $log)
-                <div class="relative bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition h-full flex flex-col justify-between group">
+                <div class="relative bg-white rounded-[2rem] shadow-sm border border-gray-100 p-4 hover:shadow-md transition h-full flex flex-col justify-between group">
                     <a href="{{ route('sales.history.detail', $log->id) }}" class="absolute inset-0 z-10 rounded-2xl"></a>
                     <div class="relative z-20 pointer-events-none">
                         {{-- HEADER TANGGAL --}}
@@ -199,7 +199,7 @@
                     </div>
                 </div>
             @empty
-                <div class="col-span-3 text-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm opacity-60">
+                <div class="col-span-3 text-center py-20 bg-white rounded-[2rem] border border-gray-100 shadow-sm opacity-60">
                     <div class="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
                         <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
                     </div>
