@@ -55,7 +55,34 @@ class SalesController extends Controller
 
         // Jika $lastLog ada dan hasEnded() == true, berarti ini absen kedua (Lembur/Emergency) -> ALLOWED
 
-        return view('sales.absen_masuk');
+        // Data untuk Information Cards
+        $plannedVisitsCount = 0; // Default, user belum absen masuk hari ini
+
+        // Cari log terakhir yang sudah masuk (untuk referensi)
+        $lastCompletedLog = DailyLog::where('user_id', $user->id)
+            ->where('date', Carbon::today())
+            ->whereNotNull('start_time')
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        if ($lastCompletedLog) {
+            // Hitung rencana kunjungan dari log terakhir
+            $plannedVisitsCount = $lastCompletedLog->visits()
+                ->where('is_planned', true)
+                ->count();
+        }
+
+        // Hitung pending reimburse (yang belum ada struk/belum lengkap)
+        $pendingReimburseCount = Expense::where('user_id', $user->id)
+            ->where('status', 'pending_spv')
+            ->whereNull('photo_receipt')
+            ->count();
+
+        return view('sales.absen_masuk', compact(
+            'user',
+            'plannedVisitsCount',
+            'pendingReimburseCount'
+        ));
     }
 
     public function storeAbsenMasuk(Request $request)
