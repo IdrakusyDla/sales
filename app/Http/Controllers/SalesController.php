@@ -277,7 +277,20 @@ class SalesController extends Controller
             return redirect()->route('dashboard')->with('error', 'Silakan selesaikan semua kunjungan terlebih dahulu sebelum absen keluar.');
         }
 
-        return view('sales.absen_keluar', ['todayLog' => $activeLog]); // Pass as 'todayLog' for view compatibility
+        // Hitung statistik kunjungan untuk Information Cards
+        $allVisits = $activeLog->visits;
+        $completedVisits = $allVisits->where('status', 'completed')->count();
+        $failedVisits = $allVisits->where('status', 'failed')->count();
+        $totalVisits = $allVisits->count();
+        $plannedVisits = $allVisits->where('is_planned', true)->count();
+
+        return view('sales.absen_keluar', [
+            'todayLog' => $activeLog,
+            'completedVisits' => $completedVisits,
+            'failedVisits' => $failedVisits,
+            'totalVisits' => $totalVisits,
+            'plannedVisits' => $plannedVisits,
+        ]);
     }
 
     public function storeAbsenKeluar(Request $request)
