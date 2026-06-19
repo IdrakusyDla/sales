@@ -1,10 +1,28 @@
 @extends('layout')
 @section('content')
-    <div class="px-5 md:hidden py-6 md:py-8">
-        <h1 class="text-2xl font-bold mb-2">Absen Masuk</h1>
-        <p class="text-sm text-gray-600 mb-6">Sebelum berangkat kerja, ambil foto selfie dan foto odometer kendaraan</p>
+    <div class="px-5 md:px-8 py-6 md:py-8 md:bg-slate-50/50 md:min-h-screen">
 
-        <form action="{{ route('sales.absen.masuk.store') }}" method="POST" id="form-absen-masuk">
+        {{-- HEADER DESKTOP --}}
+        <div class="hidden md:block mb-6">
+            <h1 class="text-xl font-extrabold text-gray-800 tracking-tight mb-1">Absen Masuk</h1>
+            <p class="text-sm text-gray-500">Sebelum berangkat kerja, ambil foto selfie dan foto odometer kendaraan</p>
+        </div>
+
+        {{-- HEADER MOBILE --}}
+        <div class="md:hidden mb-6">
+            <h1 class="text-2xl font-bold mb-2">Absen Masuk</h1>
+            <p class="text-sm text-gray-600">Sebelum berangkat kerja, ambil foto selfie dan foto odometer kendaraan</p>
+        </div>
+
+        <div class="md:grid md:grid-cols-12 md:gap-6">
+
+            {{-- ========================================== --}}
+            {{-- KOLOM KIRI: FORM UTAMA (9/12)             --}}
+            {{-- ========================================== --}}
+            <div class="md:col-span-9">
+                <div class="md:bg-white md:rounded-[2rem] md:shadow-sm md:border md:border-gray-100 md:overflow-hidden md:p-8">
+
+        <form action="{{ route('sales.absen.masuk.store') }}" method="POST" id="form-absen-masuk" class="card-form">
             @csrf
             <input type="hidden" name="lat" id="lat">
             <input type="hidden" name="long" id="long">
@@ -14,7 +32,7 @@
             {{-- 1. FOTO SELFIE --}}
             <div class="mb-6">
                 <label class="block text-sm font-bold text-gray-700 mb-2">Foto Selfie *</label>
-                <div class="relative w-full h-64 bg-black rounded-2xl overflow-hidden">
+                <div class="relative w-full h-64 md:h-80 bg-black rounded-2xl overflow-hidden md:mx-auto md:max-w-[569px]">
                     <video id="video-selfie" autoplay playsinline class="w-full h-full object-cover"></video>
                     <canvas id="canvas-selfie" class="hidden w-full h-full object-cover"></canvas>
                     {{-- Tombol switch kamera selfie --}}
@@ -47,7 +65,7 @@
             {{-- 2. FOTO ODOMETER --}}
             <div class="mb-6">
                 <label class="block text-sm font-bold text-gray-700 mb-2">Foto Odometer Kendaraan *</label>
-                <div class="relative w-full h-64 bg-black rounded-2xl overflow-hidden">
+                <div class="relative w-full h-64 md:h-80 bg-black rounded-2xl overflow-hidden md:mx-auto md:max-w-[569px]">
                     <video id="video-odometer" autoplay playsinline class="w-full h-full object-cover"></video>
                     <canvas id="canvas-odometer" class="hidden w-full h-full object-cover"></canvas>
                     {{-- Tombol switch kamera odometer --}}
@@ -110,135 +128,13 @@
                     disabled>Absen Masuk</button>
             </div>
         </form>
-    </div>
-
-    {{-- ========================================== --}}
-    {{-- TAMPILAN DESKTOP (>= 768px)                --}}
-    {{-- ========================================== --}}
-    <div class="hidden md:block min-h-screen bg-slate-50/50 px-8 py-8">
-        <div class="grid grid-cols-12 gap-6">
-
-            {{-- KOLOM KIRI: FORM UTAMA (9/12) --}}
-            <div class="col-span-9">
-                <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
-
-                    {{-- HEADER --}}
-                    <div class="px-8 pt-8 pb-6 border-b border-gray-100">
-                        <h1 class="text-xl font-extrabold text-gray-800 tracking-tight mb-1">Absen Masuk</h1>
-                        <p class="text-sm text-gray-500">Sebelum berangkat kerja, ambil foto selfie dan foto odometer kendaraan</p>
-                    </div>
-
-                    <form action="{{ route('sales.absen.masuk.store') }}" method="POST" id="form-absen-masuk" class="px-8 py-8 card-form" style="max-width: none !important;">
-                        @csrf
-                        <input type="hidden" name="lat" id="lat">
-                        <input type="hidden" name="long" id="long">
-                        <input type="hidden" name="photo" id="photo_data">
-                        <input type="hidden" name="odometer_photo" id="odometer_photo_data">
-
-                        {{-- 1. FOTO SELFIE --}}
-                        <div class="mb-8">
-                            <label class="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">Foto Selfie *</label>
-                            <div class="relative w-full h-80 bg-black rounded-2xl overflow-hidden">
-                                <video id="video-selfie" autoplay playsinline class="w-full h-full object-cover"></video>
-                                <canvas id="canvas-selfie" class="hidden w-full h-full object-cover"></canvas>
-                                {{-- Tombol switch kamera selfie --}}
-                                <button type="button" onclick="switchSelfieCamera()" id="btn-switch-selfie"
-                                    class="absolute top-4 right-4 bg-white/20 backdrop-blur p-2 rounded-full text-white">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
-                                        </path>
-                                    </svg>
-                                </button>
-                                {{-- Tombol ambil foto --}}
-                                <button type="button" onclick="takeSelfie()" id="btn-snap-selfie"
-                                    class="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-white rounded-full border-4 border-gray-300 shadow-lg flex items-center justify-center">
-                                    <div class="w-12 h-12 bg-blue-500 rounded-full"></div>
-                                </button>
-                                {{-- Tombol ambil ulang selfie --}}
-                                <button type="button" onclick="retakeSelfie()" id="btn-retake-selfie"
-                                    class="hidden absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg flex items-center gap-2">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
-                                        </path>
-                                    </svg> Ambil Ulang
-                                </button>
-                            </div>
-                            <p id="selfie-status" class="text-xs text-gray-500 mt-2"></p>
-                        </div>
-
-                        {{-- 2. FOTO ODOMETER --}}
-                        <div class="mb-8">
-                            <label class="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">Foto Odometer Kendaraan *</label>
-                            <div class="relative w-full h-80 bg-black rounded-2xl overflow-hidden">
-                                <video id="video-odometer" autoplay playsinline class="w-full h-full object-cover"></video>
-                                <canvas id="canvas-odometer" class="hidden w-full h-full object-cover"></canvas>
-                                {{-- Tombol switch kamera odometer --}}
-                                <button type="button" onclick="switchOdometerCamera()" id="btn-switch-odometer"
-                                    class="hidden absolute top-4 right-4 bg-white/20 backdrop-blur p-2 rounded-full text-white">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
-                                        </path>
-                                    </svg>
-                                </button>
-                                {{-- Tombol ambil foto --}}
-                                <button type="button" onclick="takeOdometer()" id="btn-snap-odometer"
-                                    class="hidden absolute bottom-4 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-white rounded-full border-4 border-gray-300 shadow-lg flex items-center justify-center">
-                                    <div class="w-12 h-12 bg-green-500 rounded-full"></div>
-                                </button>
-                                {{-- Tombol ambil ulang odometer --}}
-                                <button type="button" onclick="retakeOdometer()" id="btn-retake-odometer"
-                                    class="hidden absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg flex items-center gap-2">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
-                                        </path>
-                                    </svg> Ambil Ulang
-                                </button>
-                            </div>
-                            <p id="odometer-status" class="text-xs text-gray-500 mt-2"></p>
-                        </div>
-
-                        {{-- 3. INPUT NILAI ODOMETER --}}
-                        <div class="mb-8">
-                            <label class="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">Nilai Odometer (KM) *</label>
-                            <input type="number" name="odometer_value" id="odometer_value" step="0.01" min="0" required
-                                class="w-full border-gray-200 bg-gray-50 text-gray-800 rounded-xl p-4 text-lg font-bold focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
-                                placeholder="Contoh: 12345.67">
-                            <p class="text-xs text-gray-500 mt-2">Masukkan nilai odometer yang terlihat di foto</p>
-                        </div>
-
-                        {{-- 4. RENCANA KUNJUNGAN --}}
-                        <div class="mb-8">
-                            <label class="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">Rencana Kunjungan Hari Ini *</label>
-                            <div id="destinations-container" class="space-y-3">
-                                <div class="flex gap-3">
-                                    <input type="text" name="destinations[]" placeholder="Toko/Tujuan 1" required
-                                        class="flex-1 border-gray-200 bg-gray-50 text-gray-800 rounded-xl p-4 text-sm focus:ring-2 focus:ring-blue-500">
-                                </div>
-                            </div>
-                            <button type="button" onclick="addDestination()"
-                                class="text-blue-600 text-sm font-bold flex items-center gap-2 mt-4 hover:text-blue-700 transition-colors">
-                                <span class="text-lg">+</span> Tambah Tujuan Lain
-                            </button>
-                        </div>
-
-                        {{-- 5. TOMBOL SUBMIT --}}
-                        <div class="flex gap-4">
-                            <button type="button" onclick="resetForm()"
-                                class="flex-1 bg-gray-200 text-gray-700 py-4 rounded-xl font-bold text-sm hover:bg-gray-300 transition-colors">Reset</button>
-                            <button type="submit" id="btn-submit"
-                                class="flex-[2] bg-blue-600 text-white py-4 rounded-xl font-bold text-sm shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors disabled:opacity-50"
-                                disabled>Absen Masuk</button>
-                        </div>
-                    </form>
                 </div>
             </div>
 
-            {{-- KOLOM KANAN: INFORMATION CARDS (3/12) --}}
-            <div class="col-span-3 space-y-6">
+            {{-- ========================================== --}}
+            {{-- KOLOM KANAN: INFORMATION CARDS (DESKTOP)  --}}
+            {{-- ========================================== --}}
+            <div class="hidden md:block md:col-span-3 md:space-y-6">
 
                 {{-- Card 1: Tips Absen --}}
                 <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 p-6">
@@ -485,7 +381,7 @@
                 div.innerHTML = `
                                                 <input type="text" name="destinations[]" placeholder="Toko/Tujuan ${count}" required
                                                     class="flex-1 border border-gray-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500">
-                                                <button type="button" onclick="this.parentElement.remove()" class="text-red-500 font-bold px-3">✕</button>
+                                                <button type="button" onclick="this.parentElement.remove()" class="text-red-500 hover:text-red-700 transition-colors flex items-center px-2 shrink-0"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                                             `;
                 container.appendChild(div);
             }
@@ -548,7 +444,7 @@
             // Init - cek izin dulu, baru mulai kamera
             safeInitSelfieCamera();
             initGPS();
-            document.getElementById('odometer-status').innerHTML = '<svg class="w-5 h-5 inline text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> Kamera odometer akan aktif setelah foto selfie diambil';
+            document.getElementById('odometer-status').innerHTML = '<svg class="w-5 h-5 inline text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812-1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> Kamera odometer akan aktif setelah foto selfie diambil';
             document.getElementById('odometer_value').addEventListener('input', checkSubmit);
         </script>
     @endsection

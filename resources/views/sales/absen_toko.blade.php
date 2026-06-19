@@ -1,10 +1,28 @@
 @extends('layout')
 @section('content')
-    <div class="px-5 md:px-8 py-6 md:py-8">
-        <h1 class="text-2xl font-bold mb-2">Lapor Kunjungan Toko</h1>
-        <p class="text-sm text-gray-600 mb-6">Ambil foto selfie saat berada di toko</p>
+    <div class="px-5 md:px-8 py-6 md:py-8 md:bg-slate-50/50 md:min-h-screen">
 
-        <form action="{{ route('sales.absen.toko.store') }}" method="POST" id="form-absen-toko">
+        {{-- HEADER DESKTOP --}}
+        <div class="hidden md:block mb-6">
+            <h1 class="text-xl font-extrabold text-gray-800 tracking-tight mb-1">Lapor Kunjungan Toko</h1>
+            <p class="text-sm text-gray-500">Ambil foto selfie saat berada di toko</p>
+        </div>
+
+        {{-- HEADER MOBILE --}}
+        <div class="md:hidden mb-6">
+            <h1 class="text-2xl font-bold mb-2">Lapor Kunjungan Toko</h1>
+            <p class="text-sm text-gray-600">Ambil foto selfie saat berada di toko</p>
+        </div>
+
+        <div class="md:grid md:grid-cols-12 md:gap-6">
+
+            {{-- ========================================== --}}
+            {{-- KOLOM KIRI: FORM UTAMA (9/12)             --}}
+            {{-- ========================================== --}}
+            <div class="md:col-span-9">
+                <div class="md:bg-white md:rounded-[2rem] md:shadow-sm md:border md:border-gray-100 md:overflow-hidden md:p-8">
+
+        <form action="{{ route('sales.absen.toko.store') }}" method="POST" id="form-absen-toko" class="card-form">
             @csrf
             <input type="hidden" name="lat" id="lat">
             <input type="hidden" name="long" id="long">
@@ -14,7 +32,7 @@
             {{-- PILIH KUNJUNGAN (Dari Rencana atau Dadakan) --}}
             <div class="mb-6">
                 <label class="block text-sm font-bold text-gray-700 mb-2">Pilih Kunjungan</label>
-                
+
                 {{-- Radio: Dari Rencana --}}
                 <div class="mb-3">
                     <label class="flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-500">
@@ -57,7 +75,7 @@
             {{-- FOTO SELFIE --}}
             <div class="mb-6">
                 <label class="block text-sm font-bold text-gray-700 mb-2">Foto Selfie *</label>
-                <div class="relative w-full h-64 bg-black rounded-2xl overflow-hidden">
+                <div class="relative w-full h-64 md:h-80 bg-black rounded-2xl overflow-hidden md:mx-auto md:max-w-[569px]">
                     <video id="video" autoplay playsinline class="w-full h-full object-cover"></video>
                     <canvas id="canvas" class="hidden w-full h-full object-cover"></canvas>
                     <button type="button" onclick="switchCamera()" id="btn-switch"
@@ -122,6 +140,122 @@
                     disabled>Kirim Laporan</button>
             </div>
         </form>
+                </div>
+            </div>
+
+            {{-- ========================================== --}}
+            {{-- KOLOM KANAN: INFORMATION CARDS (DESKTOP)  --}}
+            {{-- ========================================== --}}
+            <div class="hidden md:block md:col-span-3 md:space-y-6">
+
+                {{-- Card 1: Tips Kunjungan --}}
+                <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 p-6">
+                    <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Tips Kunjungan
+                    </h3>
+                    <div class="bg-blue-50 rounded-xl p-4">
+                        <ul class="text-xs text-blue-700 space-y-2">
+                            <li class="flex items-start gap-2">
+                                <svg class="w-4 h-4 text-blue-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                <span>Pastikan wajah & toko terlihat jelas</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <svg class="w-4 h-4 text-blue-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                <span>Ambil foto saat sudah berada di dalam toko</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <svg class="w-4 h-4 text-blue-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                <span>Lengkapi status & keterangan dengan benar</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                {{-- Card 2: Kunjungan Tersisa --}}
+                <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 p-6">
+                    <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                        </svg>
+                        Kunjungan Tersisa
+                    </h3>
+                    <div class="bg-gray-50 rounded-xl p-4">
+                        @if($plannedVisits->count() > 0)
+                            <p class="text-xs text-gray-600 mb-2">Toko yang belum dikunjungi:</p>
+                            <ul class="text-xs text-gray-700 space-y-1">
+                                @foreach($plannedVisits as $visit)
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-gray-400">•</span>
+                                        <span>{{ $visit->client_name }}</span>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @else
+                            @if($failedVisits > 0)
+                                <p class="text-xs text-gray-600">
+                                    <svg class="w-4 h-4 inline mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    Semua toko sudah dikunjungi
+                                </p>
+                                <p class="text-xs text-red-600 mt-1 font-medium">{{ $failedVisits }} kunjungan gagal</p>
+                            @else
+                                <p class="text-xs text-gray-500">
+                                    <svg class="w-4 h-4 inline mr-1 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    Semua target tercapai!
+                                </p>
+                            @endif
+                        @endif
+                    </div>
+                </div>
+
+                {{-- Card 3: Progress Hari Ini --}}
+                <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 p-6">
+                    <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Progress Hari Ini
+                    </h3>
+                    <div class="bg-green-50 rounded-xl p-4">
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs text-green-600">Dikunjungi:</span>
+                                <span class="font-bold text-green-700">{{ $completedVisits + $failedVisits }} / {{ $totalVisits }}</span>
+                            </div>
+                            <div class="pt-3 border-t border-green-200 space-y-2">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs text-green-600">Berhasil:</span>
+                                    <span class="text-xs font-bold text-green-700">{{ $completedVisits }}</span>
+                                </div>
+                                @if($failedVisits > 0)
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs text-red-600">Gagal:</span>
+                                    <span class="text-xs font-bold text-red-600">{{ $failedVisits }}</span>
+                                </div>
+                                @endif
+                                @if($plannedVisits->count() > 0)
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs text-gray-500">Belum dikunjungi:</span>
+                                    <span class="text-xs font-bold text-gray-600">{{ $plannedVisits->count() }}</span>
+                                </div>
+                                @endif
+                            </div>
+                            @if($totalVisits > 0 && $completedVisits == $totalVisits)
+                            <div class="pt-3 border-t border-green-200">
+                                <p class="text-xs text-green-600">
+                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    Semua target tercapai!
+                                </p>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
     </div>
 
     @include('partials.permission-check', ['requireLocation' => true])
@@ -197,7 +331,7 @@
             const visitType = document.querySelector('input[name="visit_type"]:checked').value;
             const plannedDiv = document.getElementById('planned-visits');
             const newDiv = document.getElementById('new-visit');
-            
+
             if (visitType === 'planned') {
                 plannedDiv.classList.remove('hidden');
                 newDiv.classList.add('hidden');
@@ -215,13 +349,13 @@
             const btn = document.getElementById('btn-submit');
             const visitType = document.querySelector('input[name="visit_type"]:checked').value;
             let valid = photoTaken && document.querySelector('input[name="status"]:checked');
-            
+
             if (visitType === 'planned') {
                 valid = valid && document.getElementById('planned_visit_id').value;
             } else {
                 valid = valid && document.getElementById('new_client_name').value;
             }
-            
+
             btn.disabled = !valid;
         }
 
@@ -232,7 +366,7 @@
                 const reasonInput = document.getElementById('reason');
                 const notesField = document.getElementById('notes-field');
                 const notesInput = document.getElementById('notes');
-                
+
                 if (this.value === 'failed') {
                     // Tampilkan alasan gagal, sembunyikan keterangan
                     reasonField.classList.remove('hidden');
@@ -315,4 +449,3 @@
     </script>
     @endsection
 @endsection
-

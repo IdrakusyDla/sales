@@ -165,7 +165,13 @@ class SalesController extends Controller
             ->where('is_planned', true)
             ->get();
 
-        return view('sales.absen_toko', compact('plannedVisits', 'todayLog'));
+        // Statistik untuk information cards desktop (SEMUA kunjungan: rencana + dadakan)
+        $allVisits = $todayLog->visits()->get();
+        $totalVisits = $allVisits->count();
+        $completedVisits = $allVisits->where('status', 'completed')->count();
+        $failedVisits = $allVisits->where('status', 'failed')->count();
+
+        return view('sales.absen_toko', compact('plannedVisits', 'todayLog', 'totalVisits', 'completedVisits', 'failedVisits'));
     }
 
     public function storeAbsenToko(Request $request)

@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "Bash(php artisan *)",
-      "Bash(git checkout *)"
+      "Bash(git checkout *)",
+      "Bash(git add *)",
+      "Bash(git commit -m 'Add design document for desktop layout optimization - sales role *)",
+      "Bash(git rev-parse *)",
+      "Bash(cat \"$\\(git rev-parse --git-path sdd\\)/progress.md\")",
+      "Bash(bash *)",
+      "Bash(git commit -m 'feat\\(sales\\): add data preparation for absen masuk information cards *)"
     ]
   }
 }
