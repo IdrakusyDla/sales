@@ -67,13 +67,13 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pb-24">
             @forelse($expenses as $expense)
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition">
                     {{-- Checkbox untuk bulk action --}}
                     <div class="flex items-start gap-3">
                         <input type="checkbox" class="expense-checkbox mt-4 w-5 h-5 text-blue-600 rounded"
                             value="{{ $expense->id }}">
 
-                        <div class="flex-1">
+                        <div class="flex-1 cursor-pointer" onclick="goToDetail(event, '{{ route('sales.history.detail', $expense->daily_log_id) }}')">
                             {{-- Header: Nama & Tanggal --}}
                             <div class="flex justify-between items-start mb-2">
                                 <div>
@@ -130,6 +130,11 @@
                                         class="text-blue-500 text-xs flex items-center gap-1 mt-2 hover:underline">
                                         <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg> Lihat Struk/Bukti
                                     </a>
+                                @else
+                                    <span class="inline-flex items-center gap-1 text-orange-700 text-xs mt-2 bg-orange-50 border border-orange-200 rounded-lg px-2 py-1">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                        Bukti/struk belum dilampirkan
+                                    </span>
                                 @endif
 
                                 {{-- Daftar Kunjungan --}}
@@ -152,6 +157,14 @@
                                         </div>
                                     </div>
                                 @endif
+
+                                {{-- Link ke detail absen --}}
+                                <a href="{{ route('sales.history.detail', $expense->daily_log_id) }}"
+                                    onclick="event.stopPropagation()"
+                                    class="mt-3 pt-2 border-t border-gray-200/60 text-xs text-indigo-600 font-bold flex items-center justify-between hover:text-indigo-700">
+                                    <span>Lihat detail absen lengkap</span>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                                </a>
                             </div>
 
                             {{-- Revision Info --}}
@@ -299,6 +312,11 @@
             function closeRejectConfirm() {
                 document.getElementById('reject-confirm-modal').classList.add('hidden');
                 pendingRejectForm = null;
+            }
+            // Klik area info kartu -> detail absen (abaikan elemen interaktif)
+            function goToDetail(e, url) {
+                if (e.target.closest('button, a, input, select, textarea, label, form')) return;
+                window.location.href = url;
             }
             function toggleAllCheckboxes() {
                 const selectAll = document.getElementById('selectAll');
