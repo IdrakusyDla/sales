@@ -1104,24 +1104,73 @@ class SalesController extends Controller
      */
     public function storeSystemDistance(Request $request, $id)
     {
-        // Cek akses (HRD/IT only)
-        if (!in_array(Auth::user()->role, ['hrd', 'it'])) {
+        $user = Auth::user();
+
+        $dailyLog = DailyLog::with(['visits', 'user'])->findOrFail($id);
+
+        // === Hak akses ===
+        // HRD/IT/Finance: semua karyawan. Supervisor: HANYA bawahannya (bukan absen sendiri). Selainnya: tolak.
+        if (in_array($user->role, ['hrd', 'it', 'finance'])) {
+            // boleh untuk log siapa saja
+        } elseif ($user->role === 'supervisor') {
+            if ($dailyLog->user_id === $user->id) {
+                return response()->json(['message' => 'Supervisor tidak dapat menghitung absennya sendiri.'], 403);
+            }
+            $isSubordinate = $user->subordinates()->where('sales_id', $dailyLog->user_id)->exists();
+            if (!$isSubordinate && $dailyLog->user && $dailyLog->user->supervisor_id === $user->id) {
+                $isSubordinate = true;
+            }
+            if (!$isSubordinate) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+        } else {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $request->validate([
-            'distance' => 'required|numeric|min:0'
-        ]);
+        // === Hitung jarak di SERVER (deterministik, tanpa依赖 API eksternal/OSRM) ===
+        // Titik berurutan: absen masuk -> kunjungan (urut waktu) -> absen keluar
+        $points = [];
+        if ($dailyLog->lat && $dailyLog->long) {
+            $points[] = [(float) $dailyLog->lat, (float) $dailyLog->long];
+        }
+        foreach ($dailyLog->visits->sortBy('time') as $visit) {
+            if ($visit->lat && $visit->long) {
+                $points[] = [(float) $visit->lat, (float) $visit->long];
+            }
+        }
+        if ($dailyLog->end_lat && $dailyLog->end_long) {
+            $points[] = [(float) $dailyLog->end_lat, (float) $dailyLog->end_long];
+        }
 
-        $dailyLog = DailyLog::findOrFail($id);
+        $straightKm = 0.0;
+        for ($i = 1; $i < count($points); $i++) {
+            $straightKm += $this->haversineKm(
+                $points[$i - 1][0], $points[$i - 1][1],
+                $points[$i][0],     $points[$i][1]
+            );
+        }
 
-        $dailyLog->update([
-            'system_calculated_distance' => $request->distance
-        ]);
+        // Faktor jalan: jarak tempuh nyata ~30% lebih jauh dari garis lurus
+        $distance = round($straightKm * 1.3, 2);
+
+        $dailyLog->update(['system_calculated_distance' => $distance]);
 
         return response()->json([
             'message' => 'Jarak berhasil diverifikasi dan disimpan.',
-            'distance' => $request->distance
+            'distance' => $distance,
         ]);
+    }
+
+    /**
+     * Jarak garis lurus (Haversine) antara dua koordinat dalam kilometer.
+     */
+    private function haversineKm($lat1, $lon1, $lat2, $lon2): float
+    {
+        $earthRadius = 6371.0;
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLon = deg2rad($lon2 - $lon1);
+        $a = sin($dLat / 2) ** 2
+            + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLon / 2) ** 2;
+        return 2 * $earthRadius * asin(sqrt($a));
     }
 }

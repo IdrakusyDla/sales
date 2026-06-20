@@ -193,8 +193,12 @@
                         </div>
                     @endif
 
-                    {{-- Verifikasi Jarak (HRD/IT/SPV/Finance) --}}
-                    @if(in_array(Auth::user()->role, ['hrd', 'it', 'supervisor', 'finance']) && $dailyLog->lat && $dailyLog->end_lat)
+                    {{-- Verifikasi Jarak (HRD/IT/Finance: semua; Supervisor: hanya bawahan, bukan diri sendiri) --}}
+                    @php
+                        $canVerifyDistance = in_array(Auth::user()->role, ['hrd', 'it', 'finance'])
+                            || (Auth::user()->role === 'supervisor' && $dailyLog->user_id !== Auth::user()->id);
+                    @endphp
+                    @if($canVerifyDistance && $dailyLog->lat)
                         <div class="bg-indigo-50 rounded-xl p-4 border border-indigo-200">
                             <h3 class="text-sm font-bold text-indigo-800 mb-3">Estimasi Jarak (Sistem)</h3>
 
@@ -230,8 +234,8 @@
                             {{-- Map Container --}}
                             <div id="map-container" class="hidden mt-3">
                                 <div id="map" class="w-full h-48 rounded-lg border border-gray-300"></div>
-                                <p class="text-[10px] text-gray-500 mt-1">*Perhitungan menggunakan rute jalan tercepat (via
-                                    OSRM, bukan garis lurus)</p>
+                                <p class="text-[10px] text-gray-500 mt-1">*Estimasi = jarak antar titik lokasi (masuk →
+                                    kunjungan → keluar) × faktor jalan 1,3. Garis pada peta hanya indikatif.</p>
                             </div>
                         </div>
                     @endif
@@ -771,8 +775,8 @@
                                                     class="w-full rounded-xl border border-gray-200">
                                             </button>
                                         </div>
-                                    @elseif($expense->isFuel() && \Carbon\Carbon::today()->lte(\App\Models\Expense::calculateDeadline($expense->dailyLog->date)))
-                                        {{-- Tombol Lampirkan Struk untuk fuel expense yang belum punya struk --}}
+                                    @elseif(Auth::user()->id === $expense->user_id && $expense->isFuel() && \Carbon\Carbon::today()->lte(\App\Models\Expense::calculateDeadline($expense->dailyLog->date)))
+                                        {{-- Tombol Lampirkan Struk untuk fuel expense yang belum punya struk (hanya pemilik) --}}
                                         <div class="mb-3">
                                             <a href="{{ route('sales.fuel.receipt.form', $expense->id) }}"
                                                 class="block w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-sm text-center hover:bg-blue-700 transition">
@@ -784,10 +788,14 @@
                                             </a>
                                             <p class="text-xs text-gray-500 mt-2 text-center">Belum ada struk yang dilampirkan</p>
                                         </div>
-                                    @elseif($expense->isFuel())
+                                    @elseif($expense->isFuel() && \Carbon\Carbon::today()->gt(\App\Models\Expense::calculateDeadline($expense->dailyLog->date)))
                                         <div class="mb-3">
                                             <p class="text-xs text-gray-500 text-center italic">Struk belum dilampirkan (Batas waktu sudah
                                                 lewat)</p>
+                                        </div>
+                                    @else
+                                        <div class="mb-3">
+                                            <p class="text-xs text-gray-500 text-center italic">Belum ada struk yang dilampirkan</p>
                                         </div>
                                     @endif
 
@@ -941,7 +949,7 @@
                             </div>
 
                             {{-- TOMBOL TAMBAH BIAYA TAMBAHAN --}}
-                            @if(\Carbon\Carbon::today()->lte(\App\Models\Expense::calculateDeadline($dailyLog->date)) && in_array(Auth::user()->role, ['sales', 'supervisor']))
+                            @if(Auth::user()->id === $dailyLog->user_id && \Carbon\Carbon::today()->lte(\App\Models\Expense::calculateDeadline($dailyLog->date)) && in_array(Auth::user()->role, ['sales', 'supervisor']))
                                 <a href="{{ route('sales.reimburse.form', $dailyLog->id) }}"
                                     class="block w-full bg-green-600 text-white py-4 rounded-xl font-bold text-center mt-4 shadow-lg hover:bg-green-700 transition">
                                     <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1014,129 +1022,89 @@
 
 @section('scripts')
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 <script>
     let mapInstance = null;
-    let routingControl = null;
 
     function verifyDistance() {
-        // Show container
+        const btn = document.getElementById('btn-verify');
+        const txt = document.getElementById('btn-verify-text');
+        btn.disabled = true;
+        txt.innerText = 'Menghitung...';
         document.getElementById('map-container').classList.remove('hidden');
-        document.getElementById('btn-verify-text').innerText = 'Menghitung...';
-        document.getElementById('btn-verify').disabled = true;
 
-        // Coordinates
+        // Jarak dihitung di SERVER (deterministik, tanpa OSRM). Client hanya menampilkan.
+        axios.post('{{ route("sales.history.verify_distance", $dailyLog->id) }}', {
+            _token: '{{ csrf_token() }}'
+        })
+            .then(function (response) {
+                const distance = Number(response.data.distance).toFixed(2);
+
+                document.getElementById('verified-distance-container').classList.remove('hidden');
+                document.getElementById('verified-distance-value').innerText = distance + ' KM';
+                document.getElementById('verification-status').innerHTML =
+                    '<svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Tersimpan ke server';
+
+                btn.disabled = false;
+                txt.innerText = 'Hitung Ulang';
+
+                drawVerificationMap();
+            })
+            .catch(function (error) {
+                console.error('verifyDistance error:', error);
+                const msg = (error.response && error.response.data && error.response.data.message)
+                    || (error.message) || 'Gagal menghitung jarak.';
+                alert(msg);
+                btn.disabled = false;
+                txt.innerText = 'Coba Lagi';
+            });
+    }
+
+    // Visualisasi peta: marker + garis lurus antar titik (indikatif). Angka jarak dihitung server.
+    function drawVerificationMap() {
         const startLat = {{ $dailyLog->lat ?? 0 }};
         const startLong = {{ $dailyLog->long ?? 0 }};
         const endLat = {{ $dailyLog->end_lat ?? 0 }};
         const endLong = {{ $dailyLog->end_long ?? 0 }};
 
-        // Visits
-        const visits = [
-            @foreach($dailyLog->visits as $visit)
-                @if($visit->lat && $visit->long)
-                    [{{ $visit->lat }}, {{ $visit->long }}],
-                @endif
-            @endforeach
-        ];
+        const points = [];
+        if (startLat && startLong) points.push([startLat, startLong]);
+        @foreach($dailyLog->visits->sortBy('time') as $visit)
+            @if($visit->lat && $visit->long)
+                points.push([{{ $visit->lat }}, {{ $visit->long }}]);
+            @endif
+        @endforeach
+        if (endLat && endLong) points.push([endLat, endLong]);
 
-        // Prepare waypoints
-        let waypoints = [];
-        if (startLat && startLong) waypoints.push([startLat, startLong]);
-        waypoints = waypoints.concat(visits);
-        if (endLat && endLong) waypoints.push([endLat, endLong]);
+        if (points.length === 0) return;
 
-        if (waypoints.length < 2) {
-            alert('Lokasi tidak lengkap.');
-            resetButton();
-            return;
-        }
-
-        // Initialize Map
         if (!mapInstance) {
-            mapInstance = L.map('map').setView(waypoints[0], 13);
+            mapInstance = L.map('map').setView(points[0], 13);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap'
             }).addTo(mapInstance);
-            setTimeout(() => mapInstance.invalidateSize(), 400);
+            setTimeout(function () { mapInstance.invalidateSize(); }, 300);
         }
 
-        // Clear existing route
-        if (routingControl) {
-            mapInstance.removeControl(routingControl);
-            routingControl = null;
-        }
-
-        // Create Control
-        const osrmRouter = L.Routing.osrmv1({
-            serviceUrl: 'https://router.project-osrm.org/route/v1',
-            profile: 'driving'
-        });
-
-        routingControl = L.Routing.control({
-            waypoints: waypoints,
-            router: osrmRouter,
-            routeWhileDragging: false,
-            draggableWaypoints: false,
-            addWaypoints: false,
-            lineOptions: {
-                styles: [{ color: 'blue', opacity: 0.7, weight: 5 }]
-            },
-            show: false,
-            createMarker: function (i, wp, nWps) {
-                return L.marker(wp).bindPopup(i === 0 ? 'Start' : (i === nWps - 1 ? 'End' : 'Visit ' + i));
+        // Bersihkan marker & garis sebelumnya (pertahankan tile layer)
+        mapInstance.eachLayer(function (layer) {
+            if (layer instanceof L.Marker || layer instanceof L.Polyline) {
+                mapInstance.removeLayer(layer);
             }
-        }).addTo(mapInstance);
-
-        // Events
-        routingControl.on('routesfound', function (e) {
-            const summary = e.routes[0].summary;
-            const distanceKm = (summary.totalDistance / 1000).toFixed(2);
-
-            // Update UI
-            document.getElementById('verified-distance-container').classList.remove('hidden');
-            document.getElementById('verified-distance-value').innerText = distanceKm + ' KM';
-            document.getElementById('verification-status').innerText = 'Baru saja diverifikasi';
-
-            resetButton(true);
-            saveDistance(distanceKm);
         });
 
-        routingControl.on('routingerror', function (e) {
-            alert('Gagal menghitung rute. Coba lagi.');
-            resetButton();
-            console.error(e);
+        points.forEach(function (p, i) {
+            const label = (i === 0) ? 'Start' : (i === points.length - 1 ? 'End' : 'Kunjungan ' + i);
+            L.marker(p).addTo(mapInstance).bindPopup(label);
         });
-    }
 
-    function resetButton(success = false) {
-        const btn = document.getElementById('btn-verify');
-        const txt = document.getElementById('btn-verify-text');
-        btn.disabled = false;
-        txt.innerText = success ? 'Hitung Ulang' : 'Coba Lagi';
-    }
+        if (points.length > 1) {
+            L.polyline(points, { color: 'blue', weight: 4, opacity: 0.6 }).addTo(mapInstance);
+        }
 
-    function saveDistance(distance) {
-        axios.post('{{ route("sales.history.verify_distance", $dailyLog->id) }}', {
-            distance: distance,
-            _token: '{{ csrf_token() }}'
-        })
-            .then(function (response) {
-                console.log('Saved:', response.data);
-                document.getElementById('verification-status').innerHTML = '<svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Tersimpan ke server';
-            })
-            .catch(function (error) {
-                console.error('Error saving distance:', error);
-                document.getElementById('verification-status').innerHTML = '<svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg> Gagal menyimpan, mencoba ulang...';
-                // Silent retry after 2 seconds
-                setTimeout(function () {
-                    saveDistance(distance);
-                }, 2000);
-            });
+        mapInstance.fitBounds(L.latLngBounds(points).pad(0.2));
     }
 
     // --- HRD RECEIPT GENERATION ---
