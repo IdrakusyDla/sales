@@ -104,7 +104,12 @@ class SupervisorController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return view('supervisor.show_sales', compact('sales', 'dailyLogs'));
+        // Hitung reimburse menunggu persetujuan SPV milik sales ini (badge tombol persetujuan)
+        $pendingReimburseCount = Expense::where('user_id', $sales->id)
+            ->where('status', 'pending_spv')
+            ->count();
+
+        return view('supervisor.show_sales', compact('sales', 'dailyLogs', 'pendingReimburseCount'));
     }
 
     // ==========================================
@@ -156,7 +161,7 @@ class SupervisorController extends Controller
             'rejection_note' => null,
             'rejection_type' => null,
             'revised_at' => now(),
-            'revision_count' => $expense->revision_count + 1,
+            // revision_count TIDAK di-increment di sini: sudah dicatat saat approver menolak/minta revisi.
         ]);
 
         $approverLabel = $targetStatus === 'pending_finance' ? 'Finance' : 'HRD';

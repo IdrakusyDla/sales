@@ -13,8 +13,8 @@
             </div>
         </div>
 
-        {{-- FILTER TANGGAL --}}
-        <div class="bg-blue-50/50 rounded-2xl p-5 border border-blue-100 mb-6">
+        {{-- ===== MOBILE: FILTER + TOMBOL (md:hidden, tetap asli) ===== --}}
+        <div class="md:hidden bg-blue-50/50 rounded-2xl p-5 border border-blue-100 mb-6">
             <h3 class="font-bold text-blue-900 mb-3 text-sm flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
                 Filter Riwayat
@@ -36,6 +36,52 @@
                     Filter
                 </button>
             </form>
+
+            {{-- TOMBOL PERSETUJUAN REIMBURSE PER-KARYAWAN --}}
+            @if(in_array($sales->role, ['sales', 'supervisor']))
+                <a href="{{ route('supervisor.reimburse.approval', ['user_id' => $sales->id]) }}"
+                    class="mt-3 w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 transition text-white py-3 rounded-xl font-bold text-sm shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Persetujuan Reimburse
+                    @if($pendingReimburseCount > 0)
+                        <span class="bg-white/25 px-2 py-0.5 rounded-full text-xs">{{ $pendingReimburseCount }}</span>
+                    @endif
+                </a>
+            @endif
+        </div>
+
+        {{-- ===== DESKTOP: FILTER + TOMBOL (hidden md:block) - konsisten dgn sales/desktop_history ===== --}}
+        <div class="hidden md:block bg-white rounded-[2rem] shadow-sm border border-gray-100 p-8 mb-8">
+            <div class="flex items-end gap-6">
+                <form method="GET" action="{{ route('supervisor.show.sales', $sales->id) }}" class="flex items-end gap-6 flex-1">
+                    <div class="flex-1">
+                        <label class="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Dari Tanggal</label>
+                        <input type="date" name="start_date" value="{{ request('start_date') }}"
+                            class="w-full border-gray-200 bg-gray-50 text-gray-800 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Sampai Tanggal</label>
+                        <input type="date" name="end_date" value="{{ request('end_date') }}"
+                            class="w-full border-gray-200 bg-gray-50 text-gray-800 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow">
+                    </div>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 rounded-xl font-bold transition-colors shadow-md shadow-blue-600/20 active:scale-95 flex items-center gap-2 h-[58px] whitespace-nowrap">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                        Terapkan Filter
+                    </button>
+                </form>
+
+                {{-- TOMBOL PERSETUJUAN REIMBURSE PER-KARYAWAN (desktop - di kanan filter) --}}
+                @if(in_array($sales->role, ['sales', 'supervisor']))
+                    <a href="{{ route('supervisor.reimburse.approval', ['user_id' => $sales->id]) }}"
+                        class="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-xl font-bold transition-colors shadow-md shadow-green-600/20 active:scale-95 flex items-center gap-2 h-[58px] whitespace-nowrap">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Persetujuan Reimburse
+                        @if($pendingReimburseCount > 0)
+                            <span class="bg-white/25 px-2 py-0.5 rounded-full text-xs">{{ $pendingReimburseCount }}</span>
+                        @endif
+                    </a>
+                @endif
+            </div>
         </div>
 
         {{-- LIST RIWAYAT --}}

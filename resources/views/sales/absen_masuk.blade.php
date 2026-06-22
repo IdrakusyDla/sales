@@ -287,7 +287,7 @@
                 document.getElementById('btn-snap-selfie').classList.add('hidden');
                 document.getElementById('btn-switch-selfie').classList.add('hidden');
                 document.getElementById('btn-retake-selfie').classList.remove('hidden');
-                document.getElementById('selfie-status').innerHTML = '<svg class="w-5 h-5 inline text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Foto selfie berhasil diambil';
+                document.getElementById('selfie-status').innerHTML = '<svg class="w-5 h-5 inline text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Foto selfie berhasil diambil';
                 selfieTaken = true;
 
                 // Stop selfie camera and start odometer camera
@@ -342,7 +342,7 @@
                 document.getElementById('btn-snap-odometer').classList.add('hidden');
                 document.getElementById('btn-switch-odometer').classList.add('hidden');
                 document.getElementById('btn-retake-odometer').classList.remove('hidden');
-                document.getElementById('odometer-status').innerHTML = '<svg class="w-5 h-5 inline text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Foto odometer berhasil diambil';
+                document.getElementById('odometer-status').innerHTML = '<svg class="w-5 h-5 inline text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Foto odometer berhasil diambil';
                 odometerTaken = true;
 
                 // Stop odometer camera after photo taken

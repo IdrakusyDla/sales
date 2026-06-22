@@ -91,6 +91,9 @@ class FinanceController extends Controller
             $query->where('type', $request->type);
         }
 
+        // Scope per-karyawan (dipakai saat diakses dari profil karyawan)
+        $targetUser = $request->filled('user_id') ? User::find($request->user_id) : null;
+
         $expenses = $query->paginate(20);
 
         // Get semua users untuk filter dropdown
@@ -98,7 +101,7 @@ class FinanceController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('finance.approval.index', compact('expenses', 'users'));
+        return view('finance.approval.index', compact('expenses', 'users', 'targetUser'));
     }
 
     /**
@@ -276,7 +279,12 @@ class FinanceController extends Controller
             'total_expenses' => Expense::where('user_id', $id)->sum('amount'),
         ];
 
-        return view('finance.show_user', compact('user', 'dailyLogs', 'stats'));
+        // Hitung reimburse menunggu persetujuan Finance milik user ini (badge tombol persetujuan)
+        $pendingReimburseCount = Expense::where('user_id', $id)
+            ->where('status', 'pending_finance')
+            ->count();
+
+        return view('finance.show_user', compact('user', 'dailyLogs', 'stats', 'pendingReimburseCount'));
     }
 
     /**

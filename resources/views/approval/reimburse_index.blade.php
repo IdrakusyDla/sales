@@ -3,46 +3,106 @@
 @section('content')
     <div class="px-5 md:px-8 py-6 md:py-8">
         {{-- BACK BUTTON & HEADER --}}
+        @php
+            $isScoped = !empty($targetUser);
+            $profileRoute = auth()->user()->role === 'supervisor' ? 'supervisor.show.sales' : 'hrd.show.user';
+        @endphp
         <div class="flex items-center gap-3 mb-6">
-            <a href="{{ url()->previous() }}" class="text-gray-600">
+            <a href="{{ $isScoped ? route($profileRoute, $targetUser->id) : url()->previous() }}" class="text-gray-600">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
             </a>
             <div>
-                <h1 class="text-2xl font-bold">Persetujuan Reimburse</h1>
-                <p class="text-gray-500 text-sm">Daftar permintaan reimburse yang menunggu persetujuan Anda.</p>
+                <h1 class="text-2xl font-bold">
+                    Persetujuan Reimburse{{ $isScoped ? ' — ' . $targetUser->name : '' }}
+                </h1>
+                <p class="text-gray-500 text-sm">
+                    @if($isScoped)
+                        Permohonan reimburse {{ $targetUser->name }} yang menunggu persetujuan Anda.
+                    @else
+                        Daftar permintaan reimburse yang menunggu persetujuan Anda.
+                    @endif
+                </p>
             </div>
         </div>
 
+        @if($isScoped)
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                    <span class="shrink-0 w-9 h-9 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                    </span>
+                    <p class="text-sm text-gray-600 min-w-0">
+                        Menampilkan permohonan dari <span class="font-bold text-gray-800">{{ $targetUser->name }}</span> saja.
+                    </p>
+                </div>
+                <a href="{{ route(auth()->user()->role . '.reimburse.approval') }}"
+                    class="shrink-0 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-sm flex items-center justify-center gap-1.5 whitespace-nowrap">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                    </svg>
+                    Semua Karyawan
+                </a>
+            </div>
+        @endif
+
         {{-- FILTERS --}}
-        <form method="GET" action="{{ request()->url() }}" class="mb-4 space-y-2">
-            <div class="grid grid-cols-2 gap-2">
-                <input type="date" name="date_from" value="{{ request('date_from') }}"
-                    class="border border-gray-300 rounded-lg p-2 text-sm">
-                <input type="date" name="date_to" value="{{ request('date_to') }}"
-                    class="border border-gray-300 rounded-lg p-2 text-sm">
-            </div>
-            <div class="flex gap-2">
-                <select name="user_id" class="flex-1 border border-gray-300 rounded-lg p-2 text-sm">
-                    <option value="">Semua User</option>
-                    @foreach($users as $u)
-                        <option value="{{ $u->id }}" {{ request('user_id') == $u->id ? 'selected' : '' }}>{{ $u->name }}</option>
-                    @endforeach
-                </select>
-                <select name="type" class="flex-1 border border-gray-300 rounded-lg p-2 text-sm">
-                    <option value="">Semua Tipe</option>
-                    <option value="fuel" {{ request('type') == 'fuel' ? 'selected' : '' }}>Bahan Bakar</option>
-                    <option value="hotel" {{ request('type') == 'hotel' ? 'selected' : '' }}>Hotel</option>
-                    <option value="toll" {{ request('type') == 'toll' ? 'selected' : '' }}>Toll</option>
-                    <option value="transport" {{ request('type') == 'transport' ? 'selected' : '' }}>Transport</option>
-                    <option value="other" {{ request('type') == 'other' ? 'selected' : '' }}>Lainnya</option>
-                </select>
-            </div>
-            <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg font-bold text-sm">
-                Filter
-            </button>
-        </form>
+        <div class="bg-white rounded-2xl md:rounded-[2rem] shadow-sm border border-gray-100 p-4 md:p-8 mb-4 md:mb-8">
+            <form method="GET" action="{{ request()->url() }}">
+                @if($isScoped)
+                    <input type="hidden" name="user_id" value="{{ $targetUser->id }}">
+                @endif
+                <div class="grid grid-cols-2 md:flex md:items-end gap-3 md:gap-6">
+                    <div class="flex-1">
+                        <label class="block text-xs md:text-sm font-bold text-gray-600 md:text-gray-700 mb-1 md:mb-2 md:uppercase md:tracking-wider">Dari Tanggal</label>
+                        <input type="date" name="date_from" value="{{ request('date_from') }}"
+                            class="w-full border border-gray-300 md:border-gray-200 md:bg-gray-50 rounded-xl p-3 md:p-4 text-sm focus:ring-2 focus:ring-blue-500 md:focus:border-blue-500">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-xs md:text-sm font-bold text-gray-600 md:text-gray-700 mb-1 md:mb-2 md:uppercase md:tracking-wider">Sampai Tanggal</label>
+                        <input type="date" name="date_to" value="{{ request('date_to') }}"
+                            class="w-full border border-gray-300 md:border-gray-200 md:bg-gray-50 rounded-xl p-3 md:p-4 text-sm focus:ring-2 focus:ring-blue-500 md:focus:border-blue-500">
+                    </div>
+                    @if(!$isScoped)
+                        <div class="col-span-2 md:flex-1">
+                            <label class="block text-xs md:text-sm font-bold text-gray-600 md:text-gray-700 mb-1 md:mb-2 md:uppercase md:tracking-wider">Karyawan</label>
+                            <select name="user_id"
+                                class="w-full border border-gray-300 md:border-gray-200 md:bg-gray-50 rounded-xl p-3 md:p-4 text-sm focus:ring-2 focus:ring-blue-500 md:focus:border-blue-500">
+                                <option value="">Semua Karyawan</option>
+                                @foreach($users as $u)
+                                    <option value="{{ $u->id }}" {{ request('user_id') == $u->id ? 'selected' : '' }}>{{ $u->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
+                    <div class="col-span-2 md:flex-1">
+                        <label class="block text-xs md:text-sm font-bold text-gray-600 md:text-gray-700 mb-1 md:mb-2 md:uppercase md:tracking-wider">Tipe</label>
+                        <select name="type"
+                            class="w-full border border-gray-300 md:border-gray-200 md:bg-gray-50 rounded-xl p-3 md:p-4 text-sm focus:ring-2 focus:ring-blue-500 md:focus:border-blue-500">
+                            <option value="">Semua Tipe</option>
+                            <option value="fuel" {{ request('type') == 'fuel' ? 'selected' : '' }}>Bahan Bakar</option>
+                            <option value="hotel" {{ request('type') == 'hotel' ? 'selected' : '' }}>Hotel</option>
+                            <option value="toll" {{ request('type') == 'toll' ? 'selected' : '' }}>Toll</option>
+                            <option value="transport" {{ request('type') == 'transport' ? 'selected' : '' }}>Transport</option>
+                            <option value="other" {{ request('type') == 'other' ? 'selected' : '' }}>Lainnya</option>
+                        </select>
+                    </div>
+                    <div class="col-span-2 md:self-end">
+                        <button type="submit"
+                            class="w-full md:px-10 bg-blue-600 hover:bg-blue-700 text-white py-3 md:py-4 rounded-xl font-bold text-sm shadow-sm md:shadow-md md:shadow-blue-600/20 md:active:scale-95 flex items-center justify-center gap-2 md:h-[58px] md:whitespace-nowrap">
+                            <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                            </svg>
+                            <span class="md:hidden">Filter</span>
+                            <span class="hidden md:inline">Terapkan Filter</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
 
         {{-- BULK ACTION (jika ada data) --}}
         @if($pendingReimburses->total() > 0)

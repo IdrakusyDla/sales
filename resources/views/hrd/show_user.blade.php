@@ -63,6 +63,18 @@
                             Filter
                         </button>
                     </form>
+
+                    {{-- TOMBOL PERSETUJUAN REIMBURSE PER-KARYAWAN --}}
+                    @if(in_array($user->role, ['sales', 'supervisor']))
+                        <a href="{{ route('hrd.reimburse.approval', ['user_id' => $user->id]) }}"
+                            class="mt-3 w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 transition text-white py-3 rounded-xl font-bold text-sm shadow-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Persetujuan Reimburse
+                            @if($pendingReimburseCount > 0)
+                                <span class="bg-white/25 px-2 py-0.5 rounded-full text-xs">{{ $pendingReimburseCount }}</span>
+                            @endif
+                        </a>
+                    @endif
                 </div>
             </div>
 

@@ -235,7 +235,12 @@ class HRDController extends Controller
         // Ambil semua supervisor untuk dropdown tambah
         $allSupervisors = User::where('role', 'supervisor')->orderBy('name')->get();
 
-        return view('hrd.show_user', compact('user', 'dailyLogs', 'stats', 'allSupervisors'));
+        // Hitung reimburse menunggu persetujuan HRD milik user ini (badge tombol persetujuan)
+        $pendingReimburseCount = Expense::where('user_id', $id)
+            ->where('status', 'pending_hrd')
+            ->count();
+
+        return view('hrd.show_user', compact('user', 'dailyLogs', 'stats', 'allSupervisors', 'pendingReimburseCount'));
     }
 
     // ==========================================

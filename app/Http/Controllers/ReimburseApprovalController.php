@@ -57,6 +57,17 @@ class ReimburseApprovalController extends Controller
             $query->where('type', $request->type);
         }
 
+        // Scope per-karyawan (dipakai saat diakses dari profil karyawan)
+        $targetUser = $request->filled('user_id') ? User::find($request->user_id) : null;
+
+        // Guard otorisasi SPV: hanya boleh scope ke miliknya sendiri / bawahannya
+        if ($user->role === 'supervisor' && $targetUser) {
+            $isSubordinate = $targetUser->id === $user->id
+                || $user->subordinates()->where('sales_id', $targetUser->id)->exists()
+                || $targetUser->supervisor_id === $user->id;
+            abort_unless($isSubordinate, 403, 'Anda tidak memiliki akses ke data karyawan ini.');
+        }
+
         $pendingReimburses = $query->orderBy('date', 'desc')->paginate(20);
 
         // Get semua users untuk filter dropdown
@@ -64,7 +75,7 @@ class ReimburseApprovalController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('approval.reimburse_index', compact('pendingReimburses', 'users'));
+        return view('approval.reimburse_index', compact('pendingReimburses', 'users', 'targetUser'));
     }
 
     // ==========================================

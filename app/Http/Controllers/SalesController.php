@@ -642,7 +642,8 @@ class SalesController extends Controller
             'rejection_note' => null, // Clear rejection note
             'rejection_type' => null,
             'revised_at' => now(),
-            'revision_count' => $expense->revision_count + 1,
+            // revision_count TIDAK di-increment di sini: sudah dicatat saat approver menolak/minta revisi.
+            // Menambah di sini menyebabkan double-count (revisi pertama terbaca "Revisi ke-2").
             'is_generated_receipt' => $expense->is_generated_receipt,
         ]);
 

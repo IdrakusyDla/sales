@@ -903,9 +903,9 @@
 
                                                 <button type="submit" id="revise_btn_{{ $expense->id }}" disabled
                                                     class="w-full bg-orange-600 text-white py-3 rounded-xl font-bold text-sm hover:bg-orange-700 transition disabled:bg-gray-400">
-                                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <svg class="w-4 h-4 inline mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m0 0l4 4m0 0l4-4m4 4V4">
+                                                            d="M12 19l9 2-9-18-9 18 9-2zm0 0v-5">
                                                         </path>
                                                     </svg> Kirim Revisi
                                                 </button>
@@ -1227,7 +1227,7 @@
         video.classList.add('hidden');
         canvas.classList.remove('hidden');
         btn.classList.add('hidden');
-        status.innerHTML = '<svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Foto berhasil diambil';
+        status.innerHTML = '<svg class="w-5 h-5 inline text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Foto berhasil diambil';
 
         // Enable submit
         document.getElementById('revise_btn_' + expenseId).disabled = false;
