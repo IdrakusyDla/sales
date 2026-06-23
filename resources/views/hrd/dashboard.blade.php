@@ -21,7 +21,7 @@
         </div>
 
         {{-- TOMBOL AKSI CEPAT --}}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
             {{-- Tambah Akun Baru --}}
             <a href="{{ route('hrd.users.create') }}"
                 class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center gap-3 hover:bg-gray-50 mb-0">
@@ -31,25 +31,39 @@
                     </svg>
                 </div>
                 <div class="flex-1">
-                    <h3 class="font-bold text-sm text-gray-800">Tambah Akun Baru</h3>
+                    <h3 class="font-bold text-sm text-gray-800">Tambah Akun</h3>
                 </div>
                 <svg class="w-5 h-5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                 </svg>
             </a>
 
-            {{-- Setting Bahan Bakar --}}
-            <a href="{{ route('fuel_settings.index') }}"
+            {{-- Daftar Perusahaan --}}
+            <a href="{{ route('hrd.companies.index') }}"
                 class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center gap-3 hover:bg-gray-50 mb-0">
-                <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center shrink-0">
-                    <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4">
-                        </path>
+                <div class="w-10 h-10 bg-cyan-100 rounded-full flex items-center justify-center shrink-0">
+                    <svg class="w-6 h-6 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                     </svg>
                 </div>
                 <div class="flex-1">
-                    <h3 class="font-bold text-sm text-gray-800">Setting Bahan <br>Bakar</h3>
+                    <h3 class="font-bold text-sm text-gray-800">Perusahaan</h3>
+                </div>
+                <svg class="w-5 h-5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </a>
+
+            {{-- Daftar Jabatan --}}
+            <a href="{{ route('hrd.job_positions.index') }}"
+                class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center gap-3 hover:bg-gray-50 mb-0">
+                <div class="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center shrink-0">
+                    <svg class="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-bold text-sm text-gray-800">Jabatan</h3>
                 </div>
                 <svg class="w-5 h-5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -69,7 +83,6 @@
                 <div class="flex-1">
                     <h3 class="font-bold text-sm text-gray-800">Persetujuan <br>Reimburse</h3>
                 </div>
-                
                 <div class="flex items-center gap-2 shrink-0">
                     @if(($stats['pending_hrd'] ?? 0) > 0)
                         <span class="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{{ $stats['pending_hrd'] }}</span>
@@ -79,11 +92,29 @@
                     </svg>
                 </div>
             </a>
+
+            {{-- Setting Bahan Bakar --}}
+            <a href="{{ route('fuel_settings.index') }}"
+                class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center gap-3 hover:bg-gray-50 mb-0">
+                <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center shrink-0">
+                    <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4">
+                        </path>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-bold text-sm text-gray-800">Bahan <br>Bakar</h3>
+                </div>
+                <svg class="w-5 h-5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </a>
         </div>
 
         {{-- SEARCH & FILTER --}}
         <form method="GET" action="{{ route('hrd.dashboard') }}" class="mb-6">
-            <div class="flex gap-2">
+            <div class="flex flex-col md:flex-row gap-2">
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama..."
                     class="flex-1 border border-gray-300 rounded-xl p-3 text-sm">
                 <select name="role" class="border border-gray-300 rounded-xl p-3 text-sm">
@@ -91,6 +122,18 @@
                     <option value="sales" {{ request('role') == 'sales' ? 'selected' : '' }}>Sales</option>
                     <option value="supervisor" {{ request('role') == 'supervisor' ? 'selected' : '' }}>Supervisor</option>
                     <option value="finance" {{ request('role') == 'finance' ? 'selected' : '' }}>Finance</option>
+                </select>
+                <select name="company_id" class="border border-gray-300 rounded-xl p-3 text-sm">
+                    <option value="">Semua Perusahaan</option>
+                    @foreach($companies as $company)
+                        <option value="{{ $company->id }}" {{ request('company_id') == $company->id ? 'selected' : '' }}>{{ $company->name }}</option>
+                    @endforeach
+                </select>
+                <select name="job_position_id" class="border border-gray-300 rounded-xl p-3 text-sm">
+                    <option value="">Semua Jabatan</option>
+                    @foreach($jobPositions as $jobPosition)
+                        <option value="{{ $jobPosition->id }}" {{ request('job_position_id') == $jobPosition->id ? 'selected' : '' }}>{{ $jobPosition->name }}</option>
+                    @endforeach
                 </select>
                 <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold text-sm">
                     Cari
@@ -113,6 +156,17 @@
                             <div class="flex-1">
                                 <h3 class="font-bold text-gray-800">{{ $user->name }}</h3>
                                 <p class="text-xs text-gray-500">{{ $user->username }} • {{ ucfirst($user->role) }}</p>
+                                @if($user->company)
+                                    <p class="text-xs text-cyan-600">{{ $user->company->name }}</p>
+                                @endif
+                                <div class="flex items-center gap-2 flex-wrap mt-0.5">
+                                    @if($user->jobPosition)
+                                        <span class="text-[10px] bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full font-bold">{{ $user->jobPosition->name }}</span>
+                                    @endif
+                                    @if(!$user->fuel_reimbursement_enabled)
+                                        <span class="text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-bold">No Fuel</span>
+                                    @endif
+                                </div>
                                 @if($user->supervisor)
                                     <p class="text-xs text-gray-400">SPV: {{ $user->supervisor->name }}</p>
                                 @endif

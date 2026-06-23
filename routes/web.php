@@ -123,6 +123,23 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/hrd/users/create', [HRDController::class, 'createUser'])->name('hrd.users.create');
         Route::post('/hrd/users', [HRDController::class, 'storeUser'])->name('hrd.users.store');
 
+        // --- UPDATE DATA KARYAWAN (Perusahaan, Jabatan, Fuel Toggle) ---
+        Route::post('/hrd/user/{id}/update-profile', [HRDController::class, 'updateUserProfile'])->name('hrd.user.update_profile');
+
+        // --- MANAJEMEN PERUSAHAAN ---
+        Route::get('/hrd/companies', [HRDController::class, 'companyIndex'])->name('hrd.companies.index');
+        Route::post('/hrd/companies', [HRDController::class, 'companyStore'])->name('hrd.companies.store');
+        Route::put('/hrd/companies/{id}', [HRDController::class, 'companyUpdate'])->name('hrd.companies.update');
+        Route::post('/hrd/companies/{id}/toggle', [HRDController::class, 'companyToggleStatus'])->name('hrd.companies.toggle');
+        Route::delete('/hrd/companies/{id}', [HRDController::class, 'companyDestroy'])->name('hrd.companies.destroy');
+
+        // --- MANAJEMEN JABATAN ---
+        Route::get('/hrd/job-positions', [HRDController::class, 'jobPositionIndex'])->name('hrd.job_positions.index');
+        Route::post('/hrd/job-positions', [HRDController::class, 'jobPositionStore'])->name('hrd.job_positions.store');
+        Route::put('/hrd/job-positions/{id}', [HRDController::class, 'jobPositionUpdate'])->name('hrd.job_positions.update');
+        Route::post('/hrd/job-positions/{id}/toggle', [HRDController::class, 'jobPositionToggleStatus'])->name('hrd.job_positions.toggle');
+        Route::delete('/hrd/job-positions/{id}', [HRDController::class, 'jobPositionDestroy'])->name('hrd.job_positions.destroy');
+
         // --- DETAIL KARYAWAN ---
         Route::get('/hrd/user/{id}', [HRDController::class, 'showUser'])->name('hrd.show.user');
 

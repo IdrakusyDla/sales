@@ -27,7 +27,9 @@
             <input type="hidden" name="lat" id="lat">
             <input type="hidden" name="long" id="long">
             <input type="hidden" name="photo" id="photo_data">
+            @if($fuelEnabled)
             <input type="hidden" name="odometer_photo" id="odometer_photo_data">
+            @endif
 
             {{-- JENIS ABSEN KELUAR --}}
             <div class="mb-6">
@@ -102,6 +104,7 @@
             </div>
 
             {{-- 2. FOTO ODOMETER --}}
+            @if($fuelEnabled)
             <div class="mb-6">
                 <label class="block text-sm font-bold text-gray-700 mb-2">Foto Odometer Akhir *</label>
                 <div class="relative w-full h-64 md:h-80 bg-black rounded-2xl overflow-hidden md:mx-auto md:max-w-[569px]">
@@ -145,6 +148,7 @@
                 </p>
                 <p id="km-total" class="text-xs font-bold text-blue-600 mt-1"></p>
             </div>
+            @endif
 
             {{-- TOMBOL SUBMIT --}}
             <div class="flex gap-3 mb-24">
@@ -190,6 +194,7 @@
                 </div>
 
                 {{-- Card 2: Info Odometer --}}
+                @if($fuelEnabled)
                 <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 p-6">
                     <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
                         <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -212,6 +217,7 @@
                         </div>
                     </div>
                 </div>
+                @endif
 
                 {{-- Card 3: Summary Hari Ini --}}
                 <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 p-6">
@@ -256,17 +262,19 @@
     </div>
 
     {{-- Update JavaScript untuk preview KM --}}
+    @if($fuelEnabled)
     <script>
-        // Update total-km-preview saat input berubah
         document.getElementById('odometer_end_value').addEventListener('input', function() {
             const endValue = parseFloat(this.value) || 0;
             const startValue = {{ $todayLog->start_odo_value ?? 0 }};
             if (endValue > 0) {
                 const total = endValue - startValue;
-                document.getElementById('total-km-preview').textContent = total.toFixed(2) + ' KM';
+                const preview = document.getElementById('total-km-preview');
+                if (preview) preview.textContent = total.toFixed(2) + ' KM';
             }
         });
     </script>
+    @endif
 
     @include('partials.permission-check', ['requireLocation' => true])
 
@@ -274,8 +282,9 @@
         <script>
             let selfieStream, odometerStream;
             let selfieTaken = false, odometerTaken = false;
-            let selfieFacingMode = 'user'; // Kamera depan untuk selfie
-            let odometerFacingMode = 'environment'; // Kamera belakang untuk odometer
+            let selfieFacingMode = 'user';
+            let odometerFacingMode = 'environment';
+            const fuelEnabled = {{ $fuelEnabled ? 'true' : 'false' }};
             const startOdometer = {{ $todayLog->start_odo_value ?? 0 }};
 
             function initSelfieCamera() {
@@ -336,17 +345,17 @@
                 document.getElementById('selfie-status').innerHTML = '<svg class="w-5 h-5 inline text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Foto selfie berhasil diambil';
                 selfieTaken = true;
 
-                // Stop selfie camera and start odometer camera
-                if (selfieStream) selfieStream.getTracks().forEach(t => t.stop());
-                initOdometerCamera();
-                document.getElementById('btn-snap-odometer').classList.remove('hidden');
-                document.getElementById('btn-switch-odometer').classList.remove('hidden');
+                if (fuelEnabled) {
+                    if (selfieStream) selfieStream.getTracks().forEach(t => t.stop());
+                    initOdometerCamera();
+                    document.getElementById('btn-snap-odometer').classList.remove('hidden');
+                    document.getElementById('btn-switch-odometer').classList.remove('hidden');
+                }
 
                 checkSubmit();
             }
 
             function retakeSelfie() {
-                // Reset selfie state
                 selfieTaken = false;
                 document.getElementById('photo_data').value = '';
                 document.getElementById('canvas-selfie').classList.add('hidden');
@@ -356,16 +365,18 @@
                 document.getElementById('btn-retake-selfie').classList.add('hidden');
                 document.getElementById('selfie-status').textContent = '';
 
-                // Stop odometer camera and restart selfie camera
-                if (odometerStream) odometerStream.getTracks().forEach(t => t.stop());
-                odometerTaken = false;
-                document.getElementById('odometer_photo_data').value = '';
-                document.getElementById('canvas-odometer').classList.add('hidden');
-                document.getElementById('video-odometer').classList.remove('hidden');
-                document.getElementById('btn-snap-odometer').classList.add('hidden');
-                document.getElementById('btn-switch-odometer').classList.add('hidden');
-                document.getElementById('btn-retake-odometer').classList.add('hidden');
-                document.getElementById('odometer-status').innerHTML = '<svg class="w-5 h-5 inline text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812-1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> Kamera odometer akan aktif setelah foto selfie diambil';
+                if (fuelEnabled) {
+                    if (odometerStream) odometerStream.getTracks().forEach(t => t.stop());
+                    odometerTaken = false;
+                    document.getElementById('odometer_photo_data').value = '';
+                    document.getElementById('canvas-odometer').classList.add('hidden');
+                    document.getElementById('video-odometer').classList.remove('hidden');
+                    document.getElementById('btn-snap-odometer').classList.add('hidden');
+                    document.getElementById('btn-switch-odometer').classList.add('hidden');
+                    document.getElementById('btn-retake-odometer').classList.add('hidden');
+                    const odoStatus = document.getElementById('odometer-status');
+                    if (odoStatus) odoStatus.innerHTML = '<svg class="w-5 h-5 inline text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812-1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> Kamera odometer akan aktif setelah foto selfie diambil';
+                }
 
                 initSelfieCamera();
                 checkSubmit();
@@ -415,8 +426,14 @@
             function checkSubmit() {
                 const btn = document.getElementById('btn-submit');
                 const endType = document.querySelector('input[name="end_type"]:checked');
-                if (selfieTaken && odometerTaken && document.getElementById('odometer_end_value').value && endType) {
-                    btn.disabled = false;
+                if (fuelEnabled) {
+                    if (selfieTaken && odometerTaken && document.getElementById('odometer_end_value') && document.getElementById('odometer_end_value').value && endType) {
+                        btn.disabled = false;
+                    }
+                } else {
+                    if (selfieTaken && endType) {
+                        btn.disabled = false;
+                    }
                 }
             }
 
@@ -429,27 +446,29 @@
                     } else {
                         notesField.classList.add('hidden');
                     }
+                    checkSubmit();
                 });
             });
 
+            @if($fuelEnabled)
             // Calculate total KM
             document.getElementById('odometer_end_value').addEventListener('input', function () {
                 const endValue = parseFloat(this.value) || 0;
 
-                // Reset custom validity terlebih dahulu
                 this.setCustomValidity('');
 
                 if (endValue > 0 && startOdometer > 0) {
                     const total = endValue - startOdometer;
-                    document.getElementById('km-total').textContent = `Total KM hari ini: ${total.toFixed(2)} KM`;
+                    const kmTotal = document.getElementById('km-total');
+                    if (kmTotal) kmTotal.textContent = `Total KM hari ini: ${total.toFixed(2)} KM`;
 
-                    // Validasi: end harus >= start
                     if (endValue < startOdometer) {
                         this.setCustomValidity('Nilai odometer akhir tidak boleh kurang dari odometer awal');
                     }
                 }
                 checkSubmit();
             });
+            @endif
 
             // GPS - request jika granted/prompt, tolak jika denied
             async function initGPS() {
@@ -500,10 +519,12 @@
                 submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
             });
 
-            // Init - cek izin dulu, baru mulai kamera
             safeInitSelfieCamera();
             initGPS();
-            document.getElementById('odometer-status').innerHTML = '<svg class="w-5 h-5 inline text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812-1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> Kamera odometer akan aktif setelah foto selfie diambil';
+            if (fuelEnabled) {
+                const odoStatus = document.getElementById('odometer-status');
+                if (odoStatus) odoStatus.innerHTML = '<svg class="w-5 h-5 inline text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812-1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> Kamera odometer akan aktif setelah foto selfie diambil';
+            }
 
         </script>
     @endsection

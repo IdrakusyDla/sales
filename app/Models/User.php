@@ -24,6 +24,9 @@ class User extends Authenticatable
         'password',
         'role',
         'supervisor_id',
+        'company_id',
+        'job_position_id',
+        'fuel_reimbursement_enabled',
         'is_active',
         'last_activity_at',
     ];
@@ -49,6 +52,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'fuel_reimbursement_enabled' => 'boolean',
             'last_activity_at' => 'datetime',
         ];
     }
@@ -121,6 +125,22 @@ class User extends Authenticatable
     public function roleData()
     {
         return $this->belongsTo(Role::class, 'role', 'slug');
+    }
+
+    /**
+     * Relasi: User milik sebuah Perusahaan
+     */
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    /**
+     * Relasi: User memiliki Jabatan
+     */
+    public function jobPosition()
+    {
+        return $this->belongsTo(JobPosition::class);
     }
 
     // ==========================================

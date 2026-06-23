@@ -81,7 +81,7 @@
 
         {{-- SEARCH & FILTER --}}
         <form method="GET" action="{{ route('it.dashboard') }}" class="mb-6">
-            <div class="flex gap-2">
+            <div class="flex flex-col md:flex-row gap-2">
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama..."
                     class="flex-1 border border-gray-300 rounded-xl p-3 text-sm">
                 <select name="role" class="border border-gray-300 rounded-xl p-3 text-sm">
@@ -91,6 +91,18 @@
                     <option value="hrd" {{ request('role') == 'hrd' ? 'selected' : '' }}>HRD</option>
                     <option value="finance" {{ request('role') == 'finance' ? 'selected' : '' }}>Finance</option>
                     <option value="it" {{ request('role') == 'it' ? 'selected' : '' }}>IT</option>
+                </select>
+                <select name="company_id" class="border border-gray-300 rounded-xl p-3 text-sm">
+                    <option value="">Semua Perusahaan</option>
+                    @foreach($companies as $company)
+                        <option value="{{ $company->id }}" {{ request('company_id') == $company->id ? 'selected' : '' }}>{{ $company->name }}</option>
+                    @endforeach
+                </select>
+                <select name="job_position_id" class="border border-gray-300 rounded-xl p-3 text-sm">
+                    <option value="">Semua Jabatan</option>
+                    @foreach($jobPositions as $jobPosition)
+                        <option value="{{ $jobPosition->id }}" {{ request('job_position_id') == $jobPosition->id ? 'selected' : '' }}>{{ $jobPosition->name }}</option>
+                    @endforeach
                 </select>
             </div>
             <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold text-sm mt-3">
@@ -113,6 +125,17 @@
                             <div class="flex-1">
                                 <h3 class="font-bold text-gray-800">{{ $user->name }}</h3>
                                 <p class="text-xs text-gray-500">{{ $user->username }} • {{ ucfirst($user->role) }}</p>
+                                @if($user->company)
+                                    <p class="text-xs text-cyan-600">{{ $user->company->name }}</p>
+                                @endif
+                                <div class="flex items-center gap-2 flex-wrap mt-0.5">
+                                    @if($user->jobPosition)
+                                        <span class="text-[10px] bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full font-bold">{{ $user->jobPosition->name }}</span>
+                                    @endif
+                                    @if(!$user->fuel_reimbursement_enabled)
+                                        <span class="text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-bold">No Fuel</span>
+                                    @endif
+                                </div>
                             </div>
                         </div>
                         <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

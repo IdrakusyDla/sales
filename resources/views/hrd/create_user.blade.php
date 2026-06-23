@@ -44,7 +44,7 @@
 
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">Role *</label>
-                        <select name="role" required class="w-full border border-gray-300 rounded-xl p-3 text-sm bg-gray-50 focs:ring-2 focus:ring-blue-500">
+                        <select name="role" id="role-select" required class="w-full border border-gray-300 rounded-xl p-3 text-sm bg-gray-50 focs:ring-2 focus:ring-blue-500">
                             <option value="">-- Pilih Role --</option>
                             @foreach($roles as $role)
                                 <option value="{{ $role->slug }}" {{ old('role') == $role->slug ? 'selected' : '' }}>
@@ -53,6 +53,49 @@
                             @endforeach
                         </select>
                         <p class="text-xs text-gray-500 mt-1">Hak akses aplikasi akan disesuaikan dengan Role terpilih</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Perusahaan</label>
+                        <select name="company_id" class="w-full border border-gray-300 rounded-xl p-3 text-sm">
+                            <option value="">-- Tidak Ada / Belum Dipilih --</option>
+                            @foreach($companies as $company)
+                                <option value="{{ $company->id }}" {{ old('company_id') == $company->id ? 'selected' : '' }}>
+                                    {{ $company->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Pilih perusahaan tempat karyawan bekerja (untuk filter)</p>
+                        @if($companies->isEmpty())
+                            <p class="text-xs text-orange-600 mt-1">Belum ada perusahaan. <a href="{{ route('hrd.companies.index') }}" class="font-bold underline">Tambahkan di sini</a></p>
+                        @endif
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Jabatan</label>
+                        <select name="job_position_id" class="w-full border border-gray-300 rounded-xl p-3 text-sm">
+                            <option value="">-- Tidak Ada / Belum Dipilih --</option>
+                            @foreach($jobPositions as $jobPosition)
+                                <option value="{{ $jobPosition->id }}" {{ old('job_position_id') == $jobPosition->id ? 'selected' : '' }}>
+                                    {{ $jobPosition->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Pilih jabatan karyawan, misal SMD / SPG (untuk filter)</p>
+                        @if($jobPositions->isEmpty())
+                            <p class="text-xs text-orange-600 mt-1">Belum ada jabatan. <a href="{{ route('hrd.job_positions.index') }}" class="font-bold underline">Tambahkan di sini</a></p>
+                        @endif
+                    </div>
+
+                    <div id="fuel-section">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Reimburse Bensin</label>
+                        <label class="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-500">
+                            <input type="checkbox" name="fuel_reimbursement_enabled" value="1" checked class="w-5 h-5 text-blue-600 rounded">
+                            <span class="flex-1">
+                                <span class="font-bold text-sm">Aktifkan Reimburse Bahan Bakar</span>
+                                <p class="text-xs text-gray-500">Jika aktif, karyawan wajib input odometer saat absen masuk & keluar</p>
+                            </span>
+                        </label>
                     </div>
                 </div>
             </div>

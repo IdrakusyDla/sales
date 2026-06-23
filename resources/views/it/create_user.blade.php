@@ -34,6 +34,41 @@
             </div>
 
             <div class="mb-5">
+                <label class="block text-sm font-bold text-gray-700 mb-2">Perusahaan</label>
+                <select name="company_id"
+                    class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                    <option value="">-- Tidak Ada / Belum Dipilih --</option>
+                    @foreach($companies as $company)
+                        <option value="{{ $company->id }}" {{ old('company_id') == $company->id ? 'selected' : '' }}>{{ $company->name }}</option>
+                    @endforeach
+                </select>
+                <p class="text-[10px] text-gray-500 mt-1">Pilih perusahaan tempat karyawan bekerja (untuk filter).</p>
+            </div>
+
+            <div class="mb-5">
+                <label class="block text-sm font-bold text-gray-700 mb-2">Jabatan</label>
+                <select name="job_position_id"
+                    class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                    <option value="">-- Tidak Ada / Belum Dipilih --</option>
+                    @foreach($jobPositions as $jobPosition)
+                        <option value="{{ $jobPosition->id }}" {{ old('job_position_id') == $jobPosition->id ? 'selected' : '' }}>{{ $jobPosition->name }}</option>
+                    @endforeach
+                </select>
+                <p class="text-[10px] text-gray-500 mt-1">Pilih jabatan karyawan, misal SMD / SPG (untuk filter).</p>
+            </div>
+
+            <div class="mb-5">
+                <label class="block text-sm font-bold text-gray-700 mb-2">Reimburse Bensin</label>
+                <label class="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-500">
+                    <input type="checkbox" name="fuel_reimbursement_enabled" value="1" checked class="w-5 h-5 text-blue-600 rounded">
+                    <span class="flex-1">
+                        <span class="font-bold text-sm">Aktifkan Reimburse Bahan Bakar</span>
+                        <p class="text-xs text-gray-500">Jika aktif, karyawan wajib input odometer saat absen masuk & keluar</p>
+                    </span>
+                </label>
+            </div>
+
+            <div class="mb-5">
                 <label class="block text-sm font-bold text-gray-700 mb-2">Nama Lengkap *</label>
                 <input type="text" name="name" required placeholder="Contoh: Budi Santoso" value="{{ old('name') }}"
                     class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">

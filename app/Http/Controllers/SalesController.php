@@ -78,55 +78,62 @@ class SalesController extends Controller
             ->whereNull('photo_receipt')
             ->count();
 
+        $fuelEnabled = $user->fuel_reimbursement_enabled;
+
         return view('sales.absen_masuk', compact(
             'user',
             'plannedVisitsCount',
-            'pendingReimburseCount'
+            'pendingReimburseCount',
+            'fuelEnabled'
         ));
     }
 
     public function storeAbsenMasuk(Request $request)
     {
-        // Validasi manual odometer (pesan ramah via session)
-        if (!$request->odometer_value || !is_numeric($request->odometer_value) || $request->odometer_value < 0) {
-            return back()->with('error', 'Nilai odometer wajib diisi dengan angka yang valid.')->withInput();
-        }
-        if ($request->odometer_value > 99999999) {
-            return back()->with('error', 'Nilai odometer terlalu besar. Maksimal 8 digit (99.999.999 km).')->withInput();
-        }
-
-        $request->validate([
-            'photo' => 'required',
-            'odometer_photo' => 'required',
-            'odometer_value' => 'required|numeric|min:0',
-            'lat' => 'required',
-            'long' => 'required',
-            'destinations' => 'required|array|min:1',
-            'destinations.*' => 'required|string',
-        ]);
-
         $user = Auth::user();
+        $fuelEnabled = $user->fuel_reimbursement_enabled;
 
-        // Upload foto selfie
+        if ($fuelEnabled) {
+            if (!$request->odometer_value || !is_numeric($request->odometer_value) || $request->odometer_value < 0) {
+                return back()->with('error', 'Nilai odometer wajib diisi dengan angka yang valid.')->withInput();
+            }
+            if ($request->odometer_value > 99999999) {
+                return back()->with('error', 'Nilai odometer terlalu besar. Maksimal 8 digit (99.999.999 km).')->withInput();
+            }
+
+            $request->validate([
+                'photo' => 'required',
+                'odometer_photo' => 'required',
+                'odometer_value' => 'required|numeric|min:0',
+                'lat' => 'required',
+                'long' => 'required',
+                'destinations' => 'required|array|min:1',
+                'destinations.*' => 'required|string',
+            ]);
+        } else {
+            $request->validate([
+                'photo' => 'required',
+                'lat' => 'required',
+                'long' => 'required',
+                'destinations' => 'required|array|min:1',
+                'destinations.*' => 'required|string',
+            ]);
+        }
+
         $selfiePath = $this->saveBase64Image($request->photo, 'attendance');
 
-        // Upload foto odometer
-        $odometerPhotoPath = $this->saveBase64Image($request->odometer_photo, 'odometer');
-
-        // Buat daily log
         $dailyLog = DailyLog::create([
             'user_id' => $user->id,
             'date' => Carbon::today(),
             'start_time' => Carbon::now(),
             'start_photo' => $selfiePath,
-            'start_odo_value' => $request->odometer_value,
-            'start_odo_photo' => $odometerPhotoPath,
+            'start_odo_value' => $fuelEnabled ? $request->odometer_value : null,
+            'start_odo_photo' => $fuelEnabled ? $this->saveBase64Image($request->odometer_photo, 'odometer') : null,
             'lat' => $request->lat,
             'long' => $request->long,
             'daily_plan' => implode(', ', $request->destinations),
         ]);
 
-        // Buat rencana kunjungan (status: pending)
         foreach ($request->destinations as $destination) {
             Visit::create([
                 'daily_log_id' => $dailyLog->id,
@@ -289,6 +296,7 @@ class SalesController extends Controller
         $failedVisits = $allVisits->where('status', 'failed')->count();
         $totalVisits = $allVisits->count();
         $plannedVisits = $allVisits->where('is_planned', true)->count();
+        $fuelEnabled = $user->fuel_reimbursement_enabled;
 
         return view('sales.absen_keluar', [
             'todayLog' => $activeLog,
@@ -296,41 +304,51 @@ class SalesController extends Controller
             'failedVisits' => $failedVisits,
             'totalVisits' => $totalVisits,
             'plannedVisits' => $plannedVisits,
+            'fuelEnabled' => $fuelEnabled,
         ]);
     }
 
     public function storeAbsenKeluar(Request $request)
     {
-        // Validasi manual odometer (pesan ramah via session)
-        if (!$request->odometer_value || !is_numeric($request->odometer_value) || $request->odometer_value < 0) {
-            return back()->with('error', 'Nilai odometer wajib diisi dengan angka yang valid.')->withInput();
-        }
-        if ($request->odometer_value > 99999999) {
-            return back()->with('error', 'Nilai odometer terlalu besar. Maksimal 8 digit (99.999.999 km).')->withInput();
-        }
-
-        $request->validate([
-            'photo' => 'required',
-            'odometer_photo' => 'required',
-            'odometer_value' => 'required|numeric|min:0',
-            'lat' => 'required',
-            'long' => 'required',
-            'end_type' => 'required|in:home,last_store,other',
-            'end_notes' => 'nullable|string',
-        ]);
-
         $user = Auth::user();
+        $fuelEnabled = $user->fuel_reimbursement_enabled;
+
+        if ($fuelEnabled) {
+            if (!$request->odometer_value || !is_numeric($request->odometer_value) || $request->odometer_value < 0) {
+                return back()->with('error', 'Nilai odometer wajib diisi dengan angka yang valid.')->withInput();
+            }
+            if ($request->odometer_value > 99999999) {
+                return back()->with('error', 'Nilai odometer terlalu besar. Maksimal 8 digit (99.999.999 km).')->withInput();
+            }
+
+            $request->validate([
+                'photo' => 'required',
+                'odometer_photo' => 'required',
+                'odometer_value' => 'required|numeric|min:0',
+                'lat' => 'required',
+                'long' => 'required',
+                'end_type' => 'required|in:home,last_store,other',
+                'end_notes' => 'nullable|string',
+            ]);
+        } else {
+            $request->validate([
+                'photo' => 'required',
+                'lat' => 'required',
+                'long' => 'required',
+                'end_type' => 'required|in:home,last_store,other',
+                'end_notes' => 'nullable|string',
+            ]);
+        }
+
         $today = Carbon::today();
         $now = Carbon::now();
 
-        // 1. Cari Log AKTIF Hari Ini
         $activeLog = DailyLog::where('user_id', $user->id)
             ->where('date', $today)
             ->whereNull('end_time')
             ->orderBy('created_at', 'desc')
             ->first();
 
-        // 2. Jika tidak ada, Cari Log AKTIF Kemarin (Late Checkout)
         if (!$activeLog && $now->hour < 4) {
             $yesterday = Carbon::yesterday();
             $activeLog = DailyLog::where('user_id', $user->id)
@@ -341,55 +359,49 @@ class SalesController extends Controller
         }
 
         if (!$activeLog) {
-            // Bisa jadi karena tidak ada log, ATAU log sudah diclose semua
             return redirect()->route('dashboard')->with('error', 'Tidak ada sesi absen aktif yang perlu di-checkout.');
         }
 
-        // Use variable name $todayLog for compatibility with rest of method logic if needed, or update usage
         $todayLog = $activeLog;
 
         if ($todayLog->hasEnded()) {
             return redirect()->route('dashboard')->with('error', 'Anda sudah absen keluar hari ini.');
         }
 
-        // Cek apakah masih ada kunjungan yang pending
         $pendingVisits = $todayLog->visits()->where('status', 'pending')->count();
         if ($pendingVisits > 0) {
             return redirect()->route('dashboard')->with('error', 'Silakan selesaikan semua kunjungan terlebih dahulu sebelum absen keluar.');
         }
 
-        // Validasi: odometer akhir harus >= odometer awal
-        if ($request->odometer_value < $todayLog->start_odo_value) {
-            return back()->with('error', 'Nilai odometer akhir tidak boleh kurang dari odometer awal.')->withInput();
+        if ($fuelEnabled) {
+            if ($request->odometer_value < ($todayLog->start_odo_value ?? 0)) {
+                return back()->with('error', 'Nilai odometer akhir tidak boleh kurang dari odometer awal.')->withInput();
+            }
+
+            if ($request->odometer_value > 99999999) {
+                return back()->with('error', 'Nilai odometer terlalu besar. Maksimal 8 digit (99.999.999 km).')->withInput();
+            }
         }
 
-        // Validasi: odometer maksimal 8 digit (99.999.999)
-        if ($request->odometer_value > 99999999) {
-            return back()->with('error', 'Nilai odometer terlalu besar. Maksimal 8 digit (99.999.999 km).')->withInput();
-        }
-
-        // Upload foto selfie
         $selfiePath = $this->saveBase64Image($request->photo, 'attendance');
 
-        // Upload foto odometer
-        $odometerPhotoPath = $this->saveBase64Image($request->odometer_photo, 'odometer');
-
-        // Update daily log dengan absen keluar
         $todayLog->update([
             'end_time' => Carbon::now(),
             'end_photo' => $selfiePath,
-            'end_odo_value' => $request->odometer_value,
-            'end_odo_photo' => $odometerPhotoPath,
+            'end_odo_value' => $fuelEnabled ? $request->odometer_value : null,
+            'end_odo_photo' => $fuelEnabled ? $this->saveBase64Image($request->odometer_photo, 'odometer') : null,
             'end_lat' => $request->lat,
             'end_long' => $request->long,
             'end_type' => $request->end_type,
             'end_notes' => $request->end_notes,
         ]);
 
-        // Auto hitung & simpan reimburse bahan bakar
-        $this->calculateFuelReimbursement($todayLog);
+        if ($fuelEnabled) {
+            $this->calculateFuelReimbursement($todayLog);
+            return redirect()->route('dashboard')->with('success', 'Absen keluar berhasil! Reimburse bahan bakar otomatis dihitung.');
+        }
 
-        return redirect()->route('dashboard')->with('success', 'Absen keluar berhasil! Reimburse bahan bakar otomatis dihitung.');
+        return redirect()->route('dashboard')->with('success', 'Absen keluar berhasil!');
     }
 
     // ==========================================

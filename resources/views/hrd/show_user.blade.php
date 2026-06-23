@@ -17,6 +17,17 @@
                     @endif
                 </h1>
                 <p class="text-sm text-gray-500">{{ $user->username }} • {{ ucfirst($user->role) }}</p>
+                <div class="flex items-center gap-2 flex-wrap mt-1">
+                    @if($user->company)
+                        <span class="text-xs bg-cyan-100 text-cyan-700 px-2 py-0.5 rounded-full font-bold">{{ $user->company->name }}</span>
+                    @endif
+                    @if($user->jobPosition)
+                        <span class="text-xs bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full font-bold">{{ $user->jobPosition->name }}</span>
+                    @endif
+                    @if(!$user->fuel_reimbursement_enabled)
+                        <span class="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-bold">No Fuel Reimburse</span>
+                    @endif
+                </div>
             </div>
         </div>
 
@@ -166,6 +177,46 @@
                     @endif
                 </form>
             </div>
+        </div>
+
+        {{-- EDIT DATA KARYAWAN --}}
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-6">
+            <h3 class="font-bold text-gray-800 mb-4 text-sm border-b border-gray-100 pb-2">Data Perusahaan & Jabatan</h3>
+            <form action="{{ route('hrd.user.update_profile', $user->id) }}" method="POST" class="space-y-4">
+                @csrf
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Perusahaan</label>
+                        <select name="company_id" class="w-full border border-gray-300 rounded-xl p-3 text-sm">
+                            <option value="">-- Tidak Dipilih --</option>
+                            @foreach(\App\Models\Company::orderBy('name')->get() as $company)
+                                <option value="{{ $company->id }}" {{ $user->company_id == $company->id ? 'selected' : '' }}>{{ $company->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Jabatan</label>
+                        <select name="job_position_id" class="w-full border border-gray-300 rounded-xl p-3 text-sm">
+                            <option value="">-- Tidak Dipilih --</option>
+                            @foreach(\App\Models\JobPosition::orderBy('name')->get() as $jobPosition)
+                                <option value="{{ $jobPosition->id }}" {{ $user->job_position_id == $jobPosition->id ? 'selected' : '' }}>{{ $jobPosition->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-500">
+                        <input type="checkbox" name="fuel_reimbursement_enabled" value="1" {{ $user->fuel_reimbursement_enabled ? 'checked' : '' }} class="w-5 h-5 text-blue-600 rounded">
+                        <span class="flex-1">
+                            <span class="font-bold text-sm">Reimburse Bahan Bakar</span>
+                            <p class="text-xs text-gray-500">Jika dinonaktifkan, karyawan tidak perlu input odometer & tidak dapat reimburse bensin otomatis</p>
+                        </span>
+                    </label>
+                </div>
+                <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-blue-700 transition">
+                    Simpan Perubahan
+                </button>
+            </form>
         </div>
 
         {{-- LIST RIWAYAT --}}

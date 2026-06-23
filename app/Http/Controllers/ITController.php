@@ -7,6 +7,8 @@ use App\Models\User;
 use App\Models\DailyLog;
 use App\Models\Visit;
 use App\Models\Expense;
+use App\Models\Company;
+use App\Models\JobPosition;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\RekapExport;
@@ -20,23 +22,30 @@ class ITController extends Controller
 
     public function dashboard(Request $request)
     {
-        // Ambil semua sales, supervisor, HRD, dan Finance
         $query = User::whereIn('role', ['sales', 'supervisor', 'hrd', 'finance', 'it']);
 
-        // Fitur Search
         if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        // Filter role
         if ($request->filled('role')) {
             $query->where('role', $request->role);
         }
 
+        if ($request->filled('company_id')) {
+            $query->where('company_id', $request->company_id);
+        }
+
+        if ($request->filled('job_position_id')) {
+            $query->where('job_position_id', $request->job_position_id);
+        }
+
         $users = $query->orderBy('name')->get();
         $roles = \App\Models\Role::orderBy('name')->get();
+        $companies = Company::orderBy('name')->get();
+        $jobPositions = JobPosition::orderBy('name')->get();
 
-        return view('it.dashboard', compact('users', 'roles'));
+        return view('it.dashboard', compact('users', 'roles', 'companies', 'jobPositions'));
     }
 
     // ==========================================
@@ -47,7 +56,9 @@ class ITController extends Controller
     {
         $roles = \App\Models\Role::orderBy('name')->get();
         $supervisors = User::where('role', 'supervisor')->get();
-        return view('it.create_user', compact('roles', 'supervisors'));
+        $companies = Company::where('is_active', true)->orderBy('name')->get();
+        $jobPositions = JobPosition::where('is_active', true)->orderBy('name')->get();
+        return view('it.create_user', compact('roles', 'supervisors', 'companies', 'jobPositions'));
     }
 
     public function storeUser(Request $request)
@@ -57,11 +68,13 @@ class ITController extends Controller
             'username' => 'required|string|unique:users',
             'role' => 'required|exists:roles,slug',
             'password' => 'nullable|string|min:6',
+            'company_id' => 'nullable|exists:companies,id',
+            'job_position_id' => 'nullable|exists:job_positions,id',
+            'fuel_reimbursement_enabled' => 'boolean',
         ]);
 
         $roleSlug = $request->role;
 
-        // Custom validation untuk sales
         if ($roleSlug === 'sales' && $request->filled('supervisor_id')) {
             $supervisor = User::findOrFail($request->supervisor_id);
             if ($supervisor->role !== 'supervisor') {
@@ -69,7 +82,6 @@ class ITController extends Controller
             }
         }
 
-        // Tentukan password: jika diisi manual gunakan itu, jika kosong gunakan default password
         $defaultPasswords = [
             'sales' => 'sales123',
             'supervisor' => 'supervisor123',
@@ -78,8 +90,8 @@ class ITController extends Controller
             'finance' => 'finance123',
         ];
 
-        $password = $request->filled('password') 
-                    ? $request->password 
+        $password = $request->filled('password')
+                    ? $request->password
                     : ($defaultPasswords[$roleSlug] ?? 'password123');
 
         $user = User::create([
@@ -88,9 +100,11 @@ class ITController extends Controller
             'password' => Hash::make($password),
             'role' => $roleSlug,
             'supervisor_id' => ($roleSlug === 'sales') ? $request->supervisor_id : null,
+            'company_id' => $request->company_id,
+            'job_position_id' => $request->job_position_id,
+            'fuel_reimbursement_enabled' => $request->has('fuel_reimbursement_enabled'),
         ]);
 
-        // Support existing sales-supervisor many-to-many logic
         if ($roleSlug === 'sales' && $request->filled('supervisor_id')) {
             $user->supervisors()->attach($request->supervisor_id);
         }

@@ -7,6 +7,8 @@ use App\Models\User;
 use App\Models\DailyLog;
 use App\Models\Visit;
 use App\Models\Expense;
+use App\Models\Company;
+use App\Models\JobPosition;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\RekapExport;
@@ -115,27 +117,34 @@ class HRDController extends Controller
 
     public function dashboard(Request $request)
     {
-        // Ambil semua sales, supervisor, dan finance
         $query = User::whereIn('role', ['sales', 'supervisor', 'finance']);
 
-        // Fitur Search
         if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        // Filter role
         if ($request->filled('role')) {
             $query->where('role', $request->role);
         }
 
+        if ($request->filled('company_id')) {
+            $query->where('company_id', $request->company_id);
+        }
+
+        if ($request->filled('job_position_id')) {
+            $query->where('job_position_id', $request->job_position_id);
+        }
+
         $users = $query->orderBy('name')->get();
 
-        // Statistik pending reimburse untuk HRD
         $stats = [
             'pending_hrd' => Expense::where('status', 'pending_hrd')->count(),
         ];
 
-        return view('hrd.dashboard', compact('users', 'stats'));
+        $companies = Company::orderBy('name')->get();
+        $jobPositions = JobPosition::orderBy('name')->get();
+
+        return view('hrd.dashboard', compact('users', 'stats', 'companies', 'jobPositions'));
     }
 
     // ==========================================
@@ -144,12 +153,12 @@ class HRDController extends Controller
 
     public function createUser()
     {
-        // HRD hanya bisa melihat role yang hrd_can_create = true
         $roles = \App\Models\Role::where('hrd_can_create', true)->orderBy('name')->get();
-        // Ambil supervisor untuk opsi
         $supervisors = User::where('role', 'supervisor')->get();
+        $companies = Company::where('is_active', true)->orderBy('name')->get();
+        $jobPositions = JobPosition::where('is_active', true)->orderBy('name')->get();
 
-        return view('hrd.create_user', compact('roles', 'supervisors'));
+        return view('hrd.create_user', compact('roles', 'supervisors', 'companies', 'jobPositions'));
     }
 
     public function storeUser(Request $request)
@@ -159,15 +168,16 @@ class HRDController extends Controller
             'username' => 'required|string|unique:users',
             'role' => 'required|exists:roles,slug',
             'supervisor_id' => 'nullable|exists:users,id',
+            'company_id' => 'nullable|exists:companies,id',
+            'job_position_id' => 'nullable|exists:job_positions,id',
+            'fuel_reimbursement_enabled' => 'boolean',
         ]);
 
-        // PROTEKSI BACKEND: Pastikan role yang dikirim memang diizinkan untuk HRD
         $role = \App\Models\Role::where('slug', $request->role)->firstOrFail();
         if (!$role->hrd_can_create) {
             abort(403, 'Akses Ditolak: HRD tidak diizinkan membuat akun dengan role ini.');
         }
 
-        // Cek supervisor jika diisi
         if ($request->filled('supervisor_id')) {
             $supervisor = User::findOrFail($request->supervisor_id);
             if ($supervisor->role !== 'supervisor') {
@@ -175,7 +185,6 @@ class HRDController extends Controller
             }
         }
 
-        // Tentukan default password berdasarkan nama role (misal sales -> sales123)
         $defaultPassword = $request->role . '123';
 
         $user = User::create([
@@ -184,9 +193,11 @@ class HRDController extends Controller
             'password' => Hash::make($defaultPassword),
             'role' => $request->role,
             'supervisor_id' => $request->supervisor_id,
+            'company_id' => $request->company_id,
+            'job_position_id' => $request->job_position_id,
+            'fuel_reimbursement_enabled' => $request->has('fuel_reimbursement_enabled'),
         ]);
 
-        // Attach supervisor pivot kalau role-nya sales
         if ($request->role === 'sales' && $request->filled('supervisor_id')) {
             $user->supervisors()->attach($request->supervisor_id);
         }
@@ -387,5 +398,142 @@ class HRDController extends Controller
             new RekapExport($type, $startDate, $endDate, $userId),
             $fileName
         );
+    }
+
+    // ==========================================
+    // MANAJEMEN PERUSAHAAN (COMPANY)
+    // ==========================================
+
+    public function companyIndex()
+    {
+        $companies = Company::withCount('users')->orderBy('name')->get();
+        return view('hrd.companies.index', compact('companies'));
+    }
+
+    public function companyStore(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255|unique:companies,name',
+        ]);
+
+        Company::create([
+            'name' => $request->name,
+        ]);
+
+        return back()->with('success', 'Perusahaan berhasil ditambahkan!');
+    }
+
+    public function companyUpdate(Request $request, $id)
+    {
+        $company = Company::findOrFail($id);
+        $request->validate([
+            'name' => 'required|string|max:255|unique:companies,name,' . $id,
+        ]);
+
+        $company->update(['name' => $request->name]);
+
+        return back()->with('success', 'Perusahaan berhasil diperbarui!');
+    }
+
+    public function companyToggleStatus($id)
+    {
+        $company = Company::findOrFail($id);
+        $company->is_active = !$company->is_active;
+        $company->save();
+
+        $status = $company->is_active ? 'diaktifkan' : 'dinonaktifkan';
+        return back()->with('success', "Perusahaan berhasil {$status}.");
+    }
+
+    public function companyDestroy($id)
+    {
+        $company = Company::findOrFail($id);
+
+        if ($company->users()->count() > 0) {
+            return back()->with('error', 'Tidak bisa menghapus perusahaan yang masih memiliki karyawan. Nonaktifkan saja.');
+        }
+
+        $company->delete();
+        return back()->with('success', 'Perusahaan berhasil dihapus!');
+    }
+
+    // ==========================================
+    // MANAJEMEN JABATAN (JOB POSITION)
+    // ==========================================
+
+    public function jobPositionIndex()
+    {
+        $jobPositions = JobPosition::withCount('users')->orderBy('name')->get();
+        return view('hrd.job_positions.index', compact('jobPositions'));
+    }
+
+    public function jobPositionStore(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255|unique:job_positions,name',
+        ]);
+
+        JobPosition::create([
+            'name' => $request->name,
+        ]);
+
+        return back()->with('success', 'Jabatan berhasil ditambahkan!');
+    }
+
+    public function jobPositionUpdate(Request $request, $id)
+    {
+        $jobPosition = JobPosition::findOrFail($id);
+        $request->validate([
+            'name' => 'required|string|max:255|unique:job_positions,name,' . $id,
+        ]);
+
+        $jobPosition->update(['name' => $request->name]);
+
+        return back()->with('success', 'Jabatan berhasil diperbarui!');
+    }
+
+    public function jobPositionToggleStatus($id)
+    {
+        $jobPosition = JobPosition::findOrFail($id);
+        $jobPosition->is_active = !$jobPosition->is_active;
+        $jobPosition->save();
+
+        $status = $jobPosition->is_active ? 'diaktifkan' : 'dinonaktifkan';
+        return back()->with('success', "Jabatan berhasil {$status}.");
+    }
+
+    public function jobPositionDestroy($id)
+    {
+        $jobPosition = JobPosition::findOrFail($id);
+
+        if ($jobPosition->users()->count() > 0) {
+            return back()->with('error', 'Tidak bisa menghapus jabatan yang masih memiliki karyawan. Nonaktifkan saja.');
+        }
+
+        $jobPosition->delete();
+        return back()->with('success', 'Jabatan berhasil dihapus!');
+    }
+
+    // ==========================================
+    // UPDATE DATA KARYAWAN (Perusahaan, Jabatan, Fuel Toggle)
+    // ==========================================
+
+    public function updateUserProfile(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        $request->validate([
+            'company_id' => 'nullable|exists:companies,id',
+            'job_position_id' => 'nullable|exists:job_positions,id',
+            'fuel_reimbursement_enabled' => 'boolean',
+        ]);
+
+        $user->update([
+            'company_id' => $request->company_id,
+            'job_position_id' => $request->job_position_id,
+            'fuel_reimbursement_enabled' => $request->has('fuel_reimbursement_enabled'),
+        ]);
+
+        return back()->with('success', 'Data karyawan berhasil diperbarui!');
     }
 }
