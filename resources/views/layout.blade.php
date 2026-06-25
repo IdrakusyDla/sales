@@ -93,7 +93,7 @@
             }
 
             /* Forms: readable max width on desktop */
-            .desktop-main form:not(.card-form) {
+            .desktop-main form:not(.card-form):not(.filter-form) {
                 max-width: 720px;
             }
 
