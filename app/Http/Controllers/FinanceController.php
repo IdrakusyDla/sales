@@ -146,6 +146,11 @@ class FinanceController extends Controller
      */
     public function bulkApproveReimburse(Request $request)
     {
+        $expenseIds = $request->input('expense_ids');
+        if (is_string($expenseIds)) {
+            $request->merge(['expense_ids' => array_filter(explode(',', $expenseIds))]);
+        }
+
         $request->validate([
             'expense_ids' => 'required|array',
             'expense_ids.*' => 'exists:expenses,id',

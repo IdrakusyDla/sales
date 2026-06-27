@@ -42,6 +42,46 @@ class SalesController extends Controller
     {
         $user = Auth::user();
 
+        // === LAZY AUTO-CLOSE: tutup sesi hari sebelumnya yang masih terbuka ===
+        // User non-fuel tidak wajib absen keluar; bila lupa, sesi ditutup sistem di sini
+        // memakai data visit terakhir (atau data start bila tanpa visit) -> end_type=auto_rollover.
+        // Late-night window (00:00-04:00): log KEMARIN tetap dibiarkan terbuka agar bisa late-night checkout.
+        $staleBefore = Carbon::today();
+        if (Carbon::now()->hour < 4) {
+            $staleBefore = Carbon::yesterday();
+        }
+
+        $staleLogs = DailyLog::where('user_id', $user->id)
+            ->where('date', '<', $staleBefore->toDateString())
+            ->whereNull('end_time')
+            ->get();
+
+        foreach ($staleLogs as $stale) {
+            $lastVisit = $stale->visits()
+                ->whereIn('status', ['completed', 'failed'])
+                ->orderBy('departure_time', 'desc')
+                ->first();
+
+            if ($lastVisit) {
+                $stale->update([
+                    'end_time'  => $lastVisit->departure_time ?? $lastVisit->arrival_time,
+                    'end_photo' => $lastVisit->departure_photo,
+                    'end_lat'   => $lastVisit->lat,
+                    'end_long'  => $lastVisit->long,
+                    'end_type'  => 'auto_rollover',
+                ]);
+            } else {
+                // Tidak ada visit sama sekali -> fallback pakai data start sesi.
+                $stale->update([
+                    'end_time'  => $stale->start_time,
+                    'end_photo' => $stale->start_photo,
+                    'end_lat'   => $stale->lat,
+                    'end_long'  => $stale->long,
+                    'end_type'  => 'auto_rollover',
+                ]);
+            }
+        }
+
         // Cek log TERAKHIR hari ini
         $lastLog = DailyLog::where('user_id', $user->id)
             ->where('date', Carbon::today())
@@ -247,6 +287,224 @@ class SalesController extends Controller
     }
 
     // ==========================================
+    // ABSEN KUNJUNGAN TOKO - ALUR BARU 2 FOTO
+    // Check-in (sampai) -> Check-out (pulang)
+    // ==========================================
+
+    /**
+     * Helper: ambil log aktif (belum absen keluar) hari ini,
+     * atau hari kemarin jika dini hari (late night).
+     */
+    private function getActiveLogForUser($user)
+    {
+        $today = Carbon::today();
+        $now = Carbon::now();
+
+        $activeLog = DailyLog::where('user_id', $user->id)
+            ->where('date', $today)
+            ->whereNull('end_time')
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        if (!$activeLog && $now->hour < 4) {
+            $activeLog = DailyLog::where('user_id', $user->id)
+                ->where('date', Carbon::yesterday())
+                ->whereNull('end_time')
+                ->orderBy('created_at', 'desc')
+                ->first();
+        }
+
+        return $activeLog;
+    }
+
+    /**
+     * CHECK-IN: foto saat SAMPAI di toko
+     * $visit = Visit yang dipilih (planned), atau null = kunjungan dadakan.
+     */
+    public function showCheckInToko($visit = null)
+    {
+        $user = Auth::user();
+        $todayLog = $this->getActiveLogForUser($user);
+
+        if (!$todayLog) {
+            return redirect()->route('sales.absen.masuk')->with('error', 'Silakan absen masuk terlebih dahulu.');
+        }
+
+        $visitObj = null;
+        if ($visit) {
+            $visitObj = Visit::where('id', $visit)
+                ->where('daily_log_id', $todayLog->id)
+                ->firstOrFail();
+
+            // Jika sudah pernah check-in, arahkan ke check-out
+            if ($visitObj->hasArrived()) {
+                return redirect()->route('sales.absen.toko.checkout', $visitObj->id);
+            }
+        }
+
+        // Daftar kunjungan pending untuk dipilih (mode dadakan = null)
+        $pendingVisits = $todayLog->visits()
+            ->where('status', 'pending')
+            ->where('is_planned', true)
+            ->get();
+
+        // Statistik untuk information cards desktop
+        $allVisits = $todayLog->visits()->get();
+        $totalVisits = $allVisits->count();
+        $completedVisits = $allVisits->where('status', 'completed')->count();
+        $failedVisits = $allVisits->where('status', 'failed')->count();
+        $inProgressVisits = $allVisits->where('status', 'in_progress')->count();
+
+        return view('sales.absen_toko_checkin', compact(
+            'todayLog', 'visitObj', 'pendingVisits',
+            'totalVisits', 'completedVisits', 'failedVisits', 'inProgressVisits'
+        ));
+    }
+
+    /**
+     * Simpan CHECK-IN (foto sampai)
+     */
+    public function storeCheckInToko(Request $request, $visit = null)
+    {
+        $request->validate([
+            'photo' => 'required',
+            'lat' => 'required',
+            'long' => 'required',
+        ]);
+
+        $user = Auth::user();
+        $todayLog = $this->getActiveLogForUser($user);
+
+        if (!$todayLog) {
+            return redirect()->route('sales.absen.masuk')->with('error', 'Silakan absen masuk terlebih dahulu.');
+        }
+
+        $arrivalPhoto = $this->saveBase64Image($request->photo, 'visits');
+
+        // Kunjungan dadakan: buat baru
+        if (!$visit) {
+            $request->validate(['new_client_name' => 'required|string|max:255']);
+
+            $visitObj = Visit::create([
+                'daily_log_id'  => $todayLog->id,
+                'client_name'   => $request->new_client_name,
+                'time'          => Carbon::now(), // sementara (akan di-sync saat check-out)
+                'status'        => 'in_progress',
+                'is_planned'    => false,
+                'arrival_photo' => $arrivalPhoto,
+                'arrival_time'  => Carbon::now(),
+                'arrival_lat'   => $request->lat,
+                'arrival_long'  => $request->long,
+                'lat'           => $request->lat, // sync legacy
+                'long'          => $request->long,
+            ]);
+        } else {
+            $visitObj = Visit::where('id', $visit)
+                ->where('daily_log_id', $todayLog->id)
+                ->firstOrFail();
+
+            if ($visitObj->hasArrived()) {
+                return redirect()->route('sales.absen.toko.checkout', $visitObj->id)
+                    ->with('info', 'Anda sudah check-in di toko ini. Lanjut ke check-out.');
+            }
+
+            $visitObj->update([
+                'status'        => 'in_progress',
+                'arrival_photo' => $arrivalPhoto,
+                'arrival_time'  => Carbon::now(),
+                'arrival_lat'   => $request->lat,
+                'arrival_long'  => $request->long,
+                'lat'           => $request->lat, // sync legacy
+                'long'          => $request->long,
+            ]);
+        }
+
+        // AUTO-REDIRECT berantai: langsung ke check-out
+        return redirect()->route('sales.absen.toko.checkout', $visitObj->id)
+            ->with('success', 'Check-in berhasil! Foto sampai tersimpan. Silakan lanjut kerja, lalu check-out saat pulang.');
+    }
+
+    /**
+     * CHECK-OUT: foto saat PULANG dari toko + status hasil
+     */
+    public function showCheckOutToko($visit)
+    {
+        $user = Auth::user();
+        $todayLog = $this->getActiveLogForUser($user);
+
+        if (!$todayLog) {
+            return redirect()->route('sales.absen.masuk')->with('error', 'Silakan absen masuk terlebih dahulu.');
+        }
+
+        $visitObj = Visit::where('id', $visit)
+            ->where('daily_log_id', $todayLog->id)
+            ->firstOrFail();
+
+        // Harus sudah check-in
+        if (!$visitObj->hasArrived() || !$visitObj->isInProgress()) {
+            if (!$visitObj->hasArrived()) {
+                return redirect()->route('sales.absen.toko.checkin', $visitObj->id)
+                    ->with('error', 'Silakan check-in terlebih dahulu.');
+            }
+            // Sudah completed/failed -> tidak bisa check-out lagi
+            return redirect()->route('dashboard')->with('info', 'Kunjungan ini sudah diselesaikan.');
+        }
+
+        // Sisa kunjungan pending (untuk info setelah check-out)
+        $pendingVisits = $todayLog->visits()->where('status', 'pending')->where('is_planned', true)->where('id', '!=', $visitObj->id)->count();
+
+        return view('sales.absen_toko_checkout', compact('todayLog', 'visitObj', 'pendingVisits'));
+    }
+
+    /**
+     * Simpan CHECK-OUT (foto pulang + status hasil)
+     */
+    public function storeCheckOutToko(Request $request, $visit)
+    {
+        $request->validate([
+            'photo' => 'required',
+            'status' => 'required|in:completed,failed',
+            'lat' => 'required',
+            'long' => 'required',
+            'reason' => 'required_if:status,failed|nullable|string',
+        ]);
+
+        $user = Auth::user();
+        $todayLog = $this->getActiveLogForUser($user);
+
+        if (!$todayLog) {
+            return redirect()->route('sales.absen.masuk')->with('error', 'Silakan absen masuk terlebih dahulu.');
+        }
+
+        $visitObj = Visit::where('id', $visit)
+            ->where('daily_log_id', $todayLog->id)
+            ->firstOrFail();
+
+        if (!$visitObj->isInProgress()) {
+            return redirect()->route('dashboard')->with('error', 'Kunjungan ini tidak sedang in-progress.');
+        }
+
+        $departurePhoto = $this->saveBase64Image($request->photo, 'visits');
+
+        $visitObj->update([
+            'departure_photo' => $departurePhoto,
+            'departure_time'  => Carbon::now(),
+            'lat'             => $request->lat, // sync legacy = lokasi check-out
+            'long'            => $request->long,
+            'time'            => Carbon::now(), // sync legacy = waktu selesai
+            'photo_path'      => $departurePhoto, // sync legacy
+            'status'          => $request->status,
+            'notes'           => $request->status === 'completed' ? ($request->notes ?? null) : null,
+            'reason'          => $request->status === 'failed' ? $request->reason : null,
+        ]);
+
+        // Sesi TIDAK ditutup otomatis saat checkout toko terakhir.
+        // User (non-fuel maupun fuel) tetap bisa menambah kunjungan dadakan, lalu absen keluar manual.
+        // Sesi yang lupa ditutup akan di-auto-close (end_type=auto_rollover) di showAbsenMasuk.
+        return redirect()->route('dashboard')->with('success', 'Check-out berhasil! Laporan kunjungan tersimpan.');
+    }
+
+    // ==========================================
     // ABSEN KELUAR (2 Skenario)
     // ==========================================
 
@@ -284,10 +542,34 @@ class SalesController extends Controller
             return redirect()->route('sales.absen.masuk')->with('error', 'Silakan absen masuk terlebih dahulu.');
         }
 
-        // Cek apakah masih ada kunjungan yang pending
-        $pendingVisits = $activeLog->visits()->where('status', 'pending')->count();
+        // Cek apakah masih ada kunjungan yang pending ATAU in_progress (masih di toko)
+        $pendingVisits = $activeLog->visits()->whereIn('status', ['pending', 'in_progress'])->count();
         if ($pendingVisits > 0) {
-            return redirect()->route('dashboard')->with('error', 'Silakan selesaikan semua kunjungan terlebih dahulu sebelum absen keluar.');
+            return redirect()->route('dashboard')->with('error', 'Selesaikan semua kunjungan (check-in & check-out) terlebih dahulu sebelum absen keluar.');
+        }
+
+        // === CLOSE untuk user NON-FUEL: konfirmasi 1-klik (tanpa form) ===
+        // Setelah auto-close di checkout toko dihapus, ini menjadi jalur UTAMA user non-fuel
+        // menutup sesi secara eksplisit. Data sesi diisi dari visit terakhir.
+        if (!$user->fuel_reimbursement_enabled) {
+            $lastVisit = $activeLog->visits()
+                ->whereIn('status', ['completed', 'failed'])
+                ->orderBy('departure_time', 'desc')
+                ->first();
+
+            if ($lastVisit) {
+                $activeLog->update([
+                    'end_time'  => Carbon::now(),
+                    'end_photo' => $lastVisit->departure_photo,
+                    'end_lat'   => $lastVisit->lat,
+                    'end_long'  => $lastVisit->long,
+                    'end_type'  => 'last_store',
+                ]);
+
+                return redirect()->route('dashboard')
+                    ->with('success', 'Sesi otomatis ditutup. Anda tidak perlu absen keluar.');
+            }
+            // Jika tidak ada kunjungan sama sekali, lanjut ke form absen keluar (fallback).
         }
 
         // Hitung statistik kunjungan untuk Information Cards
@@ -368,9 +650,9 @@ class SalesController extends Controller
             return redirect()->route('dashboard')->with('error', 'Anda sudah absen keluar hari ini.');
         }
 
-        $pendingVisits = $todayLog->visits()->where('status', 'pending')->count();
+        $pendingVisits = $todayLog->visits()->whereIn('status', ['pending', 'in_progress'])->count();
         if ($pendingVisits > 0) {
-            return redirect()->route('dashboard')->with('error', 'Silakan selesaikan semua kunjungan terlebih dahulu sebelum absen keluar.');
+            return redirect()->route('dashboard')->with('error', 'Selesaikan semua kunjungan (check-in & check-out) terlebih dahulu sebelum absen keluar.');
         }
 
         if ($fuelEnabled) {

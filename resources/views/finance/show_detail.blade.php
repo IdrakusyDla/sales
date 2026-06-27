@@ -98,7 +98,14 @@
                             <div class="flex justify-between items-start mb-2">
                                 <div>
                                     <h3 class="font-bold text-gray-800">{{ $visit->client_name }}</h3>
-                                    <p class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($visit->time)->format('H:i') }}</p>
+                                    <p class="text-xs text-gray-500">
+                                        @if($visit->arrival_time)
+                                            {{ \Carbon\Carbon::parse($visit->arrival_time)->format('H:i') }}
+                                            @if($visit->departure_time) &rarr; {{ \Carbon\Carbon::parse($visit->departure_time)->format('H:i') }} @endif
+                                        @else
+                                            {{ \Carbon\Carbon::parse($visit->time)->format('H:i') }}
+                                        @endif
+                                    </p>
                                 </div>
                                 <span class="text-xs px-2 py-1 rounded-full
                                     @if($visit->status === 'completed') bg-green-100 text-green-700
@@ -110,9 +117,28 @@
                             @if($visit->notes)
                                 <p class="text-xs text-gray-600 mb-2">{{ $visit->notes }}</p>
                             @endif
-                            @if($visit->photo_path)
+                            @if($visit->arrival_photo || $visit->departure_photo)
+                                <div class="grid grid-cols-2 gap-2 mt-2">
+                                    <div>
+                                        <p class="text-[10px] font-bold text-blue-600 mb-1">Sampai</p>
+                                        @if($visit->arrival_photo)
+                                            <button type="button" onclick="openImageModal('{{ route('files.visit.photo', [$visit->id, 'arrival']) }}')" class="w-full block">
+                                                <img src="{{ route('files.visit.photo', [$visit->id, 'arrival']) }}" class="w-full rounded-lg aspect-square object-cover">
+                                            </button>
+                                        @endif
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-bold text-green-600 mb-1">Pulang</p>
+                                        @if($visit->departure_photo)
+                                            <button type="button" onclick="openImageModal('{{ route('files.visit.photo', [$visit->id, 'departure']) }}')" class="w-full block">
+                                                <img src="{{ route('files.visit.photo', [$visit->id, 'departure']) }}" class="w-full rounded-lg aspect-square object-cover">
+                                            </button>
+                                        @endif
+                                    </div>
+                                </div>
+                            @elseif($visit->photo_path)
                                   <button type="button" onclick="openImageModal('{{ route('files.visit.photo', $visit->id) }}')" class="w-full block">
-                                     <img src="{{ asset('storage/' . $visit->photo_path) }}" class="w-full rounded-lg">
+                                      <img src="{{ asset('storage/' . $visit->photo_path) }}" class="w-full rounded-lg">
                                   </button>
                             @endif
                         </div>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\Company;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,7 +17,13 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): View
     {
-        return view('auth.login');
+        // Daftar perusahaan aktif yang punya logo — ditampilkan di branding login.
+        $companies = Company::where('is_active', true)
+            ->whereNotNull('logo_path')
+            ->orderBy('name')
+            ->get();
+
+        return view('auth.login', compact('companies'));
     }
 
     /**

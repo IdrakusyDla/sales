@@ -110,7 +110,7 @@
             <div class="space-y-4 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4">
                 @forelse($dailyLogs as $log)
                     <a href="{{ route('sales.history.detail', $log->id) }}" class="block">
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition h-full flex flex-col justify-between">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition h-full flex flex-col justify-start">
                         <div class="mb-3 pb-3 border-b border-gray-100">
                             <div class="flex justify-between items-start mb-2">
                                 <div class="flex-1">
@@ -217,7 +217,7 @@
 
                         {{-- REIMBURSE --}}
                         @if($log->expenses->count() > 0)
-                            <div class="mt-3 pt-3 border-t border-gray-100">
+                            <div class="mt-auto pt-3 border-t border-gray-100">
                                 <p class="text-xs font-bold text-gray-600 mb-2">Reimburse:</p>
                                 <div class="space-y-1">
                                     @foreach($log->expenses as $expense)

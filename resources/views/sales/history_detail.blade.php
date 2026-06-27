@@ -456,6 +456,12 @@
                                                     d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
                                                 </path>
                                             </svg> Dari Toko Terakhir
+                                        @elseif($dailyLog->end_type === 'auto_rollover')
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4a2 2 0 00-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z">
+                                                </path>
+                                            </svg> Ditutup Otomatis (Tidak Absen Keluar)
                                         @else
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -525,7 +531,17 @@
                                                     class="bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-0.5 rounded-full">Dadakan</span>
                                             @endif
                                         </div>
-                                        <p class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($visit->time)->format('H:i') }}
+                                        <p class="text-xs text-gray-500">
+                                            @if($visit->arrival_time)
+                                                {{ \Carbon\Carbon::parse($visit->arrival_time)->format('H:i') }}
+                                                @if($visit->departure_time)
+                                                    &rarr; {{ \Carbon\Carbon::parse($visit->departure_time)->format('H:i') }}
+                                                @else
+                                                    <span class="text-amber-600">(di toko)</span>
+                                                @endif
+                                            @else
+                                                {{ \Carbon\Carbon::parse($visit->time)->format('H:i') }}
+                                            @endif
                                         </p>
                                     </div>
                                     <span
@@ -534,15 +550,51 @@
                                     </span>
                                 </div>
 
-                                {{-- Foto Kunjungan --}}
-                                @if($visit->photo_path)
+                                {{-- Foto Kunjungan: 2 foto (Sampai & Pulang) --}}
+                                @if($visit->arrival_photo || $visit->departure_photo || $visit->photo_path)
                                     <div class="mb-3">
                                         <p class="text-xs font-bold text-gray-600 mb-2">Foto Kunjungan</p>
-                                        <button type="button" onclick="openImageModal('{{ route('files.visit.photo', $visit->id) }}')"
-                                            class="block w-full p-0 bg-transparent border-0 focus:outline-none">
-                                            <img src="{{ route('files.visit.photo', $visit->id) }}" alt="Foto Kunjungan"
-                                                class="w-full rounded-xl border border-gray-200">
-                                        </button>
+                                        @if($visit->arrival_photo || $visit->departure_photo)
+                                            <div class="grid grid-cols-2 gap-2">
+                                                {{-- Foto Sampai --}}
+                                                <div>
+                                                    <p class="text-[10px] font-bold text-blue-600 mb-1 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span>Sampai</p>
+                                                    @if($visit->arrival_photo)
+                                                        <button type="button" onclick="openImageModal('{{ route('files.visit.photo', [$visit->id, 'arrival']) }}')"
+                                                            class="block w-full p-0 bg-transparent border-0 focus:outline-none">
+                                                            <img src="{{ route('files.visit.photo', [$visit->id, 'arrival']) }}" alt="Foto Sampai"
+                                                                class="w-full rounded-lg border border-gray-200 aspect-square object-cover">
+                                                        </button>
+                                                    @else
+                                                        <div class="w-full rounded-lg border border-dashed border-gray-200 aspect-square flex items-center justify-center text-gray-300">
+                                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                                {{-- Foto Pulang --}}
+                                                <div>
+                                                    <p class="text-[10px] font-bold text-green-600 mb-1 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-500"></span>Pulang</p>
+                                                    @if($visit->departure_photo)
+                                                        <button type="button" onclick="openImageModal('{{ route('files.visit.photo', [$visit->id, 'departure']) }}')"
+                                                            class="block w-full p-0 bg-transparent border-0 focus:outline-none">
+                                                            <img src="{{ route('files.visit.photo', [$visit->id, 'departure']) }}" alt="Foto Pulang"
+                                                                class="w-full rounded-lg border border-gray-200 aspect-square object-cover">
+                                                        </button>
+                                                    @else
+                                                        <div class="w-full rounded-lg border border-dashed border-gray-200 aspect-square flex items-center justify-center text-gray-300">
+                                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @else
+                                            {{-- Legacy: hanya photo_path --}}
+                                            <button type="button" onclick="openImageModal('{{ route('files.visit.photo', $visit->id) }}')"
+                                                class="block w-full p-0 bg-transparent border-0 focus:outline-none">
+                                                <img src="{{ route('files.visit.photo', $visit->id) }}" alt="Foto Kunjungan"
+                                                    class="w-full rounded-xl border border-gray-200">
+                                            </button>
+                                        @endif
                                     </div>
                                 @endif
 
@@ -905,7 +957,7 @@
                                                     class="w-full bg-orange-600 text-white py-3 rounded-xl font-bold text-sm hover:bg-orange-700 transition disabled:bg-gray-400">
                                                     <svg class="w-4 h-4 inline mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                            d="M12 19l9 2-9-18-9 18 9-2zm0 0v-5">
+                                                            d="M10.3009 13.6949L20.102 3.89742M10.5795 14.1355L12.8019 18.5804C13.339 19.6545 13.6075 20.1916 13.9458 20.3356C14.2394 20.4606 14.575 20.4379 14.8492 20.2747C15.1651 20.0866 15.3591 19.5183 15.7472 18.3818L19.9463 6.08434C20.2845 5.09409 20.4535 4.59896 20.3378 4.27142C20.2371 3.98648 20.013 3.76234 19.7281 3.66167C19.4005 3.54595 18.9054 3.71502 17.9151 4.05315L5.61763 8.2523C4.48114 8.64037 3.91289 8.83441 3.72478 9.15032C3.56153 9.42447 3.53891 9.76007 3.66389 10.0536C3.80791 10.3919 4.34498 10.6605 5.41912 11.1975L9.86397 13.42C10.041 13.5085 10.1295 13.5527 10.2061 13.6118C10.2742 13.6643 10.3352 13.7253 10.3876 13.7933C10.4468 13.87 10.491 13.9585 10.5795 14.1355Z">
                                                         </path>
                                                     </svg> Kirim Revisi
                                                 </button>

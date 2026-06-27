@@ -10,6 +10,7 @@ use App\Models\Expense;
 use App\Models\Company;
 use App\Models\JobPosition;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\RekapExport;
 use Carbon\Carbon;
@@ -414,11 +415,16 @@ class HRDController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255|unique:companies,name',
+            'logo' => 'nullable|image|mimes:png,jpg,jpeg,svg,webp|max:2048',
         ]);
 
-        Company::create([
-            'name' => $request->name,
-        ]);
+        $data = ['name' => $request->name];
+
+        if ($request->hasFile('logo')) {
+            $data['logo_path'] = $request->file('logo')->store('companies', 'public');
+        }
+
+        Company::create($data);
 
         return back()->with('success', 'Perusahaan berhasil ditambahkan!');
     }
@@ -428,9 +434,20 @@ class HRDController extends Controller
         $company = Company::findOrFail($id);
         $request->validate([
             'name' => 'required|string|max:255|unique:companies,name,' . $id,
+            'logo' => 'nullable|image|mimes:png,jpg,jpeg,svg,webp|max:2048',
         ]);
 
-        $company->update(['name' => $request->name]);
+        $data = ['name' => $request->name];
+
+        if ($request->hasFile('logo')) {
+            // Hapus logo lama jika ada
+            if ($company->logo_path && Storage::disk('public')->exists($company->logo_path)) {
+                Storage::disk('public')->delete($company->logo_path);
+            }
+            $data['logo_path'] = $request->file('logo')->store('companies', 'public');
+        }
+
+        $company->update($data);
 
         return back()->with('success', 'Perusahaan berhasil diperbarui!');
     }
@@ -451,6 +468,10 @@ class HRDController extends Controller
 
         if ($company->users()->count() > 0) {
             return back()->with('error', 'Tidak bisa menghapus perusahaan yang masih memiliki karyawan. Nonaktifkan saja.');
+        }
+
+        if ($company->logo_path && Storage::disk('public')->exists($company->logo_path)) {
+            Storage::disk('public')->delete($company->logo_path);
         }
 
         $company->delete();

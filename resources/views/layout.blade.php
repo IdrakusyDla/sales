@@ -15,6 +15,11 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
+        /* Sembunyikan elemen Alpine sebelum inisialisasi (anti-flicker) */
+        [x-cloak] {
+            display: none !important;
+        }
+
         /* Hilangkan scrollbar tapi tetap bisa scroll */
         .no-scrollbar::-webkit-scrollbar {
             display: none;
@@ -259,31 +264,92 @@
                         </a>
 
                         {{-- 3. KAMERA (Floating Tengah) --}}
-                        <div class="relative -top-8">
+                        <div class="relative -top-8" x-data="{ choiceOpen: false }">
                             @php
                                 $spvUser = Auth::user();
                                 $spvTodayLog = \App\Models\DailyLog::where('user_id', $spvUser->id)
                                     ->where('date', \Carbon\Carbon::today())
+                                    ->whereNull('end_time')
                                     ->orderBy('created_at', 'desc')
                                     ->first();
-                                if (!$spvTodayLog) {
-                                    $spvCameraRoute = route('sales.absen.masuk');
-                                } elseif (!$spvTodayLog->hasEnded()) {
-                                    $spvCameraRoute = route('sales.absen.toko');
-                                } else {
-                                    $spvCameraRoute = route('sales.absen.masuk');
+
+                                $spvNeedChoice = false;
+                                $spvCameraRoute = route('sales.absen.masuk');
+
+                                if ($spvTodayLog) {
+                                    $spvAtStore = \App\Models\Visit::where('daily_log_id', $spvTodayLog->id)
+                                        ->where('status', 'in_progress')->orderBy('arrival_time','desc')->first();
+                                    if ($spvAtStore) {
+                                        $spvCameraRoute = route('sales.absen.toko.checkout', $spvAtStore->id);
+                                    } else {
+                                        $spvHasPending = \App\Models\Visit::where('daily_log_id', $spvTodayLog->id)
+                                            ->where('status', 'pending')->exists();
+                                        if ($spvHasPending) {
+                                            $spvCameraRoute = route('sales.absen.toko.checkin');
+                                        } else {
+                                            $spvNeedChoice = true; // semua kunjungan selesai -> pilih
+                                        }
+                                    }
                                 }
                             @endphp
-                            <a href="{{ $spvCameraRoute }}"
-                                class="flex items-center justify-center w-16 h-16 bg-blue-600 text-white rounded-full shadow-xl border-4 border-gray-50 transform active:scale-95 transition hover:bg-blue-700">
-                                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
-                                    </path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                </svg>
-                            </a>
+                            @if($spvNeedChoice)
+                                <button type="button" @click="choiceOpen = true"
+                                    class="flex items-center justify-center w-16 h-16 bg-blue-600 text-white rounded-full shadow-xl border-4 border-gray-50 transform active:scale-95 transition hover:bg-blue-700">
+                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                                        </path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                </button>
+
+                                {{-- Bottom sheet pilihan --}}
+                                <template x-teleport="body">
+                                    <div x-show="choiceOpen" x-cloak
+                                         @keydown.escape.window="choiceOpen = false"
+                                         class="fixed inset-0 z-[100] flex items-end justify-center bg-black/40"
+                                         @click.self="choiceOpen = false">
+                                        <div x-show="choiceOpen"
+                                             x-transition:enter="transition ease-out duration-200"
+                                             x-transition:enter-start="translate-y-full"
+                                             x-transition:enter-end="translate-y-0"
+                                             x-transition:leave="transition ease-in duration-150"
+                                             x-transition:leave-start="translate-y-0"
+                                             x-transition:leave-end="translate-y-full"
+                                             class="relative bg-white w-full max-w-[480px] rounded-t-3xl p-5 pb-8 shadow-2xl">
+                                            <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
+                                            <h3 class="font-bold text-gray-800 text-base mb-1 text-center">Semua Kunjungan Selesai</h3>
+                                            <p class="text-xs text-gray-500 text-center mb-5">Apa yang ingin Anda lakukan selanjutnya?</p>
+                                            <div class="space-y-3">
+                                                <a href="{{ route('sales.absen.toko.checkin') }}"
+                                                    class="flex items-center gap-3 w-full bg-blue-600 text-white p-4 rounded-2xl font-bold text-sm active:scale-95 transition">
+                                                    <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                                    <span class="text-left flex-1"><span class="block">Kunjungan Dadakan</span><span class="block text-xs font-normal text-blue-100">Tambah toko baru</span></span>
+                                                </a>
+                                                <a href="{{ route('sales.absen.keluar') }}"
+                                                    class="flex items-center gap-3 w-full bg-red-600 text-white p-4 rounded-2xl font-bold text-sm active:scale-95 transition">
+                                                    <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                                                    <span class="text-left flex-1"><span class="block">Absen Keluar</span><span class="block text-xs font-normal text-red-100">Tutup sesi hari ini</span></span>
+                                                </a>
+                                            </div>
+                                            <button type="button" @click="choiceOpen = false"
+                                                class="w-full mt-4 py-3 text-gray-500 font-bold text-sm">Batal</button>
+                                        </div>
+                                    </div>
+                                </template>
+                            @else
+                                <a href="{{ $spvCameraRoute }}"
+                                    class="flex items-center justify-center w-16 h-16 bg-blue-600 text-white rounded-full shadow-xl border-4 border-gray-50 transform active:scale-95 transition hover:bg-blue-700">
+                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                                        </path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                </a>
+                            @endif
                         </div>
 
                         {{-- 4. Tim Saya --}}
@@ -334,34 +400,94 @@
                         </a>
 
                         {{-- 3. KAMERA (Floating Tengah) --}}
-                        <div class="relative -top-8">
+                        <div class="relative -top-8" x-data="{ choiceOpen: false }">
                             @php
                                 $user = Auth::user();
-                                // Ambil log TERAKHIR hari ini (untuk support multiple log/lembur)
+                                // Ambil log AKTIF (belum absen keluar) terakhir hari ini
                                 $todayLog = \App\Models\DailyLog::where('user_id', $user->id)
                                     ->where('date', \Carbon\Carbon::today())
+                                    ->whereNull('end_time')
                                     ->orderBy('created_at', 'desc')
                                     ->first();
 
-                                if (!$todayLog) {
-                                    $cameraRoute = route('sales.absen.masuk');
-                                } elseif (!$todayLog->hasEnded()) {
-                                    $cameraRoute = route('sales.absen.toko');
-                                } else {
-                                    // Jika log terakhir sudah selesai, bisa absen masuk lagi (lembur)
-                                    $cameraRoute = route('sales.absen.masuk');
+                                $needChoice = false;
+                                $cameraRoute = route('sales.absen.masuk');
+
+                                if ($todayLog) {
+                                    // Cek ada visit in_progress (sedang di toko) -> check-out
+                                    $atStore = \App\Models\Visit::where('daily_log_id', $todayLog->id)
+                                        ->where('status', 'in_progress')->orderBy('arrival_time','desc')->first();
+                                    if ($atStore) {
+                                        $cameraRoute = route('sales.absen.toko.checkout', $atStore->id);
+                                    } else {
+                                        $hasPending = \App\Models\Visit::where('daily_log_id', $todayLog->id)
+                                            ->where('status', 'pending')->exists();
+                                        if ($hasPending) {
+                                            $cameraRoute = route('sales.absen.toko.checkin');
+                                        } else {
+                                            $needChoice = true; // semua kunjungan selesai -> pilih
+                                        }
+                                    }
                                 }
                             @endphp
-                            <a href="{{ $cameraRoute }}"
-                                class="flex items-center justify-center w-16 h-16 bg-blue-600 text-white rounded-full shadow-xl border-4 border-gray-50 transform active:scale-95 transition hover:bg-blue-700">
-                                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
-                                    </path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                </svg>
-                            </a>
+                            @if($needChoice)
+                                <button type="button" @click="choiceOpen = true"
+                                    class="flex items-center justify-center w-16 h-16 bg-blue-600 text-white rounded-full shadow-xl border-4 border-gray-50 transform active:scale-95 transition hover:bg-blue-700">
+                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                                        </path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                </button>
+
+                                {{-- Bottom sheet pilihan --}}
+                                <template x-teleport="body">
+                                    <div x-show="choiceOpen" x-cloak
+                                         @keydown.escape.window="choiceOpen = false"
+                                         class="fixed inset-0 z-[100] flex items-end justify-center bg-black/40"
+                                         @click.self="choiceOpen = false">
+                                        <div x-show="choiceOpen"
+                                             x-transition:enter="transition ease-out duration-200"
+                                             x-transition:enter-start="translate-y-full"
+                                             x-transition:enter-end="translate-y-0"
+                                             x-transition:leave="transition ease-in duration-150"
+                                             x-transition:leave-start="translate-y-0"
+                                             x-transition:leave-end="translate-y-full"
+                                             class="relative bg-white w-full max-w-[480px] rounded-t-3xl p-5 pb-8 shadow-2xl">
+                                            <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
+                                            <h3 class="font-bold text-gray-800 text-base mb-1 text-center">Semua Kunjungan Selesai</h3>
+                                            <p class="text-xs text-gray-500 text-center mb-5">Apa yang ingin Anda lakukan selanjutnya?</p>
+                                            <div class="space-y-3">
+                                                <a href="{{ route('sales.absen.toko.checkin') }}"
+                                                    class="flex items-center gap-3 w-full bg-blue-600 text-white p-4 rounded-2xl font-bold text-sm active:scale-95 transition">
+                                                    <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                                    <span class="text-left flex-1"><span class="block">Kunjungan Dadakan</span><span class="block text-xs font-normal text-blue-100">Tambah toko baru</span></span>
+                                                </a>
+                                                <a href="{{ route('sales.absen.keluar') }}"
+                                                    class="flex items-center gap-3 w-full bg-red-600 text-white p-4 rounded-2xl font-bold text-sm active:scale-95 transition">
+                                                    <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                                                    <span class="text-left flex-1"><span class="block">Absen Keluar</span><span class="block text-xs font-normal text-red-100">Tutup sesi hari ini</span></span>
+                                                </a>
+                                            </div>
+                                            <button type="button" @click="choiceOpen = false"
+                                                class="w-full mt-4 py-3 text-gray-500 font-bold text-sm">Batal</button>
+                                        </div>
+                                    </div>
+                                </template>
+                            @else
+                                <a href="{{ $cameraRoute }}"
+                                    class="flex items-center justify-center w-16 h-16 bg-blue-600 text-white rounded-full shadow-xl border-4 border-gray-50 transform active:scale-95 transition hover:bg-blue-700">
+                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                                        </path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                </a>
+                            @endif
                         </div>
 
                         {{-- 4. (Empty spacer for sales 5-btn grid) --}}

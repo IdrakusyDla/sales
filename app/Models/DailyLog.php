@@ -24,7 +24,7 @@ class DailyLog extends Model
         'end_odo_photo',
         'end_lat',
         'end_long',
-        'end_type', // 'home', 'last_store', 'other'
+        'end_type', // 'home', 'last_store', 'other', 'auto_rollover'
         'end_notes',
         'system_calculated_distance',
     ];

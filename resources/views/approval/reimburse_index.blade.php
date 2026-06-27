@@ -114,7 +114,7 @@
                             class="w-5 h-5 text-blue-600 rounded">
                         <span class="text-sm font-bold text-blue-700">Pilih Semua</span>
                     </label>
-                    <button type="submit" onclick="return confirm('Setujui semua yang dipilih?')"
+                    <button type="submit"
                         class="bg-green-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-green-700">
                         <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Bulk Approve
                     </button>
@@ -348,6 +348,25 @@
         </div>
     </div>
 
+    {{-- Confirm Bulk Approve Modal --}}
+    <div id="bulk-approve-modal" class="hidden modal-overlay fixed inset-0 z-[60] flex items-center justify-center bg-black/50" onclick="if(event.target===this) closeBulkApprove()">
+        <div class="modal-box bg-white rounded-2xl shadow-xl w-[90%] max-w-sm overflow-hidden">
+            <div class="p-6 text-center">
+                <div class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+                <h3 class="text-lg font-bold text-gray-800 mb-2">Konfirmasi Persetujuan</h3>
+                <p class="text-sm text-gray-500">Apakah Anda yakin ingin menyetujui <span id="bulk-approve-count" class="font-bold text-gray-800">0</span> reimburse yang dipilih?</p>
+            </div>
+            <div class="flex border-t border-gray-100">
+                <button type="button" onclick="closeBulkApprove()"
+                    class="flex-1 py-3.5 text-sm font-bold text-gray-600 hover:bg-gray-50 transition">Batal</button>
+                <button type="button" onclick="confirmBulkApprove()"
+                    class="flex-1 py-3.5 text-sm font-bold text-white bg-green-600 hover:bg-green-700 transition">Ya, Setujui</button>
+            </div>
+        </div>
+    </div>
+
     {{-- Image Modal (hidden) --}}
     <div id="image-modal-overlay" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50" onclick="if(event.target.id==='image-modal-overlay') closeImageModal()">
         <div class="bg-white rounded-xl overflow-hidden max-w-4xl w-full mx-4" role="dialog" aria-modal="true">
@@ -438,16 +457,34 @@
                 document.getElementById('approve-form-' + id).classList.add('hidden');
             }
 
+            // Bulk approve confirmation modal
+            let pendingBulkForm = null;
+
+            function closeBulkApprove() {
+                document.getElementById('bulk-approve-modal').classList.add('hidden');
+                pendingBulkForm = null;
+            }
+
+            function confirmBulkApprove() {
+                if (pendingBulkForm) {
+                    pendingBulkForm.submit();
+                    pendingBulkForm = null;
+                }
+            }
+
             // Submit bulk approve dengan selected IDs
             document.getElementById('bulkApproveForm')?.addEventListener('submit', function(e) {
+                e.preventDefault();
                 const checked = document.querySelectorAll('.expense-checkbox:checked');
                 const ids = Array.from(checked).map(cb => cb.value);
                 if (ids.length === 0) {
-                    e.preventDefault();
                     alert('Pilih minimal satu expense!');
                     return false;
                 }
                 this.querySelector('input[name="expense_ids"]').value = ids.join(',');
+                pendingBulkForm = this;
+                document.getElementById('bulk-approve-count').textContent = ids.length;
+                document.getElementById('bulk-approve-modal').classList.remove('hidden');
             });
         </script>
     @endsection

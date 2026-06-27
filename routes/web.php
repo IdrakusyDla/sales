@@ -14,6 +14,14 @@ use Illuminate\Support\Facades\Response;
 
 
 // ====================================================
+// AREA 0: ROUTE PUBLIK (tanpa auth)
+// ====================================================
+// Logo perusahaan — ditampilkan di halaman login (publik).
+Route::get('/files/company-logo/{id}', [\App\Http\Controllers\FileController::class, 'companyLogo'])
+    ->name('files.company.logo');
+
+
+// ====================================================
 // AREA 1: ROUTE DENGAN MIDDLEWARE AUTH
 // ====================================================
 Route::middleware(['auth', 'force.password.change'])->group(function () {
@@ -53,9 +61,17 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/absen/masuk', [SalesController::class, 'showAbsenMasuk'])->name('sales.absen.masuk');
         Route::post('/absen/masuk', [SalesController::class, 'storeAbsenMasuk'])->name('sales.absen.masuk.store');
 
-        // --- ABSEN TOKO (Kunjungan) ---
+        // --- ABSEN TOKO (Kunjungan) - HALAMAN LAMA (fallback) ---
         Route::get('/absen/toko', [SalesController::class, 'showAbsenToko'])->name('sales.absen.toko');
         Route::post('/absen/toko', [SalesController::class, 'storeAbsenToko'])->name('sales.absen.toko.store');
+
+        // --- ABSEN TOKO (Kunjungan) - ALUR BARU 2 FOTO (Check-in / Check-out) ---
+        // Check-in: foto saat SAMPAI di toko
+        Route::get('/absen/toko/check-in/{visit?}', [SalesController::class, 'showCheckInToko'])->name('sales.absen.toko.checkin');
+        Route::post('/absen/toko/check-in/{visit?}', [SalesController::class, 'storeCheckInToko'])->name('sales.absen.toko.checkin.store');
+        // Check-out: foto saat PULANG dari toko + status hasil
+        Route::get('/absen/toko/check-out/{visit}', [SalesController::class, 'showCheckOutToko'])->name('sales.absen.toko.checkout');
+        Route::post('/absen/toko/check-out/{visit}', [SalesController::class, 'storeCheckOutToko'])->name('sales.absen.toko.checkout.store');
 
         // --- ABSEN KELUAR ---
         Route::get('/absen/keluar', [SalesController::class, 'showAbsenKeluar'])->name('sales.absen.keluar');
@@ -104,7 +120,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         ->middleware('auth')
         ->name('files.daily.photo');
 
-    Route::get('/files/visit/{id}', [\App\Http\Controllers\FileController::class, 'visitPhoto'])
+    Route::get('/files/visit/{id}/{kind?}', [\App\Http\Controllers\FileController::class, 'visitPhoto'])
         ->middleware('auth')
         ->name('files.visit.photo');
 
