@@ -1,5 +1,43 @@
 @extends('layout')
+
 @section('content')
+
+@php
+    use Carbon\Carbon;
+    $todayStr = Carbon::today()->format('Y-m-d');
+    $yesterdayStr = Carbon::yesterday()->format('Y-m-d');
+    $mondayStr = Carbon::now()->startOfWeek()->format('Y-m-d');
+    $reqFrom = request('date_from');
+    $reqTo = request('date_to');
+    $reqType = request('type', 'all');
+
+    $reqPreset = request('preset');
+    $activePreset = $reqPreset ?: ($reqFrom || $reqTo ? 'custom' : 'all');
+
+    $buildUrl = function (array $override = [], array $remove = []) {
+        $q = request()->query();
+        foreach ($remove as $k) {
+            unset($q[$k]);
+        }
+        foreach ($override as $k => $v) {
+            $q[$k] = $v;
+        }
+        $q['page'] = 1;
+        return route('hrd.home') . '?' . http_build_query($q);
+    };
+
+    $todayUrl = $buildUrl(['date_from' => $todayStr, 'date_to' => $todayStr, 'preset' => 'today']);
+    $yesterdayUrl = $buildUrl(['date_from' => $yesterdayStr, 'date_to' => $yesterdayStr, 'preset' => 'yesterday']);
+    $weekUrl = $buildUrl(['date_from' => $mondayStr, 'date_to' => $todayStr, 'preset' => 'week']);
+    $allUrl = $buildUrl(['preset' => 'all'], ['date_from', 'date_to']);
+    $typeUrl = fn($t) => $t === 'all' ? $buildUrl([], ['type']) : $buildUrl(['type' => $t]);
+
+    $isFiltered = request()->hasAny(['date_from', 'date_to', 'type', 'job_position_id', 'company_id', 'per_page']);
+
+    $totalActivities = $activities->total();
+    $firstItem = $totalActivities ? ($activities->currentPage() - 1) * $perPage + 1 : 0;
+    $lastItem = min($totalActivities, $activities->currentPage() * $perPage);
+@endphp
 
 {{-- ========================================== --}}
 {{-- TAMPILAN MOBILE (< 768px)                  --}}
@@ -31,34 +69,75 @@
         </div>
     </div>
 
-    {{-- FILTER HARI --}}
-    <div class="flex gap-2 mb-3 overflow-x-auto pb-1" id="dateFilterMobile">
-        <button onclick="filterDate('today', this)" class="date-filter-btn active shrink-0 px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white transition">Hari Ini</button>
-        <button onclick="filterDate('yesterday', this)" class="date-filter-btn shrink-0 px-4 py-2 rounded-xl text-xs font-bold bg-gray-100 text-gray-600 transition">Kemarin</button>
-        <button onclick="filterDate('week', this)" class="date-filter-btn shrink-0 px-4 py-2 rounded-xl text-xs font-bold bg-gray-100 text-gray-600 transition">Minggu Ini</button>
-        <button onclick="filterDate('all', this)" class="date-filter-btn shrink-0 px-4 py-2 rounded-xl text-xs font-bold bg-gray-100 text-gray-600 transition">Semua</button>
-    </div>
+    {{-- FILTER (MOBILE) --}}
+    <div class="mb-5">
+        {{-- FILTER HARI (preset links) --}}
+        <div class="flex gap-2 mb-3 overflow-x-auto pb-1">
+            <a href="{{ $todayUrl }}" class="shrink-0 px-4 py-2 rounded-xl text-xs font-bold transition {{ $activePreset === 'today' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600' }}">Hari Ini</a>
+            <a href="{{ $yesterdayUrl }}" class="shrink-0 px-4 py-2 rounded-xl text-xs font-bold transition {{ $activePreset === 'yesterday' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600' }}">Kemarin</a>
+            <a href="{{ $weekUrl }}" class="shrink-0 px-4 py-2 rounded-xl text-xs font-bold transition {{ $activePreset === 'week' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600' }}">Minggu Ini</a>
+            <a href="{{ $allUrl }}" class="shrink-0 px-4 py-2 rounded-xl text-xs font-bold transition {{ $activePreset === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600' }}">Semua</a>
+        </div>
 
-    {{-- FILTER JENIS AKTIVITAS (Mobile) --}}
-    <div class="flex gap-2 mb-5 overflow-x-auto pb-1">
-        <button onclick="filterType('all', this)" class="type-filter-btn active shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-700 text-white transition">Semua</button>
-        <button onclick="filterType('check_in', this)" class="type-filter-btn shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-50 text-blue-600 transition">Masuk</button>
-        <button onclick="filterType('check_out', this)" class="type-filter-btn shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold bg-green-50 text-green-600 transition">Keluar</button>
-        <button onclick="filterType('visit', this)" class="type-filter-btn shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-50 text-purple-600 transition">Kunjungan</button>
+        {{-- FILTER JENIS AKTIVITAS (type links) --}}
+        <div class="flex gap-2 mb-3 overflow-x-auto pb-1">
+            <a href="{{ $typeUrl('all') }}" class="shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition {{ $reqType === 'all' ? 'bg-slate-700 text-white' : 'bg-gray-100 text-gray-600' }}">Semua</a>
+            <a href="{{ $typeUrl('check_in') }}" class="shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition {{ $reqType === 'check_in' ? 'bg-slate-700 text-white' : 'bg-gray-100 text-gray-600' }}">Masuk</a>
+            <a href="{{ $typeUrl('check_out') }}" class="shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition {{ $reqType === 'check_out' ? 'bg-slate-700 text-white' : 'bg-gray-100 text-gray-600' }}">Keluar</a>
+            <a href="{{ $typeUrl('visit') }}" class="shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition {{ $reqType === 'visit' ? 'bg-slate-700 text-white' : 'bg-gray-100 text-gray-600' }}">Kunjungan</a>
+        </div>
+
+        {{-- FILTER FORM: range tanggal + selects --}}
+        <form method="GET" action="{{ route('hrd.home') }}" id="filterFormMobile">
+            <input type="hidden" name="type" value="{{ $reqType }}">
+            <input type="hidden" name="preset" value="{{ $reqPreset }}">
+
+            {{-- RANGE TANGGAL --}}
+            <div class="flex items-center gap-2 mb-3">
+                <input type="date" name="date_from" value="{{ request('date_from') }}" onchange="this.form.querySelector('[name=preset]').value='';this.form.submit()" class="flex-1 border border-gray-200 rounded-lg px-2.5 py-2 text-xs text-gray-700 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                <span class="text-xs text-gray-400 shrink-0">s/d</span>
+                <input type="date" name="date_to" value="{{ request('date_to') }}" onchange="this.form.querySelector('[name=preset]').value='';this.form.submit()" class="flex-1 border border-gray-200 rounded-lg px-2.5 py-2 text-xs text-gray-700 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none">
+            </div>
+
+            {{-- JABATAN / PERUSAHAAN / PER HALAMAN --}}
+            <div class="grid grid-cols-3 gap-2">
+                <select name="job_position_id" onchange="this.form.submit()" class="w-full border border-gray-200 rounded-lg pl-2 pr-6 py-2 text-[11px] text-gray-700 bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                    <option value="">Semua Jabatan</option>
+                    @foreach($jobPositions as $jp)
+                        <option value="{{ $jp->id }}" @selected(request('job_position_id') == $jp->id)>{{ $jp->name }}</option>
+                    @endforeach
+                </select>
+                <select name="company_id" onchange="this.form.submit()" class="w-full border border-gray-200 rounded-lg pl-2 pr-6 py-2 text-[11px] text-gray-700 bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                    <option value="">Semua</option>
+                    @foreach($companies as $c)
+                        <option value="{{ $c->id }}" @selected(request('company_id') == $c->id)>{{ $c->name }}</option>
+                    @endforeach
+                </select>
+                <select name="per_page" onchange="this.form.submit()" class="w-full border border-gray-200 rounded-lg pl-2 pr-6 py-2 text-[11px] text-gray-700 bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                    @foreach([10, 20, 50, 100] as $opt)
+                        <option value="{{ $opt }}" @selected($perPage == $opt)>{{ $opt }}/hal</option>
+                    @endforeach
+                </select>
+            </div>
+        </form>
     </div>
 
     {{-- TIMELINE FEED --}}
     @if($activities->count() > 0)
-        <div class="space-y-3 mb-20" id="activityFeedMobile">
+        <div class="space-y-3 mb-4" id="activityFeedMobile">
             @foreach($activities as $activity)
                 @include('hrd.partials._activity_item_mobile', ['activity' => $activity])
             @endforeach
         </div>
 
+        <p class="text-[11px] text-gray-400 text-center mb-3">Menampilkan {{ $firstItem }}–{{ $lastItem }} dari {{ $totalActivities }} aktivitas</p>
+
         {{-- PAGINATION --}}
-        <div class="mb-20">
-            {{ $activities->withQueryString()->links('pagination::tailwind') }}
-        </div>
+        @if($activities->hasPages())
+            <div class="mb-20">
+                {{ $activities->withQueryString()->links('pagination::tailwind') }}
+            </div>
+        @endif
     @else
         <div class="text-center py-16">
             <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -89,47 +168,90 @@
                         </div>
                     </div>
 
-                    {{-- FILTER BAR --}}
-                    <div class="flex items-center gap-3 flex-wrap">
-                        {{-- Filter Tanggal --}}
-                        <div class="flex gap-1.5" id="dateFilterDesktop">
-                            <button onclick="filterDate('today', this)" class="date-filter-btn active px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition">Hari Ini</button>
-                            <button onclick="filterDate('yesterday', this)" class="date-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition">Kemarin</button>
-                            <button onclick="filterDate('week', this)" class="date-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition">Minggu Ini</button>
-                            <button onclick="filterDate('all', this)" class="date-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition">Semua</button>
+                    {{-- FILTER FORM (DESKTOP) --}}
+                    <form method="GET" action="{{ route('hrd.home') }}" id="filterFormDesktop" class="space-y-3">
+                        <input type="hidden" name="type" value="{{ $reqType }}">
+                        <input type="hidden" name="preset" value="{{ $reqPreset }}">
+
+                        {{-- Row 1: Periode + Range + Tipe --}}
+                        <div class="flex items-center gap-3 flex-wrap">
+                            <div class="flex gap-1.5">
+                                <a href="{{ $todayUrl }}" class="px-3 py-1.5 rounded-lg text-xs font-bold transition {{ $activePreset === 'today' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">Hari Ini</a>
+                                <a href="{{ $yesterdayUrl }}" class="px-3 py-1.5 rounded-lg text-xs font-bold transition {{ $activePreset === 'yesterday' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">Kemarin</a>
+                                <a href="{{ $weekUrl }}" class="px-3 py-1.5 rounded-lg text-xs font-bold transition {{ $activePreset === 'week' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">Minggu Ini</a>
+                                <a href="{{ $allUrl }}" class="px-3 py-1.5 rounded-lg text-xs font-bold transition {{ $activePreset === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">Semua</a>
+                            </div>
+
+                            <div class="w-px h-6 bg-gray-200"></div>
+
+                            <div class="flex items-center gap-2">
+                                <input type="date" name="date_from" value="{{ request('date_from') }}" onchange="this.form.querySelector('[name=preset]').value='';this.form.submit()" class="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs text-gray-700 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                                <span class="text-xs text-gray-400">s/d</span>
+                                <input type="date" name="date_to" value="{{ request('date_to') }}" onchange="this.form.querySelector('[name=preset]').value='';this.form.submit()" class="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs text-gray-700 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                            </div>
+
+                            <div class="w-px h-6 bg-gray-200"></div>
+
+                            <div class="flex gap-1.5">
+                                <a href="{{ $typeUrl('all') }}" class="px-3 py-1.5 rounded-lg text-xs font-bold transition {{ $reqType === 'all' ? 'bg-slate-700 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">Semua</a>
+                                <a href="{{ $typeUrl('check_in') }}" class="px-3 py-1.5 rounded-lg text-xs font-bold transition {{ $reqType === 'check_in' ? 'bg-slate-700 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">Absen Masuk</a>
+                                <a href="{{ $typeUrl('check_out') }}" class="px-3 py-1.5 rounded-lg text-xs font-bold transition {{ $reqType === 'check_out' ? 'bg-slate-700 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">Absen Keluar</a>
+                                <a href="{{ $typeUrl('visit') }}" class="px-3 py-1.5 rounded-lg text-xs font-bold transition {{ $reqType === 'visit' ? 'bg-slate-700 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">Kunjungan</a>
+                            </div>
                         </div>
 
-                        <div class="w-px h-6 bg-gray-200"></div>
+                        {{-- Row 2: Jabatan + Perusahaan + Per halaman + Reset (sebaris) --}}
+                        <div class="flex items-center gap-3 flex-wrap">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-semibold text-gray-500 shrink-0">Jabatan</span>
+                                <select name="job_position_id" onchange="this.form.submit()" class="w-[150px] border border-gray-200 rounded-lg pl-3 pr-8 py-1.5 text-xs text-gray-700 bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                                    <option value="">Semua</option>
+                                    @foreach($jobPositions as $jp)
+                                        <option value="{{ $jp->id }}" @selected(request('job_position_id') == $jp->id)>{{ $jp->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
 
-                        {{-- Filter Tanggal Custom --}}
-                        <div class="flex items-center gap-2">
-                            <input type="date" id="filter-date-from" onchange="applyFilters()" class="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs text-gray-700 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none">
-                            <span class="text-xs text-gray-400">s/d</span>
-                            <input type="date" id="filter-date-to" onchange="applyFilters()" class="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs text-gray-700 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-semibold text-gray-500 shrink-0">Perusahaan</span>
+                                <select name="company_id" onchange="this.form.submit()" class="w-[150px] border border-gray-200 rounded-lg pl-3 pr-8 py-1.5 text-xs text-gray-700 bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                                    <option value="">Semua</option>
+                                    @foreach($companies as $c)
+                                        <option value="{{ $c->id }}" @selected(request('company_id') == $c->id)>{{ $c->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="flex items-center gap-2 shrink-0">
+                                <span class="text-xs font-semibold text-gray-500 shrink-0">Per Halaman</span>
+                                <select name="per_page" onchange="this.form.submit()" class="w-[72px] border border-gray-200 rounded-lg pl-3 pr-7 py-1.5 text-xs text-gray-700 bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                                    @foreach([10, 20, 50, 100] as $opt)
+                                        <option value="{{ $opt }}" @selected($perPage == $opt)>{{ $opt }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            @if($isFiltered)
+                                <a href="{{ route('hrd.home') }}" class="text-xs font-bold text-gray-400 hover:text-red-500 transition shrink-0 ml-auto">Reset Filter</a>
+                            @endif
                         </div>
-
-                        <div class="w-px h-6 bg-gray-200"></div>
-
-                        {{-- Filter Jenis Aktivitas --}}
-                        <div class="flex gap-1.5">
-                            <button onclick="filterType('all', this)" class="type-filter-btn active px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-700 text-white transition">Semua</button>
-                            <button onclick="filterType('check_in', this)" class="type-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-50 text-blue-600 hover:bg-blue-100 transition">Absen Masuk</button>
-                            <button onclick="filterType('check_out', this)" class="type-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-green-50 text-green-600 hover:bg-green-100 transition">Absen Keluar</button>
-                            <button onclick="filterType('visit', this)" class="type-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-50 text-purple-600 hover:bg-purple-100 transition">Kunjungan</button>
-                        </div>
-                    </div>
+                    </form>
                 </div>
 
                 {{-- TIMELINE --}}
                 @if($activities->count() > 0)
-                    <div class="px-8 pb-8 space-y-3" id="activityFeedDesktop">
+                    <div class="px-8 pb-5 space-y-3" id="activityFeedDesktop">
                         @foreach($activities as $activity)
                             @include('hrd.partials._activity_item_desktop', ['activity' => $activity])
                         @endforeach
                     </div>
 
+                    <div class="px-8 pb-3">
+                        <p class="text-xs text-gray-400">Menampilkan {{ $firstItem }}–{{ $lastItem }} dari {{ $totalActivities }} aktivitas</p>
+                    </div>
+
                     {{-- PAGINATION --}}
-                    @if($activities->hasMorePages())
+                    @if($activities->hasPages())
                         <div class="px-8 pb-8">
                             {{ $activities->withQueryString()->links('pagination::tailwind') }}
                         </div>
@@ -213,105 +335,4 @@
     </div>
 </div>
 
-@endsection
-
-@section('scripts')
-<script>
-    let currentDateFilter = 'today';
-    let currentTypeFilter = 'all';
-
-    function filterDate(range, btn) {
-        currentDateFilter = range;
-
-        // Reset custom date inputs when using preset
-        if (range !== 'custom') {
-            const fromEl = document.getElementById('filter-date-from');
-            const toEl = document.getElementById('filter-date-to');
-            if (fromEl) fromEl.value = '';
-            if (toEl) toEl.value = '';
-        }
-
-        // Update active button
-        document.querySelectorAll('.date-filter-btn').forEach(b => {
-            b.classList.remove('bg-blue-600', 'text-white', 'active');
-            b.classList.add('bg-gray-100', 'text-gray-600');
-        });
-        btn.classList.remove('bg-gray-100', 'text-gray-600');
-        btn.classList.add('bg-blue-600', 'text-white', 'active');
-
-        applyFilters();
-    }
-
-    function filterType(type, btn) {
-        currentTypeFilter = type;
-
-        // Update active button
-        document.querySelectorAll('.type-filter-btn').forEach(b => {
-            b.classList.remove('bg-slate-700', 'text-white', 'active');
-            b.classList.add('bg-gray-100', 'text-gray-600');
-        });
-        btn.classList.remove('bg-gray-100', 'text-gray-600');
-        btn.classList.add('bg-slate-700', 'text-white', 'active');
-
-        applyFilters();
-    }
-
-    function applyFilters() {
-        const today = new Date();
-        const todayStr = today.toISOString().split('T')[0];
-        const items = document.querySelectorAll('.activity-item');
-
-        // Hitung range tanggal
-        let dateFrom = null;
-        let dateTo = null;
-
-        const customFrom = document.getElementById('filter-date-from');
-        const customTo = document.getElementById('filter-date-to');
-
-        if (customFrom && customTo && customFrom.value && customTo.value) {
-            dateFrom = customFrom.value;
-            dateTo = customTo.value;
-            currentDateFilter = 'custom';
-        } else if (currentDateFilter === 'today') {
-            dateFrom = todayStr;
-            dateTo = todayStr;
-        } else if (currentDateFilter === 'yesterday') {
-            const y = new Date(today);
-            y.setDate(y.getDate() - 1);
-            const ys = y.toISOString().split('T')[0];
-            dateFrom = ys;
-            dateTo = ys;
-        } else if (currentDateFilter === 'week') {
-            const d = new Date(today);
-            const day = d.getDay();
-            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-            const monday = new Date(today);
-            monday.setDate(diff);
-            dateFrom = monday.toISOString().split('T')[0];
-            dateTo = todayStr;
-        }
-
-        items.forEach(item => {
-            const d = item.getAttribute('data-date');
-            const t = item.getAttribute('data-type');
-
-            // Filter tanggal
-            let dateMatch = true;
-            if (currentDateFilter !== 'all' && dateFrom && dateTo) {
-                dateMatch = d >= dateFrom && d <= dateTo;
-            }
-
-            // Filter tipe
-            let typeMatch = true;
-            if (currentTypeFilter !== 'all') {
-                typeMatch = t === currentTypeFilter;
-            }
-
-            item.style.display = (dateMatch && typeMatch) ? '' : 'none';
-        });
-    }
-
-    // Jalankan filter saat halaman pertama kali dimuat
-    applyFilters();
-</script>
 @endsection

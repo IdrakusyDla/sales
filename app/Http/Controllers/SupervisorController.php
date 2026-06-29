@@ -61,6 +61,8 @@ class SupervisorController extends Controller
                 'hasEnded' => $dailyLog ? $dailyLog->hasEnded() : false,
                 'visitsCount' => $dailyLog ? $dailyLog->visits()->count() : 0,
                 'completedVisits' => $dailyLog ? $dailyLog->visits()->where('status', 'completed')->count() : 0,
+                'failedVisits' => $dailyLog ? $dailyLog->visits()->where('status', 'failed')->count() : 0,
+                'activeVisits' => $dailyLog ? $dailyLog->visits()->whereIn('status', ['pending', 'in_progress'])->count() : 0,
             ];
         }
 

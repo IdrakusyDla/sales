@@ -70,9 +70,19 @@
                                 @if($absensi['hasEnded'])
                                     <span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-1 rounded-full">Selesai</span>
                                 @else
-                                    <span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-1 rounded-full">Aktif</span>
+                                    <span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-1 rounded-full">Sedang Bekerja</span>
                                 @endif
-                                <p class="text-[10px] text-gray-500 mt-1">{{ $absensi['completedVisits'] }}/{{ $absensi['visitsCount'] }} kunjungan</p>
+                                <div class="text-[10px] text-gray-500 mt-1 flex items-center gap-1.5 justify-end">
+                                    <span><span class="text-green-700 font-bold">{{ $absensi['completedVisits'] }}</span> berhasil</span>
+                                    @if($absensi['failedVisits'] > 0)
+                                        <span class="text-gray-300">·</span>
+                                        <span><span class="text-red-600 font-bold">{{ $absensi['failedVisits'] }}</span> gagal</span>
+                                    @endif
+                                    @if($absensi['activeVisits'] > 0)
+                                        <span class="text-gray-300">·</span>
+                                        <span><span class="text-blue-700 font-bold">{{ $absensi['activeVisits'] }}</span> aktif</span>
+                                    @endif
+                                </div>
                             @else
                                 <span class="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-1 rounded-full">Belum Absen</span>
                             @endif
@@ -132,14 +142,33 @@
                                     @if($absensi && $absensi['hasStarted'])
                                         <div class="flex flex-col items-end">
                                             @if($absensi['hasEnded'])
-                                                <span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-md border border-green-200">Selesai Kerja</span>
+                                                <span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-md border border-green-200">Selesai</span>
                                             @else
                                                 <span class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-md border border-blue-200 relative">
                                                     <span class="absolute -top-1 -right-1 flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span></span>
                                                     Sedang Bekerja
                                                 </span>
                                             @endif
-                                            <p class="text-xs text-gray-500 font-medium mt-1.5"><span class="text-gray-900 font-bold">{{ $absensi['completedVisits'] }}</span> dari {{ $absensi['visitsCount'] }} kunjungan beres</p>
+                                            <div class="flex items-center gap-2 text-xs font-medium mt-1.5">
+                                                <span class="inline-flex items-center gap-1">
+                                                    <span class="text-gray-900 font-bold">{{ $absensi['completedVisits'] }}</span>
+                                                    <span class="text-gray-500">berhasil</span>
+                                                </span>
+                                                @if($absensi['failedVisits'] > 0)
+                                                    <span class="text-gray-300">·</span>
+                                                    <span class="inline-flex items-center gap-1">
+                                                        <span class="text-red-600 font-bold">{{ $absensi['failedVisits'] }}</span>
+                                                        <span class="text-gray-500">gagal</span>
+                                                    </span>
+                                                @endif
+                                                @if($absensi['activeVisits'] > 0)
+                                                    <span class="text-gray-300">·</span>
+                                                    <span class="inline-flex items-center gap-1">
+                                                        <span class="text-blue-700 font-bold">{{ $absensi['activeVisits'] }}</span>
+                                                        <span class="text-gray-500">aktif</span>
+                                                    </span>
+                                                @endif
+                                            </div>
                                         </div>
                                     @else
                                         <span class="bg-gray-100 text-gray-500 text-xs font-bold px-3 py-1 rounded-md border border-gray-200">Belum Absen</span>

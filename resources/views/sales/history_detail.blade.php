@@ -650,7 +650,7 @@
         {{-- TAB CONTENT: REIMBURSE --}}
         @if($dailyLog->expenses->count() > 0)
                 <div id="content-reimburse" class="tab-content hidden">
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-24">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 md:p-6 mb-24 md:rounded-[2rem]">
                         <h2 class="font-bold text-lg mb-4 flex items-center gap-2">
                             <span
                                 class="bg-green-100 text-green-600 w-8 h-8 rounded-full flex items-center justify-center text-sm"><svg
@@ -662,7 +662,7 @@
                             Reimburse ({{ $dailyLog->expenses->count() }})
                         </h2>
 
-                        <div class="space-y-4">
+                        <div class="space-y-4 md:grid md:grid-cols-2 md:gap-4 md:space-y-0">
                             @foreach($dailyLog->expenses as $expense)
                                 <div class="border border-gray-200 rounded-xl p-4 bg-gray-50">
                                     {{-- Header dengan Nama dan Harga --}}
@@ -992,24 +992,26 @@
                                     @endif
                                 </div>
                             @endforeach
-
-                            {{-- Total --}}
-                            <div class="bg-green-50 rounded-xl p-4 border-2 border-green-200 mt-4">
-                                <p class="text-2xl font-bold text-green-600">Rp
-                                    {{ number_format($dailyLog->expenses->sum('amount'), 0, ',', '.') }}
-                                </p>
-                            </div>
-
-                            {{-- TOMBOL TAMBAH BIAYA TAMBAHAN --}}
-                            @if(Auth::user()->id === $dailyLog->user_id && \Carbon\Carbon::today()->lte(\App\Models\Expense::calculateDeadline($dailyLog->date)) && in_array(Auth::user()->role, ['sales', 'supervisor']))
-                                <a href="{{ route('sales.reimburse.form', $dailyLog->id) }}"
-                                    class="block w-full bg-green-600 text-white py-4 rounded-xl font-bold text-center mt-4 shadow-lg hover:bg-green-700 transition">
-                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                    </svg> Tambah Biaya Tambahan
-                                </a>
-                            @endif
                         </div>
+
+                        {{-- Total --}}
+                        <div class="bg-green-50 rounded-xl p-4 border-2 border-green-200 mt-4 md:mt-6 flex items-center justify-between gap-3">
+                            <div>
+                                <p class="text-sm font-bold text-green-700">Total Pengeluaran</p>
+                                <p class="text-xs text-green-600">{{ $dailyLog->expenses->count() }} item</p>
+                            </div>
+                            <p class="text-2xl md:text-3xl font-extrabold text-green-600 whitespace-nowrap">Rp {{ number_format($dailyLog->expenses->sum('amount'), 0, ',', '.') }}</p>
+                        </div>
+
+                        {{-- TOMBOL TAMBAH BIAYA TAMBAHAN --}}
+                        @if(Auth::user()->id === $dailyLog->user_id && \Carbon\Carbon::today()->lte(\App\Models\Expense::calculateDeadline($dailyLog->date)) && in_array(Auth::user()->role, ['sales', 'supervisor']))
+                            <a href="{{ route('sales.reimburse.form', $dailyLog->id) }}"
+                                class="block w-full bg-green-600 text-white py-4 rounded-xl font-bold text-center mt-4 shadow-lg hover:bg-green-700 transition md:max-w-md md:mx-auto md:rounded-2xl">
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg> Tambah Biaya Tambahan
+                            </a>
+                        @endif
 
                         {{-- MODAL GENERATE RECEIPT (HRD/IT) --}}
                         @if(in_array(Auth::user()->role, ['hrd', 'it']))

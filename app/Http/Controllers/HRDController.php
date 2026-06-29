@@ -21,95 +21,127 @@ class HRDController extends Controller
     // HOME - AKTIVITAS FEED
     // ==========================================
 
-    public function home()
+    public function home(Request $request)
     {
-        // Ambil ID user yang role-nya sales atau supervisor
-        $targetUserIds = User::whereIn('role', ['sales', 'supervisor'])->pluck('id');
+        $perPage = in_array((int) $request->get('per_page'), [10, 20, 50, 100])
+            ? (int) $request->get('per_page')
+            : 20;
 
-        // Ambil daily logs terbaru (absensi masuk/keluar)
-        $dailyLogs = DailyLog::whereIn('user_id', $targetUserIds)
-            ->where(function ($q) {
-                $q->whereNotNull('start_time')->orWhereNotNull('end_time');
-            })
-            ->with('user')
-            ->orderBy('created_at', 'desc')
-            ->limit(50)
-            ->get();
+        $type = $request->get('type', 'all');
+        if (!in_array($type, ['all', 'check_in', 'check_out', 'visit'])) {
+            $type = 'all';
+        }
 
-        // Ambil kunjungan terbaru
-        $visits = Visit::whereHas('dailyLog', function ($q) use ($targetUserIds) {
-            $q->whereIn('user_id', $targetUserIds);
-        })
-            ->with(['dailyLog.user'])
-            ->orderBy('created_at', 'desc')
-            ->limit(50)
-            ->get();
+        $userQuery = User::whereIn('role', ['sales', 'supervisor']);
+        if ($request->filled('job_position_id')) {
+            $userQuery->where('job_position_id', $request->job_position_id);
+        }
+        if ($request->filled('company_id')) {
+            $userQuery->where('company_id', $request->company_id);
+        }
+        $targetUserIds = $userQuery->pluck('id');
 
-        // Gabungkan jadi satu collection dengan timestamp unified
+        $dateFrom = $request->filled('date_from') ? $request->date_from : null;
+        $dateTo = $request->filled('date_to') ? $request->date_to : null;
+
         $activities = collect();
 
-        foreach ($dailyLogs as $log) {
-            if ($log->start_time) {
-                $activities->push([
-                    'type' => 'check_in',
-                    'user' => $log->user,
-                    'time' => $log->start_time,
-                    'date' => $log->date,
-                    'meta' => $log,
-                    'sort_time' => $log->date . ' ' . $log->start_time,
-                ]);
+        if (!in_array($type, ['visit'])) {
+            $logsQuery = DailyLog::whereIn('user_id', $targetUserIds)
+                ->where(function ($q) {
+                    $q->whereNotNull('start_time')->orWhereNotNull('end_time');
+                })
+                ->with('user');
+            if ($dateFrom) {
+                $logsQuery->whereDate('date', '>=', $dateFrom);
             }
-            if ($log->end_time) {
+            if ($dateTo) {
+                $logsQuery->whereDate('date', '<=', $dateTo);
+            }
+
+            foreach ($logsQuery->get() as $log) {
+                if ($log->start_time && $type !== 'check_out') {
+                    $activities->push([
+                        'type' => 'check_in',
+                        'user' => $log->user,
+                        'time' => $log->start_time,
+                        'date' => $log->date,
+                        'meta' => $log,
+                        'sort_time' => $log->date . ' ' . $log->start_time,
+                    ]);
+                }
+                if ($log->end_time && $type !== 'check_in') {
+                    $activities->push([
+                        'type' => 'check_out',
+                        'user' => $log->user,
+                        'time' => $log->end_time,
+                        'date' => $log->date,
+                        'meta' => $log,
+                        'sort_time' => $log->date . ' ' . $log->end_time,
+                    ]);
+                }
+            }
+        }
+
+        if (!in_array($type, ['check_in', 'check_out'])) {
+            $visits = Visit::whereHas('dailyLog', function ($q) use ($targetUserIds, $dateFrom, $dateTo) {
+                $q->whereIn('user_id', $targetUserIds);
+                if ($dateFrom) {
+                    $q->whereDate('date', '>=', $dateFrom);
+                }
+                if ($dateTo) {
+                    $q->whereDate('date', '<=', $dateTo);
+                }
+            })
+                ->with(['dailyLog.user'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            foreach ($visits as $visit) {
                 $activities->push([
-                    'type' => 'check_out',
-                    'user' => $log->user,
-                    'time' => $log->end_time,
-                    'date' => $log->date,
-                    'meta' => $log,
-                    'sort_time' => $log->date . ' ' . $log->end_time,
+                    'type' => 'visit',
+                    'user' => $visit->dailyLog->user,
+                    'time' => $visit->time,
+                    'date' => $visit->dailyLog->date,
+                    'meta' => $visit,
+                    'sort_time' => $visit->dailyLog->date . ' ' . $visit->time,
                 ]);
             }
         }
 
-        foreach ($visits as $visit) {
-            $activities->push([
-                'type' => 'visit',
-                'user' => $visit->dailyLog->user,
-                'time' => $visit->time,
-                'date' => $visit->dailyLog->date,
-                'meta' => $visit,
-                'sort_time' => $visit->dailyLog->date . ' ' . $visit->time,
-            ]);
-        }
-
-        // Sort by time descending dan paginate manual
         $activities = $activities->sortByDesc('sort_time')->values();
+
+        $page = max(1, (int) $request->get('page', 1));
         $activities = new \Illuminate\Pagination\LengthAwarePaginator(
-            $activities->forPage(request()->get('page', 1), 20),
+            $activities->forPage($page, $perPage),
             $activities->count(),
-            20,
-            request()->get('page', 1),
+            $perPage,
+            $page,
             ['path' => request()->url(), 'query' => request()->query()]
         );
 
-        // Statistik hari ini
+        $allTargetUserIds = User::whereIn('role', ['sales', 'supervisor'])->pluck('id');
+
         $today = Carbon::today();
         $todayStats = [
-            'check_in' => DailyLog::whereIn('user_id', $targetUserIds)
+            'check_in' => DailyLog::whereIn('user_id', $allTargetUserIds)
                 ->whereDate('date', $today)
                 ->whereNotNull('start_time')
                 ->count(),
-            'check_out' => DailyLog::whereIn('user_id', $targetUserIds)
+            'check_out' => DailyLog::whereIn('user_id', $allTargetUserIds)
                 ->whereDate('date', $today)
                 ->whereNotNull('end_time')
                 ->count(),
-            'visits' => Visit::whereHas('dailyLog', function ($q) use ($targetUserIds, $today) {
-                $q->whereIn('user_id', $targetUserIds)->whereDate('date', $today);
+            'visits' => Visit::whereHas('dailyLog', function ($q) use ($allTargetUserIds, $today) {
+                $q->whereIn('user_id', $allTargetUserIds)->whereDate('date', $today);
             })->count(),
             'total_active' => User::whereIn('role', ['sales', 'supervisor'])->where('is_active', true)->count(),
         ];
 
-        return view('hrd.home', compact('activities', 'todayStats'));
+        $companies = Company::orderBy('name')->get();
+        $jobPositions = JobPosition::orderBy('name')->get();
+
+        return view('hrd.home', compact('activities', 'todayStats', 'companies', 'jobPositions', 'perPage'));
     }
 
     // ==========================================
