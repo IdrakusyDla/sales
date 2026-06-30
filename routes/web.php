@@ -105,6 +105,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::post('/supervisor/approval/reimburse/{id}/approve', [\App\Http\Controllers\ReimburseApprovalController::class, 'approve'])->name('supervisor.reimburse.approve');
         Route::post('/supervisor/approval/reimburse/{id}/reject', [\App\Http\Controllers\ReimburseApprovalController::class, 'reject'])->name('supervisor.reimburse.reject');
         Route::post('/supervisor/approval/reimburse/bulk-approve', [\App\Http\Controllers\ReimburseApprovalController::class, 'bulkApprove'])->name('supervisor.reimburse.bulk_approve');
+        Route::post('/supervisor/approval/reimburse/bulk-reject', [\App\Http\Controllers\ReimburseApprovalController::class, 'bulkReject'])->name('supervisor.reimburse.bulk_reject');
 
         // REVISI REIMBURSE (SPV - jika Finance reject ke SPV)
         Route::post('/supervisor/reimburse/{expenseId}/revise', [SupervisorController::class, 'reviseReimburse'])->name('supervisor.reimburse.revise');
@@ -182,6 +183,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::post('/hrd/approval/reimburse/{id}/approve', [\App\Http\Controllers\ReimburseApprovalController::class, 'approve'])->name('hrd.reimburse.approve');
         Route::post('/hrd/approval/reimburse/{id}/reject', [\App\Http\Controllers\ReimburseApprovalController::class, 'reject'])->name('hrd.reimburse.reject');
         Route::post('/hrd/approval/reimburse/bulk-approve', [\App\Http\Controllers\ReimburseApprovalController::class, 'bulkApprove'])->name('hrd.reimburse.bulk_approve');
+        Route::post('/hrd/approval/reimburse/bulk-reject', [\App\Http\Controllers\ReimburseApprovalController::class, 'bulkReject'])->name('hrd.reimburse.bulk_reject');
 
         // --- SETTING BAHAN BAKAR ---
         Route::get('/fuel-settings', [FuelSettingController::class, 'index'])->name('fuel_settings.index');
@@ -205,6 +207,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::post('/finance/approval/reimburse/{id}/approve', [FinanceController::class, 'approveReimburse'])->name('finance.reimburse.approve');
         Route::post('/finance/approval/reimburse/{id}/reject', [FinanceController::class, 'rejectReimburse'])->name('finance.reimburse.reject');
         Route::post('/finance/approval/reimburse/bulk-approve', [FinanceController::class, 'bulkApproveReimburse'])->name('finance.reimburse.bulk_approve');
+        Route::post('/finance/approval/reimburse/bulk-reject', [FinanceController::class, 'bulkRejectReimburse'])->name('finance.reimburse.bulk_reject');
 
         // --- DETAIL USER & ABSENSI ---
         Route::get('/finance/user/{id}', [FinanceController::class, 'showUser'])->name('finance.show.user');

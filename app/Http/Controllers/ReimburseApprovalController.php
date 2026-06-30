@@ -8,20 +8,23 @@ use App\Models\ExpenseHistory;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Traits\PaginatesExpenseGroups;
 
 class ReimburseApprovalController extends Controller
 {
+    use PaginatesExpenseGroups;
+
     // ==========================================
-    // DAFTAR REIMBURSE PENDING
+    // DAFTAR REIMBURSE PENDING (di-group per DailyLog)
     // ==========================================
     public function index(Request $request)
     {
         $user = Auth::user();
-        $query = Expense::with(['dailyLog.user', 'dailyLog.visits', 'user', 'histories']);
+        $base = Expense::query();
 
         // LOGIKA SPV: Hanya lihat milik sales bawahan yang statusnya 'pending_spv'
         if ($user->role === 'supervisor') {
-            $query->where('status', 'pending_spv')
+            $base->where('status', 'pending_spv')
                 ->whereHas('user', function ($q) use ($user) {
                     // Cek supervisor_id (single) atau many-to-many supervisors
                     $q->where('supervisor_id', $user->id)
@@ -32,29 +35,11 @@ class ReimburseApprovalController extends Controller
         }
         // LOGIKA HRD: Hanya lihat yang sudah disetujui SPV ('pending_hrd')
         elseif ($user->role === 'hrd') {
-            $query->where('status', 'pending_hrd');
+            $base->where('status', 'pending_hrd');
         }
         // Role lain (IT/Sales/Finance tidak pakai ini - Finance punya controller sendiri)
         else {
             abort(403);
-        }
-
-        // Filter berdasarkan tanggal
-        if ($request->filled('date_from')) {
-            $query->where('date', '>=', $request->date_from);
-        }
-        if ($request->filled('date_to')) {
-            $query->where('date', '<=', $request->date_to);
-        }
-
-        // Filter berdasarkan user
-        if ($request->filled('user_id')) {
-            $query->where('user_id', $request->user_id);
-        }
-
-        // Filter berdasarkan type expense
-        if ($request->filled('type')) {
-            $query->where('type', $request->type);
         }
 
         // Scope per-karyawan (dipakai saat diakses dari profil karyawan)
@@ -68,14 +53,19 @@ class ReimburseApprovalController extends Controller
             abort_unless($isSubordinate, 403, 'Anda tidak memiliki akses ke data karyawan ini.');
         }
 
-        $pendingReimburses = $query->orderBy('date', 'desc')->paginate(20);
+        // Group per daily_log_id: 1 putaran absen = 1 kartu.
+        [$groups, $paginator] = $this->getGroupedExpensePaginator(
+            $base,
+            $request,
+            ['dailyLog.user', 'dailyLog.visits', 'user', 'histories']
+        );
 
         // Get semua users untuk filter dropdown
         $users = User::whereIn('role', ['sales', 'supervisor'])
             ->orderBy('name')
             ->get();
 
-        return view('approval.reimburse_index', compact('pendingReimburses', 'users', 'targetUser'));
+        return view('approval.reimburse_index', compact('groups', 'paginator', 'users', 'targetUser'));
     }
 
     // ==========================================
@@ -311,6 +301,99 @@ class ReimburseApprovalController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Gagal bulk approve: ' . $e->getMessage());
+        }
+    }
+
+    // ==========================================
+    // BULK REJECT (Per-item decline dalam grup)
+    // ==========================================
+    public function bulkReject(Request $request)
+    {
+        $expenseIds = $request->input('expense_ids');
+        if (is_string($expenseIds)) {
+            $request->merge(['expense_ids' => array_filter(explode(',', $expenseIds))]);
+        }
+
+        $request->validate([
+            'expense_ids' => 'required|array',
+            'expense_ids.*' => 'exists:expenses,id',
+            'reason' => 'required|string|min:5',
+            'rejection_type' => 'required|in:revisi,permanent',
+        ]);
+
+        $user = Auth::user();
+        $targetStatus = $user->role === 'supervisor' ? 'pending_spv' : 'pending_hrd';
+        $approverLabel = $user->role === 'supervisor' ? 'Supervisor' : 'HRD';
+
+        DB::beginTransaction();
+        try {
+            $rejectedCount = 0;
+
+            foreach ($request->expense_ids as $id) {
+                $expense = Expense::with('user')->where('status', $targetStatus)->find($id);
+                if (!$expense) {
+                    continue;
+                }
+
+                // Penolakan permanen
+                if ($request->rejection_type === 'permanent') {
+                    $expense->update([
+                        'status' => 'rejected_permanent',
+                        'rejection_note' => $request->reason,
+                        'rejection_type' => 'permanent',
+                        'revision_count' => $expense->revision_count + 1,
+                        'revised_at' => now(),
+                    ]);
+
+                    ExpenseHistory::create([
+                        'expense_id' => $expense->id,
+                        'status' => 'rejected_permanent',
+                        'changed_by' => $user->id,
+                        'notes' => "Ditolak permanen oleh {$approverLabel} (Bulk): " . $request->reason,
+                    ]);
+
+                    $rejectedCount++;
+                    continue;
+                }
+
+                // Penolakan dengan permintaan revisi
+                if ($user->role === 'supervisor') {
+                    $newStatus = 'needs_revision_sales';
+                    $notes = "Perlu revisi (Sales) - Supervisor (Bulk): " . $request->reason;
+                } else {
+                    // HRD: kembalikan ke SPV jika yang submit SPV, selain itu ke Sales
+                    if ($expense->isFromSupervisor()) {
+                        $newStatus = 'needs_revision_spv';
+                        $notes = "Perlu revisi (Supervisor) - HRD (Bulk): " . $request->reason;
+                    } else {
+                        $newStatus = 'needs_revision_sales';
+                        $notes = "Perlu revisi (Sales) - HRD (Bulk): " . $request->reason;
+                    }
+                }
+
+                $expense->update([
+                    'status' => $newStatus,
+                    'rejection_note' => $request->reason,
+                    'rejection_type' => 'revisi',
+                    'revision_count' => $expense->revision_count + 1,
+                    'revised_at' => now(),
+                ]);
+
+                ExpenseHistory::create([
+                    'expense_id' => $expense->id,
+                    'status' => $newStatus,
+                    'changed_by' => $user->id,
+                    'notes' => $notes,
+                ]);
+
+                $rejectedCount++;
+            }
+
+            DB::commit();
+            return back()->with('success', "{$rejectedCount} reimburse berhasil ditolak.");
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal bulk reject: ' . $e->getMessage());
         }
     }
 

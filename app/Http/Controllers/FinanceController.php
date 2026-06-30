@@ -14,9 +14,11 @@ use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\RekapExport;
 use Carbon\Carbon;
+use App\Traits\PaginatesExpenseGroups;
 
 class FinanceController extends Controller
 {
+    use PaginatesExpenseGroups;
     // ==========================================
     // DASHBOARD FINANCE
     // ==========================================
@@ -64,44 +66,29 @@ class FinanceController extends Controller
 
     /**
      * List reimburse yang perlu di-approve Finance
-     * Hanya yang statusnya pending_finance
+     * Hanya yang statusnya pending_finance (di-group per DailyLog)
      */
     public function reimbursementApproval(Request $request)
     {
-        // Query: expenses yang statusnya pending_finance
-        $query = Expense::with(['user', 'dailyLog.visits', 'histories'])
-            ->where('status', 'pending_finance')
-            ->orderBy('date', 'desc');
-
-        // Filter berdasarkan tanggal
-        if ($request->filled('date_from')) {
-            $query->where('date', '>=', $request->date_from);
-        }
-        if ($request->filled('date_to')) {
-            $query->where('date', '<=', $request->date_to);
-        }
-
-        // Filter berdasarkan user
-        if ($request->filled('user_id')) {
-            $query->where('user_id', $request->user_id);
-        }
-
-        // Filter berdasarkan type expense
-        if ($request->filled('type')) {
-            $query->where('type', $request->type);
-        }
+        // Base query: hanya expense yang siap di-approve Finance
+        $base = Expense::query()->where('status', 'pending_finance');
 
         // Scope per-karyawan (dipakai saat diakses dari profil karyawan)
         $targetUser = $request->filled('user_id') ? User::find($request->user_id) : null;
 
-        $expenses = $query->paginate(20);
+        // Group per daily_log_id: 1 putaran absen = 1 kartu.
+        [$groups, $paginator] = $this->getGroupedExpensePaginator(
+            $base,
+            $request,
+            ['user', 'dailyLog.user', 'dailyLog.visits', 'histories']
+        );
 
         // Get semua users untuk filter dropdown
         $users = User::whereIn('role', ['sales', 'supervisor'])
             ->orderBy('name')
             ->get();
 
-        return view('finance.approval.index', compact('expenses', 'users', 'targetUser'));
+        return view('finance.approval.index', compact('groups', 'paginator', 'users', 'targetUser'));
     }
 
     /**
@@ -246,6 +233,69 @@ class FinanceController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withErrors(['msg' => 'Gagal reject: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Bulk reject reimburse (per-item decline dalam grup)
+     */
+    public function bulkRejectReimburse(Request $request)
+    {
+        $expenseIds = $request->input('expense_ids');
+        if (is_string($expenseIds)) {
+            $request->merge(['expense_ids' => array_filter(explode(',', $expenseIds))]);
+        }
+
+        $request->validate([
+            'expense_ids' => 'required|array',
+            'expense_ids.*' => 'exists:expenses,id',
+            'rejection_note' => 'required|string|min:5',
+            'rejection_type' => 'required|in:revisi,permanent',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $rejectedCount = 0;
+
+            foreach ($request->expense_ids as $id) {
+                $expense = Expense::with('user')->where('status', 'pending_finance')->find($id);
+                if (!$expense) {
+                    continue;
+                }
+
+                if ($request->rejection_type === 'permanent') {
+                    $newStatus = 'rejected_permanent';
+                    $notes = 'Ditolak permanen oleh Finance (Bulk): ' . $request->rejection_note;
+                } else {
+                    $newStatus = $expense->isFromSupervisor()
+                        ? 'needs_revision_spv'
+                        : 'needs_revision_sales';
+                    $notes = 'Perlu revisi - Finance (Bulk): ' . $request->rejection_note;
+                }
+
+                $expense->update([
+                    'status' => $newStatus,
+                    'rejection_note' => $request->rejection_note,
+                    'rejection_type' => $request->rejection_type,
+                    'revision_count' => $expense->revision_count + 1,
+                    'revised_at' => now(),
+                ]);
+
+                ExpenseHistory::create([
+                    'expense_id' => $expense->id,
+                    'status' => $newStatus,
+                    'changed_by' => auth()->id(),
+                    'notes' => $notes,
+                ]);
+
+                $rejectedCount++;
+            }
+
+            DB::commit();
+            return back()->with('success', "{$rejectedCount} reimburse berhasil ditolak.");
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['msg' => 'Gagal bulk reject: ' . $e->getMessage()]);
         }
     }
 
