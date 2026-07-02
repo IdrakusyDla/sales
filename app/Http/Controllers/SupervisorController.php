@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\DailyLog;
+use App\Models\Visit;
 use App\Models\Expense;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Carbon\Carbon;
 
 class SupervisorController extends Controller
@@ -31,21 +33,69 @@ class SupervisorController extends Controller
     }
 
     // ==========================================
-    // DASHBOARD SUPERVISOR (Tim Saya)
+    // DASHBOARD SUPERVISOR (Aktivitas Terbaru Tim)
     // ==========================================
 
-    public function dashboard()
+    public function dashboard(Request $request)
+    {
+        $supervisor = Auth::user();
+        $subordinateIds = $this->getSubordinateSalesQuery($supervisor)->pluck('id');
+
+        $perPage = in_array((int) $request->get('per_page'), [10, 20, 50, 100])
+            ? (int) $request->get('per_page')
+            : 20;
+
+        $type = $request->get('type', 'all');
+        if (!in_array($type, ['all', 'check_in', 'check_out', 'visit'])) {
+            $type = 'all';
+        }
+
+        $dateFrom = $request->filled('date_from') ? $request->date_from : null;
+        $dateTo = $request->filled('date_to') ? $request->date_to : null;
+
+        $activities = $this->buildTeamActivities($subordinateIds, $type, $dateFrom, $dateTo);
+
+        $page = max(1, (int) $request->get('page', 1));
+        $activities = new LengthAwarePaginator(
+            $activities->forPage($page, $perPage),
+            $activities->count(),
+            $perPage,
+            $page,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
+
+        // Statistik hari ini, scoped ke bawahan supervisor
+        $today = Carbon::today();
+        $todayStats = [
+            'check_in' => $subordinateIds->isNotEmpty()
+                ? DailyLog::whereIn('user_id', $subordinateIds)->whereDate('date', $today)->whereNotNull('start_time')->count()
+                : 0,
+            'check_out' => $subordinateIds->isNotEmpty()
+                ? DailyLog::whereIn('user_id', $subordinateIds)->whereDate('date', $today)->whereNotNull('end_time')->count()
+                : 0,
+            'visits' => $subordinateIds->isNotEmpty()
+                ? Visit::whereHas('dailyLog', function ($q) use ($subordinateIds, $today) {
+                    $q->whereIn('user_id', $subordinateIds)->whereDate('date', $today);
+                })->count()
+                : 0,
+            'total_active' => User::whereIn('id', $subordinateIds)->where('is_active', true)->count(),
+        ];
+
+        $totalTeam = $subordinateIds->count();
+
+        return view('supervisor.dashboard', compact('activities', 'todayStats', 'totalTeam', 'perPage'));
+    }
+
+    // ==========================================
+    // DAFTAR KARYAWAN (Page lama "Tim Saya")
+    // ==========================================
+
+    public function teamList()
     {
         $supervisor = Auth::user();
 
-        // Ambil sales yang ditugaskan ke supervisor ini (Support Double Logic: Pivot OR Legacy)
-        $sales = User::whereHas('supervisors', function($q) use ($supervisor) {
-                // Gunakan table name explicit untuk menghindari ambiguous column
-                $q->where('supervisor_sales.supervisor_id', $supervisor->id);
-            })
-            ->orWhere('users.supervisor_id', $supervisor->id) // Legacy fallback (explicit table)
-            ->where('role', 'sales')
-            ->get();
+        // Ambil sales yang ditugaskan ke supervisor ini (Support Double Logic: Pivot or Legacy)
+        $sales = $this->getSubordinateSalesQuery($supervisor)->get();
 
         // Ambil data absen hari ini untuk semua sales
         $todayAbsensi = [];
@@ -77,7 +127,100 @@ class SupervisorController extends Controller
                 })->count(),
         ];
 
-        return view('supervisor.dashboard', compact('sales', 'todayAbsensi', 'stats'));
+        return view('supervisor.team', compact('sales', 'todayAbsensi', 'stats'));
+    }
+
+    // ==========================================
+    // HELPER: Query sales bawahan supervisor (Pivot OR Legacy)
+    // ==========================================
+
+    private function getSubordinateSalesQuery($supervisor)
+    {
+        return User::where('role', 'sales')
+            ->where(function ($query) use ($supervisor) {
+                $query->whereHas('supervisors', function ($q) use ($supervisor) {
+                    $q->where('supervisor_sales.supervisor_id', $supervisor->id);
+                })
+                ->orWhere('users.supervisor_id', $supervisor->id); // Legacy fallback
+            });
+    }
+
+    // ==========================================
+    // HELPER: Bangun timeline aktivitas dari kumpulan user
+    // ==========================================
+
+    private function buildTeamActivities($userIds, $type, $dateFrom, $dateTo)
+    {
+        $activities = collect();
+
+        if (empty($userIds) || (is_countable($userIds) ? count($userIds) === 0 : !$userIds)) {
+            return $activities;
+        }
+
+        if (!in_array($type, ['visit'])) {
+            $logsQuery = DailyLog::whereIn('user_id', $userIds)
+                ->where(function ($q) {
+                    $q->whereNotNull('start_time')->orWhereNotNull('end_time');
+                })
+                ->with('user');
+            if ($dateFrom) {
+                $logsQuery->whereDate('date', '>=', $dateFrom);
+            }
+            if ($dateTo) {
+                $logsQuery->whereDate('date', '<=', $dateTo);
+            }
+
+            foreach ($logsQuery->get() as $log) {
+                if ($log->start_time && $type !== 'check_out') {
+                    $activities->push([
+                        'type' => 'check_in',
+                        'user' => $log->user,
+                        'time' => $log->start_time,
+                        'date' => $log->date,
+                        'meta' => $log,
+                        'sort_time' => $log->date . ' ' . $log->start_time,
+                    ]);
+                }
+                if ($log->end_time && $type !== 'check_in') {
+                    $activities->push([
+                        'type' => 'check_out',
+                        'user' => $log->user,
+                        'time' => $log->end_time,
+                        'date' => $log->date,
+                        'meta' => $log,
+                        'sort_time' => $log->date . ' ' . $log->end_time,
+                    ]);
+                }
+            }
+        }
+
+        if (!in_array($type, ['check_in', 'check_out'])) {
+            $visits = Visit::whereHas('dailyLog', function ($q) use ($userIds, $dateFrom, $dateTo) {
+                $q->whereIn('user_id', $userIds);
+                if ($dateFrom) {
+                    $q->whereDate('date', '>=', $dateFrom);
+                }
+                if ($dateTo) {
+                    $q->whereDate('date', '<=', $dateTo);
+                }
+            })
+                ->with(['dailyLog.user'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            foreach ($visits as $visit) {
+                $activities->push([
+                    'type' => 'visit',
+                    'user' => $visit->dailyLog->user,
+                    'time' => $visit->time,
+                    'date' => $visit->dailyLog->date,
+                    'meta' => $visit,
+                    'sort_time' => $visit->dailyLog->date . ' ' . $visit->time,
+                ]);
+            }
+        }
+
+        return $activities->sortByDesc('sort_time')->values();
     }
 
     // ==========================================

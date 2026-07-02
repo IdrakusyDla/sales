@@ -92,6 +92,43 @@ class FinanceController extends Controller
     }
 
     /**
+     * Arsip reimburse: daftar yang sudah final (approved / rejected_permanent).
+     * Read-only, untuk audit & history cross-karyawan di sisi Finance.
+     */
+    public function reimbursementArchive(Request $request)
+    {
+        // Base query: hanya expense yang sudah final
+        $base = Expense::query()->whereIn('status', ['approved', 'rejected_permanent']);
+
+        // Filter status tambahan (opsional)
+        if (in_array($request->status, ['approved', 'rejected_permanent'])) {
+            $base->where('status', $request->status);
+        }
+
+        // Scope per-karyawan (dipakai saat diakses dari profil karyawan)
+        $targetUser = $request->filled('user_id') ? User::find($request->user_id) : null;
+
+        [$groups, $paginator] = $this->getGroupedExpensePaginator(
+            $base,
+            $request,
+            ['user', 'dailyLog.user', 'dailyLog.visits', 'approvedByFinance', 'histories.changedBy']
+        );
+
+        // Statistik ringkas arsip (semua waktu)
+        $archiveStats = [
+            'approved_count' => Expense::where('status', 'approved')->count(),
+            'rejected_count' => Expense::where('status', 'rejected_permanent')->count(),
+            'approved_total' => Expense::where('status', 'approved')->sum('amount'),
+        ];
+
+        $users = User::whereIn('role', ['sales', 'supervisor'])
+            ->orderBy('name')
+            ->get();
+
+        return view('finance.approval.archive', compact('groups', 'paginator', 'users', 'targetUser', 'archiveStats'));
+    }
+
+    /**
      * Approve reimburse
      */
     public function approveReimburse(Request $request, $id)

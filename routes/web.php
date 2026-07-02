@@ -98,6 +98,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     Route::middleware(['role:supervisor'])->group(function () {
         Route::get('/supervisor/home', [SupervisorController::class, 'home'])->name('supervisor.home');
         Route::get('/supervisor/dashboard', [SupervisorController::class, 'dashboard'])->name('supervisor.dashboard');
+        Route::get('/supervisor/team', [SupervisorController::class, 'teamList'])->name('supervisor.team.index');
         Route::get('/supervisor/sales/{id}', [SupervisorController::class, 'showSales'])->name('supervisor.show.sales');
 
         // APPROVAL REIMBURSE
@@ -208,6 +209,9 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::post('/finance/approval/reimburse/{id}/reject', [FinanceController::class, 'rejectReimburse'])->name('finance.reimburse.reject');
         Route::post('/finance/approval/reimburse/bulk-approve', [FinanceController::class, 'bulkApproveReimburse'])->name('finance.reimburse.bulk_approve');
         Route::post('/finance/approval/reimburse/bulk-reject', [FinanceController::class, 'bulkRejectReimburse'])->name('finance.reimburse.bulk_reject');
+
+        // --- ARSIP REIMBURSE (sudah di-approve / ditolak permanen) ---
+        Route::get('/finance/archive/reimburse', [FinanceController::class, 'reimbursementArchive'])->name('finance.reimburse.archive');
 
         // --- DETAIL USER & ABSENSI ---
         Route::get('/finance/user/{id}', [FinanceController::class, 'showUser'])->name('finance.show.user');

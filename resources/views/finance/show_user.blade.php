@@ -1,77 +1,95 @@
 @extends('layout')
 @section('content')
     <div class="px-5 md:px-8 py-6 md:py-8">
-        <div class="flex items-center gap-3 mb-6">
-            <a href="{{ route('finance.dashboard') }}" class="text-gray-600">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18">
-                    </path>
-                </svg>
-            </a>
-            <div>
-                <h1 class="text-2xl font-bold">{{ $user->name }}</h1>
-                <p class="text-sm text-gray-500">{{ $user->username }} • {{ ucfirst($user->role) }}</p>
+        {{-- HEADER: Flex Row on Desktop, Column on Mobile --}}
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div class="flex items-center gap-3">
+                <a href="{{ route('finance.dashboard') }}" class="text-gray-600 hover:text-gray-800 transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                </a>
+                <div>
+                    <h1 class="text-2xl font-bold flex items-center gap-2 flex-wrap">
+                        {{ $user->name }}
+                        @if(!$user->is_active)
+                            <span class="bg-red-100 text-red-600 text-xs px-2.5 py-1 rounded-full border border-red-200 font-normal">Nonaktif</span>
+                        @endif
+                        @if(!$user->fuel_reimbursement_enabled)
+                            <span class="text-xs bg-gray-200 text-gray-600 px-2.5 py-0.5 rounded-full font-bold">Tidak Reimburse Bensin</span>
+                        @endif
+                    </h1>
+                    <p class="text-sm text-gray-500">{{ $user->username }} • {{ ucfirst($user->role) }}</p>
+                    <div class="flex items-center gap-2 flex-wrap mt-1">
+                        @if($user->company)
+                            <span class="text-xs bg-cyan-100 text-cyan-700 px-2.5 py-0.5 rounded-full font-bold">{{ $user->company->name }}</span>
+                        @endif
+                        @if($user->jobPosition)
+                            <span class="text-xs bg-teal-100 text-teal-700 px-2.5 py-0.5 rounded-full font-bold">{{ $user->jobPosition->name }}</span>
+                        @endif
+                    </div>
+                </div>
             </div>
+            @if(in_array($user->role, ['sales', 'supervisor']))
+                <a href="{{ route('finance.reimburse.approval', ['user_id' => $user->id]) }}"
+                    class="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 transition text-white px-5 py-3 rounded-xl font-bold text-sm shadow-sm w-full sm:w-auto">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Persetujuan Reimburse
+                    @if($pendingReimburseCount > 0)
+                        <span class="bg-white text-green-700 px-2 py-0.5 rounded-full text-xs font-black shadow-sm ml-1">{{ $pendingReimburseCount }}</span>
+                    @endif
+                </a>
+            @endif
         </div>
 
         {{-- STATISTIK --}}
         <div class="grid grid-cols-3 gap-3 mb-6">
-            <div class="bg-blue-50 rounded-xl p-3 text-center">
+            <div class="bg-blue-50 rounded-xl p-3 text-center shadow-sm">
                 <p class="text-xs text-gray-600">Absensi</p>
                 <p class="text-xl font-bold text-blue-600">{{ $stats['total_absensi'] }}</p>
             </div>
-            <div class="bg-green-50 rounded-xl p-3 text-center">
+            <div class="bg-green-50 rounded-xl p-3 text-center shadow-sm">
                 <p class="text-xs text-gray-600">Kunjungan</p>
                 <p class="text-xl font-bold text-green-600">{{ $stats['total_visits'] }}</p>
             </div>
-            <div class="bg-orange-50 rounded-xl p-3 text-center">
+            <div class="bg-orange-50 rounded-xl p-3 text-center shadow-sm">
                 <p class="text-xs text-gray-600">Reimburse</p>
                 <p class="text-xl font-bold text-orange-600">Rp {{ number_format($stats['total_expenses'] / 1000, 0) }}K</p>
             </div>
         </div>
 
-        {{-- FILTER TANGGAL --}}
+        {{-- FILTER TANGGAL Compact: Row on desktop, Col on mobile --}}
         <div class="bg-blue-50/50 rounded-2xl p-5 border border-blue-100 mb-6">
-            <h3 class="font-bold text-blue-900 mb-3 text-sm flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
-                Filter Riwayat
-            </h3>
-            <form method="GET" action="{{ route('finance.show.user', $user->id) }}">
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="text-xs text-blue-800 font-bold mb-1 block">Dari Tanggal</label>
-                        <input type="date" name="start_date" value="{{ request('start_date') }}"
-                            class="w-full border-0 ring-1 ring-inset ring-blue-200 focus:ring-2 focus:ring-blue-600 rounded-xl p-3 text-sm bg-white shadow-sm">
-                    </div>
-                    <div>
-                        <label class="text-xs text-blue-800 font-bold mb-1 block">Sampai Tanggal</label>
-                        <input type="date" name="end_date" value="{{ request('end_date') }}"
-                            class="w-full border-0 ring-1 ring-inset ring-blue-200 focus:ring-2 focus:ring-blue-600 rounded-xl p-3 text-sm bg-white shadow-sm">
-                    </div>
+            <form method="GET" action="{{ route('finance.show.user', $user->id) }}" class="filter-form flex flex-col md:flex-row md:items-end gap-4">
+                <div class="w-full md:flex-1">
+                    <label class="text-xs text-blue-900 font-bold mb-1.5 block">Dari Tanggal</label>
+                    <input type="date" name="start_date" value="{{ request('start_date') }}"
+                        class="w-full border-0 ring-1 ring-inset ring-blue-200 focus:ring-2 focus:ring-blue-600 rounded-xl p-3 md:py-2.5 md:px-4 text-sm bg-white shadow-sm focus:outline-none">
                 </div>
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 transition text-white py-3 rounded-xl font-bold text-sm mt-4 shadow-sm">
-                    Filter
-                </button>
-            </form>
-
-            {{-- TOMBOL PERSETUJUAN REIMBURSE PER-KARYAWAN --}}
-            @if(in_array($user->role, ['sales', 'supervisor']))
-                <a href="{{ route('finance.reimburse.approval', ['user_id' => $user->id]) }}"
-                    class="mt-3 w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 transition text-white py-3 rounded-xl font-bold text-sm shadow-sm">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    Persetujuan Reimburse
-                    @if($pendingReimburseCount > 0)
-                        <span class="bg-white/25 px-2 py-0.5 rounded-full text-xs">{{ $pendingReimburseCount }}</span>
+                <div class="w-full md:flex-1">
+                    <label class="text-xs text-blue-900 font-bold mb-1.5 block">Sampai Tanggal</label>
+                    <input type="date" name="end_date" value="{{ request('end_date') }}"
+                        class="w-full border-0 ring-1 ring-inset ring-blue-200 focus:ring-2 focus:ring-blue-600 rounded-xl p-3 md:py-2.5 md:px-4 text-sm bg-white shadow-sm focus:outline-none">
+                </div>
+                <div class="flex gap-2 w-full md:w-auto md:shrink-0">
+                    <button type="submit" class="flex-1 md:flex-none bg-blue-600 hover:bg-blue-700 transition text-white px-6 py-3 md:py-2.5 md:px-5 rounded-xl font-bold text-sm shadow-sm flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                        Filter
+                    </button>
+                    @if(request('start_date') || request('end_date'))
+                        <a href="{{ route('finance.show.user', $user->id) }}" class="bg-white hover:bg-gray-50 border border-gray-200 transition text-gray-600 px-5 py-3 md:py-2.5 md:px-5 rounded-xl font-bold text-sm shadow-sm flex items-center justify-center">
+                            Reset
+                        </a>
                     @endif
-                </a>
-            @endif
+                </div>
+            </form>
         </div>
 
         {{-- LIST RIWAYAT --}}
         <div class="space-y-4 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4">
             @forelse($dailyLogs as $log)
                 <a href="{{ route('sales.history.detail', $log->id) }}" class="block">
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition h-full flex flex-col justify-between">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition h-full flex flex-col justify-start">
                     <div class="mb-3 pb-3 border-b border-gray-100">
                         <div class="flex justify-between items-start mb-2">
                             <div class="flex-1">
@@ -178,7 +196,7 @@
 
                     {{-- REIMBURSE --}}
                     @if($log->expenses->count() > 0)
-                        <div class="mt-3 pt-3 border-t border-gray-100">
+                        <div class="mt-auto pt-3 border-t border-gray-100">
                             <p class="text-xs font-bold text-gray-600 mb-2">Reimburse:</p>
                             <div class="space-y-1">
                                 @foreach($log->expenses as $expense)

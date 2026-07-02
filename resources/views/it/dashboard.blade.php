@@ -80,7 +80,7 @@
         </div>
 
         {{-- SEARCH & FILTER --}}
-        <form method="GET" action="{{ route('it.dashboard') }}" class="mb-4 md:mb-6">
+        <form method="GET" action="{{ route('it.dashboard') }}" class="filter-form mb-4 md:mb-6">
             <div class="space-y-2 md:flex md:flex-row md:gap-2 md:space-y-0">
                 <div class="flex gap-2 md:contents">
                     <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama..."

@@ -59,23 +59,23 @@
 
         {{-- FILTERS --}}
         <div class="bg-white rounded-2xl md:rounded-[2rem] shadow-sm border border-gray-100 p-4 md:p-8 mb-4 md:mb-8">
-            <form method="GET" action="{{ request()->url() }}">
+            <form method="GET" action="{{ request()->url() }}" class="filter-form">
                 @if($isScoped)
                     <input type="hidden" name="user_id" value="{{ $targetUser->id }}">
                 @endif
-                <div class="grid grid-cols-2 md:flex md:items-end gap-3 md:gap-6">
-                    <div class="flex-1">
+                <div class="grid grid-cols-2 xl:flex xl:items-end gap-3 xl:gap-4">
+                    <div class="xl:w-40 xl:flex-none">
                         <label class="block text-xs md:text-sm font-bold text-gray-600 md:text-gray-700 mb-1 md:mb-2 md:uppercase md:tracking-wider">Dari Tanggal</label>
                         <input type="date" name="date_from" value="{{ request('date_from') }}"
                             class="w-full border border-gray-300 md:border-gray-200 md:bg-gray-50 rounded-xl p-3 md:p-4 text-sm focus:ring-2 focus:ring-blue-500 md:focus:border-blue-500">
                     </div>
-                    <div class="flex-1">
+                    <div class="xl:w-40 xl:flex-none">
                         <label class="block text-xs md:text-sm font-bold text-gray-600 md:text-gray-700 mb-1 md:mb-2 md:uppercase md:tracking-wider">Sampai Tanggal</label>
                         <input type="date" name="date_to" value="{{ request('date_to') }}"
                             class="w-full border border-gray-300 md:border-gray-200 md:bg-gray-50 rounded-xl p-3 md:p-4 text-sm focus:ring-2 focus:ring-blue-500 md:focus:border-blue-500">
                     </div>
                     @if(!$isScoped)
-                        <div class="col-span-2 md:flex-1">
+                        <div class="col-span-2 xl:flex-1">
                             <label class="block text-xs md:text-sm font-bold text-gray-600 md:text-gray-700 mb-1 md:mb-2 md:uppercase md:tracking-wider">Karyawan</label>
                             <select name="user_id"
                                 class="w-full border border-gray-300 md:border-gray-200 md:bg-gray-50 rounded-xl p-3 md:p-4 text-sm focus:ring-2 focus:ring-blue-500 md:focus:border-blue-500">
@@ -86,7 +86,7 @@
                             </select>
                         </div>
                     @endif
-                    <div class="col-span-2 md:flex-1">
+                    <div class="col-span-2 xl:flex-1">
                         <label class="block text-xs md:text-sm font-bold text-gray-600 md:text-gray-700 mb-1 md:mb-2 md:uppercase md:tracking-wider">Tipe</label>
                         <select name="type"
                             class="w-full border border-gray-300 md:border-gray-200 md:bg-gray-50 rounded-xl p-3 md:p-4 text-sm focus:ring-2 focus:ring-blue-500 md:focus:border-blue-500">
@@ -99,9 +99,9 @@
                             <option value="other" {{ request('type') == 'other' ? 'selected' : '' }}>Lainnya</option>
                         </select>
                     </div>
-                    <div class="col-span-2 md:self-end">
+                    <div class="col-span-2 xl:flex-none">
                         <button type="submit"
-                            class="w-full md:px-10 bg-blue-600 hover:bg-blue-700 text-white py-3 md:py-4 rounded-xl font-bold text-sm shadow-sm md:shadow-md md:shadow-blue-600/20 md:active:scale-95 flex items-center justify-center gap-2 md:h-[58px] md:whitespace-nowrap">
+                            class="w-full md:px-10 xl:px-5 xl:w-auto bg-blue-600 hover:bg-blue-700 text-white py-3 md:py-4 rounded-xl font-bold text-sm shadow-sm md:shadow-md md:shadow-blue-600/20 md:active:scale-95 flex items-center justify-center gap-2 md:h-[58px] md:whitespace-nowrap">
                             <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
                             </svg>

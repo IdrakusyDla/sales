@@ -41,7 +41,7 @@
                 <div class="flex-1">
                     <h3 class="font-bold text-sm text-gray-800">Persetujuan <br>Reimburse</h3>
                 </div>
-                
+
                 <div class="flex items-center gap-2 shrink-0">
                     @if(($stats['pending_finance'] ?? 0) > 0)
                         <span class="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{{ $stats['pending_finance'] }}</span>
@@ -52,10 +52,27 @@
                 </div>
             </a>
 
+            {{-- Arsip Reimburse --}}
+            <a href="{{ route('finance.reimburse.archive') }}"
+                class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center gap-3 hover:bg-gray-50 mb-0">
+                <div class="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center font-bold shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4">
+                        </path>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-bold text-sm text-gray-800">Arsip <br>Reimburse</h3>
+                </div>
+                <svg class="w-5 h-5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </a>
+
             {{-- Setting Bahan Bakar --}}
             <a href="{{ route('finance.fuel_settings.index') }}"
-                class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center gap-3 hover:bg-gray-50 mb-0">
-                <div class="w-10 h-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold shrink-0">
+                class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center gap-3 hover:bg-gray-50 mb-0">                <div class="w-10 h-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold shrink-0">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4">
@@ -72,19 +89,21 @@
         </div>
 
         {{-- SEARCH & FILTER --}}
-        <form method="GET" action="{{ route('finance.dashboard') }}" class="mb-6">
-            <div class="flex gap-2">
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama..."
-                    class="flex-1 border border-gray-300 rounded-xl p-3 text-sm">
-                <select name="role" class="border border-gray-300 rounded-xl p-3 text-sm">
-                    <option value="">Semua Role</option>
-                    <option value="sales" {{ request('role') == 'sales' ? 'selected' : '' }}>Sales</option>
-                    <option value="supervisor" {{ request('role') == 'supervisor' ? 'selected' : '' }}>Supervisor</option>
-                </select>
+        <form method="GET" action="{{ route('finance.dashboard') }}" class="filter-form mb-6">
+            <div class="flex flex-col gap-3 md:flex md:flex-row md:gap-2">
+                <div class="flex gap-2 md:contents">
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama..."
+                        class="flex-1 border border-gray-300 rounded-xl p-3 text-sm">
+                    <select name="role" class="w-36 border border-gray-300 rounded-xl p-3 text-sm">
+                        <option value="">Semua Role</option>
+                        <option value="sales" {{ request('role') == 'sales' ? 'selected' : '' }}>Sales</option>
+                        <option value="supervisor" {{ request('role') == 'supervisor' ? 'selected' : '' }}>Supervisor</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white px-5 py-3 rounded-xl font-bold text-sm shrink-0 md:w-auto md:order-last">
+                    Cari
+                </button>
             </div>
-            <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-sm mt-3">
-                Cari
-            </button>
         </form>
 
         {{-- LIST KARYAWAN --}}

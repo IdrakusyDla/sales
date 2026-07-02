@@ -2,7 +2,6 @@
 
 @section('content')
     <div class="px-5 md:px-8 py-6 md:py-8">
-        {{-- BACK BUTTON & HEADER --}}
         @php
             $isScoped = !empty($targetUser);
             $typeMeta = [
@@ -13,7 +12,13 @@
                 'transport' => ['label' => 'Transport', 'bg' => 'bg-orange-100', 'text' => 'text-orange-600'],
                 'other' => ['label' => 'Lainnya', 'bg' => 'bg-gray-200', 'text' => 'text-gray-600'],
             ];
+            $statusMeta = [
+                'approved' => ['label' => 'Disetujui', 'bg' => 'bg-green-100', 'text' => 'text-green-700'],
+                'rejected_permanent' => ['label' => 'Ditolak', 'bg' => 'bg-red-100', 'text' => 'text-red-700'],
+            ];
         @endphp
+
+        {{-- BACK BUTTON & HEADER --}}
         <div class="flex items-center gap-3 mb-6">
             <a href="{{ $isScoped ? route('finance.show.user', $targetUser->id) : route('finance.dashboard') }}" class="text-gray-600">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -22,13 +27,13 @@
             </a>
             <div>
                 <h1 class="text-2xl font-bold">
-                    Persetujuan Reimburse{{ $isScoped ? ' — ' . $targetUser->name : '' }}
+                    Arsip Reimburse{{ $isScoped ? ' — ' . $targetUser->name : '' }}
                 </h1>
                 <p class="text-gray-500 text-sm">
                     @if($isScoped)
-                        Permohonan reimburse {{ $targetUser->name }} yang menunggu persetujuan Finance.
+                        Riwayat reimburse final {{ $targetUser->name }} (disetujui & ditolak).
                     @else
-                        Daftar reimburse yang menunggu persetujuan Finance.
+                        Riwayat reimburse yang sudah diselesaikan Finance.
                     @endif
                 </p>
             </div>
@@ -43,10 +48,10 @@
                         </svg>
                     </span>
                     <p class="text-sm text-gray-600 min-w-0">
-                        Menampilkan permohonan dari <span class="font-bold text-gray-800">{{ $targetUser->name }}</span> saja.
+                        Menampilkan arsip dari <span class="font-bold text-gray-800">{{ $targetUser->name }}</span> saja.
                     </p>
                 </div>
-                <a href="{{ route('finance.reimburse.approval') }}"
+                <a href="{{ route('finance.reimburse.archive') }}"
                     class="shrink-0 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-sm flex items-center justify-center gap-1.5 whitespace-nowrap">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
@@ -56,9 +61,25 @@
             </div>
         @endif
 
+        {{-- STATISTIK RINGKAS --}}
+        <div class="grid grid-cols-3 gap-3 mb-4">
+            <div class="bg-green-50 rounded-xl p-3 md:p-4">
+                <p class="text-[10px] md:text-xs text-gray-600 mb-1">Disetujui</p>
+                <p class="text-lg md:text-2xl font-bold text-green-600">{{ $archiveStats['approved_count'] }}</p>
+            </div>
+            <div class="bg-red-50 rounded-xl p-3 md:p-4">
+                <p class="text-[10px] md:text-xs text-gray-600 mb-1">Ditolak</p>
+                <p class="text-lg md:text-2xl font-bold text-red-600">{{ $archiveStats['rejected_count'] }}</p>
+            </div>
+            <div class="bg-blue-50 rounded-xl p-3 md:p-4">
+                <p class="text-[10px] md:text-xs text-gray-600 mb-1">Total Disetujui</p>
+                <p class="text-sm md:text-lg font-bold text-blue-600">Rp {{ number_format($archiveStats['approved_total'], 0, ',', '.') }}</p>
+            </div>
+        </div>
+
         {{-- FILTERS --}}
         <div class="bg-white rounded-2xl md:rounded-[2rem] shadow-sm border border-gray-100 p-4 md:p-8 mb-4 md:mb-8">
-            <form method="GET" action="{{ route('finance.reimburse.approval') }}" class="filter-form">
+            <form method="GET" action="{{ route('finance.reimburse.archive') }}" class="filter-form">
                 @if($isScoped)
                     <input type="hidden" name="user_id" value="{{ $targetUser->id }}">
                 @endif
@@ -86,6 +107,15 @@
                         </div>
                     @endif
                     <div class="col-span-2 xl:flex-1">
+                        <label class="w-36 block text-xs md:text-sm font-bold text-gray-600 md:text-gray-700 mb-1 md:mb-2 md:uppercase md:tracking-wider">Status</label>
+                        <select name="status"
+                            class="w-full border border-gray-300 md:border-gray-200 md:bg-gray-50 rounded-xl p-3 md:p-4 text-sm focus:ring-2 focus:ring-blue-500 md:focus:border-blue-500">
+                            <option value="">Semua Status</option>
+                            <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Disetujui</option>
+                            <option value="rejected_permanent" {{ request('status') == 'rejected_permanent' ? 'selected' : '' }}>Ditolak</option>
+                        </select>
+                    </div>
+                    <div class="col-span-2 xl:flex-1">
                         <label class="w-36 block text-xs md:text-sm font-bold text-gray-600 md:text-gray-700 mb-1 md:mb-2 md:uppercase md:tracking-wider">Tipe</label>
                         <select name="type"
                             class="w-full border border-gray-300 md:border-gray-200 md:bg-gray-50 rounded-xl p-3 md:p-4 text-sm focus:ring-2 focus:ring-blue-500 md:focus:border-blue-500">
@@ -112,36 +142,6 @@
             </form>
         </div>
 
-        {{-- HIDDEN FORM: bulk approve --}}
-        <form id="bulkApproveForm" action="{{ route('finance.reimburse.bulk_approve') }}" method="POST" class="hidden">
-            @csrf
-            <input type="hidden" name="expense_ids" value="">
-            <input type="hidden" name="notes" value="">
-        </form>
-
-        @if($groups->isNotEmpty())
-            {{-- GLOBAL ACTION BAR --}}
-            <div class="flex flex-wrap items-center justify-between gap-3 bg-blue-50 rounded-xl p-3 mb-4">
-                <label class="flex items-center gap-2">
-                    <input type="checkbox" id="selectAll" onchange="toggleAllCheckboxes()"
-                        class="w-5 h-5 text-blue-600 rounded">
-                    <span class="text-sm font-bold text-blue-700">Pilih Semua</span>
-                </label>
-                <div class="flex flex-wrap gap-2">
-                    <button type="button" onclick="approveChecked('all')"
-                        class="bg-green-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-green-700 flex items-center gap-1.5">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                        Setujui Dipilih
-                    </button>
-                    <button type="button" onclick="rejectChecked('all')"
-                        class="bg-red-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-red-700 flex items-center gap-1.5">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                        Tolak Dipilih
-                    </button>
-                </div>
-            </div>
-        @endif
-
         {{-- DAFTAR KARTU (1 DailyLog = 1 Kartu) --}}
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pb-24">
             @forelse($groups as $items)
@@ -149,12 +149,16 @@
                     $first = $items->first();
                     $dlId = $first->daily_log_id;
                     $total = $items->sum('amount');
+                    $statuses = $items->pluck('status')->unique();
+                    if ($statuses->count() === 1) {
+                        $cardStatus = $statuses->first();
+                    } else {
+                        $cardStatus = 'mixed';
+                    }
                 @endphp
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition flex flex-col">
                     {{-- HEADER KARTU --}}
                     <div class="flex items-start gap-3 mb-3">
-                        <input type="checkbox" class="card-select-all mt-1 w-5 h-5 text-blue-600 rounded"
-                            onchange="toggleCard('{{ $dlId }}', this.checked)">
                         <div class="flex-1 min-w-0">
                             <div class="flex justify-between items-start gap-2">
                                 <div class="min-w-0">
@@ -167,9 +171,16 @@
                                         {{ \Carbon\Carbon::parse($first->date)->format('d M Y') }}
                                     </p>
                                 </div>
-                                <span class="bg-yellow-100 text-yellow-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase whitespace-nowrap">
-                                    Menunggu Finance
-                                </span>
+                                @php
+                                    $cardBadge = $cardStatus === 'mixed'
+                                        ? ['label' => 'Campuran', 'bg' => 'bg-gray-200', 'text' => 'text-gray-700']
+                                        : ($statusMeta[$cardStatus] ?? null);
+                                @endphp
+                                @if($cardBadge)
+                                    <span class="{{ $cardBadge['bg'] }} {{ $cardBadge['text'] }} text-[10px] font-bold px-2 py-1 rounded-full uppercase whitespace-nowrap">
+                                        {{ $cardBadge['label'] }}
+                                    </span>
+                                @endif
                             </div>
 
                             {{-- TOTAL & JUMLAH ITEM --}}
@@ -180,28 +191,27 @@
                         </div>
                     </div>
 
-                    {{-- RIWAYAT APPROVAL (SPV & HRD) --}}
-                    @if($first->approved_by_spv_at || $first->approved_by_hrd_at)
+                    {{-- INFO KEPUTUSAN FINANCE --}}
+                    @if($first->status === 'approved' && $first->approved_by_finance_at)
                         <div class="bg-green-50 border border-green-200 rounded-lg p-2 mb-3 text-xs space-y-0.5">
-                            @if($first->approved_by_spv_at)
-                                <p class="text-green-700"><svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> SPV: {{ $first->approvedBySpv?->name ?? '-' }} ({{ \Carbon\Carbon::parse($first->approved_by_spv_at)->format('d M H:i') }})</p>
-                            @endif
-                            @if($first->approved_by_hrd_at)
-                                <p class="text-green-700"><svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> HRD: {{ $first->approvedByHrd?->name ?? '-' }} ({{ \Carbon\Carbon::parse($first->approved_by_hrd_at)->format('d M H:i') }})</p>
-                            @endif
+                            <p class="text-green-700"><svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Finance: {{ $first->approvedByFinance?->name ?? '-' }} ({{ \Carbon\Carbon::parse($first->approved_by_finance_at)->format('d M Y H:i') }})</p>
+                        </div>
+                    @elseif($first->status === 'rejected_permanent' && $first->rejection_note)
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-2 mb-3 text-xs">
+                            <p class="text-red-700 font-bold flex items-center gap-1 mb-0.5"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> Ditolak Permanen</p>
+                            <p class="text-red-600 italic break-words">"{{ $first->rejection_note }}"</p>
                         </div>
                     @endif
 
                     {{-- DAFTAR ITEM --}}
                     <div class="space-y-2 flex-1">
                         @foreach($items as $expense)
-                            @php $meta = $typeMeta[$expense->type] ?? $typeMeta['other']; @endphp
+                            @php
+                                $meta = $typeMeta[$expense->type] ?? $typeMeta['other'];
+                                $itemStatus = $statusMeta[$expense->status] ?? null;
+                            @endphp
                             <div class="bg-gray-50 rounded-xl p-3">
                                 <div class="flex items-start gap-3">
-                                    <label class="cursor-pointer pt-1 shrink-0">
-                                        <input type="checkbox" class="expense-checkbox w-5 h-5 text-blue-600 rounded"
-                                            value="{{ $expense->id }}" data-card="{{ $dlId }}">
-                                    </label>
                                     <div class="flex-1 min-w-0">
                                         <div class="flex items-center justify-between gap-2">
                                             <div class="flex items-center gap-2 min-w-0">
@@ -218,6 +228,12 @@
                                         @endif
 
                                         <div class="flex flex-wrap items-center gap-2 mt-1.5">
+                                            @if($itemStatus)
+                                                <span class="inline-flex items-center gap-1 text-[10px] font-bold {{ $itemStatus['bg'] }} {{ $itemStatus['text'] }} rounded px-1.5 py-0.5 uppercase">
+                                                    {{ $itemStatus['label'] }}
+                                                </span>
+                                            @endif
+
                                             @if($expense->photo_receipt)
                                                 <button type="button" onclick="openImageModal('{{ route('expenses.receipt.show', $expense->id) }}')"
                                                     class="text-blue-500 text-xs flex items-center gap-1 hover:underline">
@@ -228,6 +244,10 @@
                                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                                                     Tanpa struk
                                                 </span>
+                                            @endif
+
+                                            @if($expense->status === 'rejected_permanent' && $expense->rejection_note)
+                                                <span class="text-[10px] text-red-600 italic truncate max-w-[160px]" title="{{ $expense->rejection_note }}">"{{ $expense->rejection_note }}"</span>
                                             @endif
 
                                             @if($expense->revision_count > 0)
@@ -269,30 +289,11 @@
                         <span>Lihat detail absen lengkap</span>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                     </a>
-
-                    {{-- AKSI PER KARTU --}}
-                    <div class="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-100">
-                        <button type="button" onclick="approveInCard('{{ $dlId }}')"
-                            class="flex-1 min-w-[120px] bg-green-100 text-green-700 py-2.5 rounded-xl font-bold text-xs hover:bg-green-200 transition flex items-center justify-center gap-1">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            Setujui Terpilih
-                        </button>
-                        <button type="button" onclick="rejectInCard('{{ $dlId }}')"
-                            class="flex-1 min-w-[120px] bg-red-100 text-red-700 py-2.5 rounded-xl font-bold text-xs hover:bg-red-200 transition flex items-center justify-center gap-1">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                            Tolak Terpilih
-                        </button>
-                        <button type="button" onclick="approveAllInCard('{{ $dlId }}')"
-                            class="flex-1 min-w-[120px] bg-green-600 text-white py-2.5 rounded-xl font-bold text-xs hover:bg-green-700 transition flex items-center justify-center gap-1">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            Setujui Semua
-                        </button>
-                    </div>
                 </div>
             @empty
                 <div class="md:col-span-2 text-center py-10">
-                    <svg class="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <p class="text-sm text-gray-500">Tidak ada permintaan pending.</p>
+                    <svg class="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <p class="text-sm text-gray-500">Belum ada reimburse yang diselesaikan.</p>
                 </div>
             @endforelse
         </div>
@@ -303,65 +304,6 @@
                 {{ $paginator->appends(request()->query())->links() }}
             </div>
         @endif
-    </div>
-
-    {{-- MODAL: Bulk Approve --}}
-    <div id="bulk-approve-modal" class="hidden modal-overlay fixed inset-0 z-[60] flex items-center justify-center bg-black/50" onclick="if(event.target===this) closeBulkApprove()">
-        <div class="modal-box bg-white rounded-2xl shadow-xl w-[90%] max-w-sm overflow-hidden">
-            <div class="p-6 text-center">
-                <div class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                </div>
-                <h3 class="text-lg font-bold text-gray-800 mb-2">Konfirmasi Persetujuan</h3>
-                <p class="text-sm text-gray-500">Setujui <span id="bulk-approve-count" class="font-bold text-gray-800">0</span> reimburse yang dipilih?</p>
-            </div>
-            <div class="flex border-t border-gray-100">
-                <button type="button" onclick="closeBulkApprove()"
-                    class="flex-1 py-3.5 text-sm font-bold text-gray-600 hover:bg-gray-50 transition">Batal</button>
-                <button type="button" onclick="confirmBulkApprove()"
-                    class="flex-1 py-3.5 text-sm font-bold text-white bg-green-600 hover:bg-green-700 transition">Ya, Setujui</button>
-            </div>
-        </div>
-    </div>
-
-    {{-- MODAL: Bulk Reject --}}
-    <div id="reject-modal" class="hidden modal-overlay fixed inset-0 z-[60] flex items-center justify-center bg-black/50" onclick="if(event.target===this) closeReject()">
-        <div class="modal-box bg-white rounded-2xl shadow-xl w-[90%] max-w-md overflow-hidden">
-            <form id="bulkRejectForm" action="{{ route('finance.reimburse.bulk_reject') }}" method="POST">
-                @csrf
-                <input type="hidden" name="expense_ids" value="">
-                <div class="p-6">
-                    <div class="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-800 mb-1 text-center">Tolak Reimburse</h3>
-                    <p class="text-sm text-gray-500 text-center mb-4"><span id="reject-count">0</span> item akan diproses.</p>
-
-                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Alasan *</label>
-                    <input type="text" name="rejection_note" placeholder="Masukkan alasan penolakan..." required
-                        class="w-full border border-gray-300 rounded-lg p-3 text-sm mb-3 focus:ring-2 focus:ring-red-300 focus:border-red-400">
-
-                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Tipe Penolakan *</label>
-                    <div class="flex gap-2 mb-4">
-                        <label class="flex-1 flex items-center gap-2 bg-yellow-50 border border-yellow-200 rounded-lg p-3 cursor-pointer hover:bg-yellow-100">
-                            <input type="radio" name="rejection_type" value="revisi" required class="text-yellow-600">
-                            <span class="text-xs font-bold text-yellow-700">Minta Revisi</span>
-                        </label>
-                        <label class="flex-1 flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg p-3 cursor-pointer hover:bg-red-100">
-                            <input type="radio" name="rejection_type" value="permanent" required class="text-red-600">
-                            <span class="text-xs font-bold text-red-700">Tolak Permanen</span>
-                        </label>
-                    </div>
-
-                    <div class="flex border-t border-gray-100 -mx-6 -mb-6 mt-2">
-                        <button type="button" onclick="closeReject()"
-                            class="flex-1 py-3.5 text-sm font-bold text-gray-600 hover:bg-gray-50 transition">Batal</button>
-                        <button type="submit"
-                            class="flex-1 py-3.5 text-sm font-bold text-white bg-red-600 hover:bg-red-700 transition">Ya, Tolak</button>
-                    </div>
-                </div>
-            </form>
-        </div>
     </div>
 
     {{-- Image Modal (hidden) --}}
@@ -378,57 +320,6 @@
 
     @section('scripts')
         <script>
-            // === Pilihan & seleksi ===
-            function toggleAllCheckboxes() {
-                const selectAll = document.getElementById('selectAll');
-                document.querySelectorAll('.expense-checkbox').forEach(cb => cb.checked = selectAll.checked);
-            }
-
-            function toggleCard(cardId, checked) {
-                document.querySelectorAll('.expense-checkbox[data-card="' + cardId + '"]').forEach(cb => cb.checked = checked);
-            }
-
-            function idsInScope(scope) {
-                const sel = scope === 'all'
-                    ? '.expense-checkbox:checked'
-                    : '.expense-checkbox[data-card="' + scope + '"]:checked';
-                return Array.from(document.querySelectorAll(sel)).map(cb => cb.value);
-            }
-
-            // === Approve flow ===
-            function approveChecked(scope) {
-                const ids = idsInScope(scope);
-                if (!ids.length) { alert('Pilih minimal satu item.'); return; }
-                document.querySelector('#bulkApproveForm input[name="expense_ids"]').value = ids.join(',');
-                document.getElementById('bulk-approve-count').textContent = ids.length;
-                document.getElementById('bulk-approve-modal').classList.remove('hidden');
-            }
-            function approveInCard(cardId) { approveChecked(cardId); }
-            function approveAllInCard(cardId) {
-                document.querySelectorAll('.expense-checkbox[data-card="' + cardId + '"]').forEach(cb => cb.checked = true);
-                approveChecked(cardId);
-            }
-            function closeBulkApprove() {
-                document.getElementById('bulk-approve-modal').classList.add('hidden');
-            }
-            function confirmBulkApprove() {
-                document.getElementById('bulkApproveForm').submit();
-            }
-
-            // === Reject flow ===
-            function rejectChecked(scope) {
-                const ids = idsInScope(scope);
-                if (!ids.length) { alert('Pilih minimal satu item.'); return; }
-                document.querySelector('#bulkRejectForm input[name="expense_ids"]').value = ids.join(',');
-                document.getElementById('reject-count').textContent = ids.length;
-                document.getElementById('reject-modal').classList.remove('hidden');
-            }
-            function rejectInCard(cardId) { rejectChecked(cardId); }
-            function closeReject() {
-                document.getElementById('reject-modal').classList.add('hidden');
-            }
-
-            // === Image modal ===
             function openImageModal(url) {
                 const overlay = document.getElementById('image-modal-overlay');
                 document.getElementById('image-modal-img').src = url;
@@ -441,10 +332,8 @@
             }
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') {
-                    ['image-modal-overlay', 'bulk-approve-modal', 'reject-modal'].forEach(id => {
-                        const el = document.getElementById(id);
-                        if (el && !el.classList.contains('hidden')) el.classList.add('hidden');
-                    });
+                    const el = document.getElementById('image-modal-overlay');
+                    if (el && !el.classList.contains('hidden')) el.classList.add('hidden');
                 }
             });
         </script>

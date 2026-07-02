@@ -169,7 +169,7 @@
                     </div>
 
                     {{-- FILTER FORM (DESKTOP) --}}
-                    <form method="GET" action="{{ route('hrd.home') }}" id="filterFormDesktop" class="space-y-3">
+                    <form method="GET" action="{{ route('hrd.home') }}" id="filterFormDesktop" class="filter-form space-y-3">
                         <input type="hidden" name="type" value="{{ $reqType }}">
                         <input type="hidden" name="preset" value="{{ $reqPreset }}">
 

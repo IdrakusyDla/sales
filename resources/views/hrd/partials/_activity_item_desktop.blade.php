@@ -24,6 +24,9 @@
     }
 
     $dataType = $activity['type']; // check_in, check_out, visit
+
+    // Link detail user (bisa di-override oleh konteks pemanggil, mis. supervisor)
+    $showUserRoute = $showUserRoute ?? route('hrd.show.user', $user->id);
 @endphp
 
 <div class="activity-item mb-3" data-date="{{ $activity['date'] ? \Carbon\Carbon::parse($activity['date'])->format('Y-m-d') : '' }}" data-type="{{ $dataType }}">
@@ -43,7 +46,7 @@
                     {{ substr($user->name, 0, 1) }}
                 </div>
                 <div class="flex-1 min-w-0">
-                    <a href="{{ route('hrd.show.user', $user->id) }}" class="text-sm font-bold text-gray-800 hover:text-blue-600 transition truncate block">
+                    <a href="{{ $showUserRoute }}" class="text-sm font-bold text-gray-800 hover:text-blue-600 transition truncate block">
                         {{ $user->name }}
                     </a>
                     <p class="text-xs text-gray-500 capitalize">{{ $user->role }}</p>

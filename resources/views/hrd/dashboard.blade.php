@@ -101,37 +101,37 @@
         </div>
 
         {{-- SEARCH & FILTER --}}
-        <form method="GET" action="{{ route('hrd.dashboard') }}" class="mb-4 md:mb-6">
-            <div class="space-y-2 md:flex md:flex-row md:gap-2 md:space-y-0">
-                <div class="flex gap-2 md:contents">
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama..."
-                        class="flex-1 border border-gray-300 rounded-xl p-3 text-sm">
-                    <button type="submit" class="bg-blue-600 text-white px-5 py-3 rounded-xl font-bold text-sm shrink-0 md:order-last">
-                        Cari
-                    </button>
-                </div>
-                <div class="grid grid-cols-3 gap-2 md:contents">
-                    <select name="role" class="border border-gray-300 rounded-xl p-3 text-sm">
-                        <option value="">Semua Role</option>
-                        <option value="sales" {{ request('role') == 'sales' ? 'selected' : '' }}>Sales</option>
-                        <option value="supervisor" {{ request('role') == 'supervisor' ? 'selected' : '' }}>Supervisor</option>
-                        <option value="finance" {{ request('role') == 'finance' ? 'selected' : '' }}>Finance</option>
-                    </select>
-                    <select name="company_id" class="border border-gray-300 rounded-xl p-3 text-sm">
-                        <option value="">Semua Perusahaan</option>
-                        @foreach($companies as $company)
-                            <option value="{{ $company->id }}" {{ request('company_id') == $company->id ? 'selected' : '' }}>{{ $company->name }}</option>
-                        @endforeach
-                    </select>
-                    <select name="job_position_id" class="border border-gray-300 rounded-xl p-3 text-sm">
-                        <option value="">Semua Jabatan</option>
-                        @foreach($jobPositions as $jobPosition)
-                            <option value="{{ $jobPosition->id }}" {{ request('job_position_id') == $jobPosition->id ? 'selected' : '' }}>{{ $jobPosition->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-        </form>
+        <form method="GET" action="{{ route('hrd.dashboard') }}" class="filter-form mb-4 md:mb-6">
+                    <div class="space-y-2 md:flex md:flex-row md:gap-2 md:space-y-0">
+                        <div class="flex gap-2 md:contents">
+                            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama..."
+                                class="flex-1 border border-gray-300 rounded-xl p-3 text-sm">
+                            <button type="submit" class="bg-blue-600 text-white px-5 py-3 rounded-xl font-bold text-sm shrink-0 md:order-last">
+                                Cari
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 md:contents">
+                            <select name="role" class="w-36 border border-gray-300 rounded-xl p-3 text-sm">
+                                <option value="">Semua Role</option>
+                                <option value="sales" {{ request('role') == 'sales' ? 'selected' : '' }}>Sales</option>
+                                <option value="supervisor" {{ request('role') == 'supervisor' ? 'selected' : '' }}>Supervisor</option>
+                                <option value="finance" {{ request('role') == 'finance' ? 'selected' : '' }}>Finance</option>
+                            </select>
+                            <select name="company_id" class="w-48 border border-gray-300 rounded-xl p-3 text-sm">
+                                <option value="">Semua Perusahaan</option>
+                                @foreach($companies as $company)
+                                    <option value="{{ $company->id }}" {{ request('company_id') == $company->id ? 'selected' : '' }}>{{ $company->name }}</option>
+                                @endforeach
+                            </select>
+                            <select name="job_position_id" class="w-36 border border-gray-300 rounded-xl p-3 text-sm">
+                                <option value="">Semua Jabatan</option>
+                                @foreach($jobPositions as $jobPosition)
+                                    <option value="{{ $jobPosition->id }}" {{ request('job_position_id') == $jobPosition->id ? 'selected' : '' }}>{{ $jobPosition->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </form>
 
         {{-- LIST KARYAWAN --}}
         <div class="space-y-3 md:grid md:grid-cols-2 md:gap-4 md:space-y-0 pb-8">
